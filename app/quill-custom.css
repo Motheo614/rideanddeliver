@@ -1,0 +1,136 @@
+/* Custom styles for React Quill editor */
+
+.quill {
+  font-family: inherit;
+}
+
+.ql-toolbar {
+  background-color: #f9fafb;
+  border-color: #e5e7eb !important;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  padding: 12px;
+}
+
+.ql-container {
+  border-color: #e5e7eb !important;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  font-size: 16px;
+  font-family: inherit;
+  min-height: 500px;
+}
+
+.ql-editor {
+  min-height: 500px;
+  padding: 20px;
+  line-height: 1.7;
+}
+
+.ql-editor p {
+  margin-bottom: 1em;
+}
+
+.ql-editor h2 {
+  font-size: 1.875rem;
+  font-weight: 800;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  color: #1a1a1a;
+}
+
+.ql-editor h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  color: #1a1a1a;
+}
+
+.ql-editor ul,
+.ql-editor ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.ql-editor li {
+  margin-bottom: 0.5em;
+}
+
+.ql-editor blockquote {
+  border-left: 4px solid #CC0000;
+  padding-left: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 1em;
+  font-style: italic;
+  color: #4b5563;
+}
+
+.ql-editor a {
+  color: #CC0000;
+  text-decoration: underline;
+}
+
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1em 0;
+}
+
+.ql-editor.ql-blank::before {
+  color: #9ca3af;
+  font-style: normal;
+}
+
+/* Toolbar button styling */
+.ql-toolbar button {
+  width: 32px;
+  height: 32px;
+}
+
+.ql-toolbar button:hover {
+  color: #CC0000;
+}
+
+.ql-toolbar button.ql-active {
+  color: #CC0000;
+}
+
+.ql-toolbar .ql-stroke {
+  stroke: #4b5563;
+}
+
+.ql-toolbar button:hover .ql-stroke {
+  stroke: #CC0000;
+}
+
+.ql-toolbar button.ql-active .ql-stroke {
+  stroke: #CC0000;
+}
+
+.ql-toolbar .ql-fill {
+  fill: #4b5563;
+}
+
+.ql-toolbar button:hover .ql-fill {
+  fill: #CC0000;
+}
+
+.ql-toolbar button.ql-active .ql-fill {
+  fill: #CC0000;
+}
+
+/* Picker styling */
+.ql-toolbar .ql-picker-label {
+  color: #4b5563;
+}
+
+.ql-toolbar .ql-picker-label:hover {
+  color: #CC0000;
+}
+
+.ql-toolbar .ql-picker-label.ql-active {
+  color: #CC0000;
+}
