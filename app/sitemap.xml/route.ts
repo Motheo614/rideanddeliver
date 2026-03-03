@@ -1,4 +1,4 @@
-import { connectToDatabase } from '@/lib/db/mongoose';
+import connectDB from '@/lib/db/mongoose';
 import { Post } from '@/lib/db/models';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,7 @@ export async function GET() {
   
   // Fetch posts directly from database during generation
   try {
-    await connectToDatabase();
+    await connectDB();
     posts = await Post.find({ status: 'published' })
       .select('slug publishedAt')
       .sort({ publishedAt: -1 })
