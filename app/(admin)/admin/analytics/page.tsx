@@ -7,7 +7,7 @@ import AnalyticsChart from '@/components/admin/AnalyticsChart';
 import { Calendar, TrendingUp, Users, MousePointer, Eye, Download, ChevronDown } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { ExportToCsv } from 'export-to-csv';
+import { mkConfig, generateCsv, download } from 'export-to-csv';
 import { format } from 'date-fns';
 
 type DateRangePreset = {
@@ -96,20 +96,13 @@ export default function AnalyticsPage() {
   const exportToCSV = () => {
     if (!pageviewsData.length) return;
 
-    const csvExporter = new ExportToCsv({
-      fieldSeparator: ',',
-      quoteStrings: '"',
-      decimalSeparator: '.',
-      showLabels: true,
-      showTitle: true,
-      title: `Analytics Report - ${format(startDate, 'MMM dd, yyyy')} to ${format(endDate, 'MMM dd, yyyy')}`,
-      useTextFile: false,
-      useBom: true,
+    const csvConfig = mkConfig({
       useKeysAsHeaders: true,
       filename: `analytics-${format(new Date(), 'yyyy-MM-dd')}`,
     });
 
-    csvExporter.generateCsv(pageviewsData);
+    const csv = generateCsv(csvConfig)(pageviewsData);
+    download(csvConfig)(csv);
   };
 
   // Calculate sparkline data from pageviews

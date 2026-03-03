@@ -19,7 +19,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { ExportToCsv } from 'export-to-csv';
+import { mkConfig, generateCsv, download } from 'export-to-csv';
 import { format } from 'date-fns';
 
 interface Product {
@@ -252,20 +252,13 @@ export default function AdminAffiliatePage() {
       'Created': format(new Date(p.createdAt), 'MMM dd, yyyy'),
     }));
 
-    const csvExporter = new ExportToCsv({
-      fieldSeparator: ',',
-      quoteStrings: '"',
-      decimalSeparator: '.',
-      showLabels: true,
-      showTitle: true,
-      title: `Affiliate Links Report - ${format(new Date(), 'MMM dd, yyyy')}`,
-      useTextFile: false,
-      useBom: true,
+    const csvConfig = mkConfig({
       useKeysAsHeaders: true,
       filename: `affiliate-links-${format(new Date(), 'yyyy-MM-dd')}`,
     });
 
-    csvExporter.generateCsv(csvData);
+    const csv = generateCsv(csvConfig)(csvData);
+    download(csvConfig)(csv);
     setMessage({ type: 'success', text: 'Exported successfully!' });
   };
 
