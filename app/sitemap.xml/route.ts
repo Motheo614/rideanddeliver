@@ -1,8 +1,24 @@
-import { getPosts } from '@/lib/posts';
+import { connectToDatabase } from '@/lib/db/mongoose';
+import { Post } from '@/lib/db/models';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Revalidate every hour
 
 export async function GET() {
-  const posts = await getPosts({ status: 'published' });
-  const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+  let posts: any[] = [];
+  
+  // Fetch posts directly from database during generation
+  try {
+    await connectToDatabase();
+    posts = await Post.find({ status: 'published' })
+      .select('slug publishedAt')
+      .sort({ publishedAt: -1 })
+      .lean();
+  } catch (error) {
+    console.error('Error fetching posts for sitemap:', error);
+  }
+  
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://motheo614-ride-and-deliver.vercel.app';
   
   const staticPages = [
     '',
