@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import Post from '../lib/db/models/Post';
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://motheoeesemang:3hWJldC4AAddouY9@cluster1.sgegg2e.mongodb.net/?appName=Cluster1';
+import connectDB from '../lib/db/mongoose';
 
 const samplePosts = [
   {
@@ -339,7 +338,7 @@ async function seed() {
     console.log('🌱 Starting database seed...');
     
     // Connect to MongoDB
-    await mongoose.connect(MONGODB_URI);
+    await connectDB();
     console.log('✅ Connected to MongoDB');
 
     // Clear existing posts
