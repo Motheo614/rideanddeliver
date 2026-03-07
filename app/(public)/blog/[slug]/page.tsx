@@ -66,11 +66,10 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Main Layout Container */}
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1200px]">
-        {/* FIX 1: Switched from Grid to Flexbox */}
-        <div className="flex flex-col lg:flex-row gap-8 xl:gap-12 w-full">
+        <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
           
-          {/* FIX 2: Left Column - 'flex-1 min-w-0' guarantees it fills space but NEVER blows out */}
-          <article className="flex-1 min-w-0 w-full">
+          {/* Main Left Column (Removed w-full, kept flex-1 min-w-0) */}
+          <article className="flex-1 min-w-0">
             
             {/* Title Section */}
             <header className="mb-8">
@@ -114,14 +113,12 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
 
-            {/* Content Section */}
-            {/* FIX 3: Cleaned up Prose classes. max-w-none removes standard limits, break-words stops long URLs blowing it out */}
+            {/* Content Section (Removed w-full so it respects the article boundary) */}
             <div 
-              className="prose prose-lg max-w-none w-full break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto"
+              className="prose prose-lg max-w-none prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto overflow-hidden [&>p]:break-words"
               style={{ 
                 wordBreak: 'normal',
-                overflowWrap: 'break-word',
-                wordWrap: 'break-word',
+                overflowWrap: 'anywhere',
                 hyphens: 'auto'
               }}
               dangerouslySetInnerHTML={{ __html: post.content }}
