@@ -4,6 +4,7 @@ export interface Post {
   excerpt: string;
   category: string;
   categorySlug: string;
+  dbCategorySlug: string; // Database category enum for blog post URLs
   publishedAt: string;
   readTime: string;
   featuredImage: string;

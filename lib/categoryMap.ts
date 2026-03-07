@@ -60,5 +60,7 @@ export function transformPost(dbPost: any): any {
     ...dbPost,
     category: categoryInfo?.displayName || dbPost.categoryLabel || dbPost.category,
     categorySlug: categoryInfo?.urlSlug || dbPost.category,
+    // Database category slug for blog post URLs (e.g., 'safety-gear')
+    dbCategorySlug: dbPost.category,
   };
 }

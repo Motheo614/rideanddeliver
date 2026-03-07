@@ -268,7 +268,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
           />
           <p className="text-xs text-gray-500 mt-1">
-            ridersection.com/blog/{slug || 'your-post-slug'}
+            ridersection.com/{category || 'category'}/{slug || 'your-post-slug'}
           </p>
         </div>
 

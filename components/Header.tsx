@@ -80,11 +80,11 @@ export default function Header() {
     }
   };
 
-  const handleResultClick = (slug: string) => {
+  const handleResultClick = (post: any) => {
     setIsSearchOpen(false);
     setSearchQuery('');
     setSearchResults([]);
-    router.push(`/blog/${slug}/`);
+    router.push(`/${post.dbCategorySlug}/${post.slug}/`);
   };
 
   return (
@@ -173,7 +173,7 @@ export default function Header() {
                         {searchResults.map((result) => (
                           <button
                             key={result._id}
-                            onClick={() => handleResultClick(result.slug)}
+                            onClick={() => handleResultClick(result)}
                             className="w-full p-4 hover:bg-gray-50 border-b border-gray-100 text-left transition-colors"
                           >
                             <div className="flex gap-3">

@@ -18,7 +18,7 @@ export default async function TrendingNow() {
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {trendingPosts.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.slug}/`} className="group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+            <Link key={post.slug} href={`/${post.dbCategorySlug}/${post.slug}/`} className="group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
               <div className="relative aspect-[4/3] overflow-hidden">
                 {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
                   <Image
