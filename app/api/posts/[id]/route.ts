@@ -40,7 +40,7 @@ export async function GET(
     await post.save();
 
     // Transform post to include proper category display names and slugs
-    const transformedPost = transformPost(post.toObject());
+    const transformedPost = transformPost(post);
 
     return NextResponse.json({ post: transformedPost });
   } catch (error) {

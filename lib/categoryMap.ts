@@ -54,13 +54,17 @@ export function getCategoryInfoByUrlSlug(urlSlug: string): CategoryInfo | null {
  * Transform a database post to frontend Post format
  */
 export function transformPost(dbPost: any): any {
-  const categoryInfo = getCategoryInfo(dbPost.category);
+  // Handle both mongoose objects and plain objects
+  const plainPost = dbPost.toObject ? dbPost.toObject() : dbPost;
+  const categoryValue = plainPost.category || dbPost.category;
+  
+  const categoryInfo = getCategoryInfo(categoryValue);
   
   return {
-    ...dbPost,
-    category: categoryInfo?.displayName || dbPost.categoryLabel || dbPost.category,
-    categorySlug: categoryInfo?.urlSlug || dbPost.category,
+    ...plainPost,
+    category: categoryInfo?.displayName || plainPost.categoryLabel || categoryValue || 'Uncategorized',
+    categorySlug: categoryInfo?.urlSlug || categoryValue || '',
     // Database category slug for blog post URLs (e.g., 'safety-gear')
-    dbCategorySlug: dbPost.category,
+    dbCategorySlug: categoryValue || 'uncategorized',
   };
 }
