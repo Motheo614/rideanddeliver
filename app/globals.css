@@ -61,6 +61,49 @@ pre, code {
   margin-bottom: 0.6em;
 }
 
+/* Blog content word break fix */
+.blog-content {
+  max-width: 100%;
+  width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.blog-content p,
+.blog-content div,
+.blog-content span,
+.blog-content a,
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4,
+.blog-content h5,
+.blog-content h6,
+.blog-content li,
+.blog-content blockquote {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  max-width: 100%;
+}
+
+.blog-content a {
+  word-break: break-all;
+  display: inline;
+  max-width: 100%;
+}
+
+.blog-content pre,
+.blog-content code {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 /* React DatePicker Custom Styles */
 .react-datepicker {
   font-family: inherit;

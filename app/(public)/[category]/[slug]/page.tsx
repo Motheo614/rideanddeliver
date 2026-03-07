@@ -154,7 +154,7 @@ export default async function BlogPostPage({ params }: Props) {
             {/* Content Section */}
             {/* ULTIMATE FIX 2: [&_*]:!max-w-full overrides inline CMS widths, forcing it to respect the grid */}
             <div 
-              className="prose prose-lg max-w-[72ch] w-full prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-a:break-all prose-p:break-words [&_*]:break-words [&_*]:overflow-wrap-break-word [&_img]:!h-auto [&_img]:max-w-full [&_table]:!block [&_table]:!overflow-x-auto"
+              className="blog-content prose prose-lg max-w-[72ch] prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline [&_img]:!h-auto [&_table]:!block [&_table]:!overflow-x-auto"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
