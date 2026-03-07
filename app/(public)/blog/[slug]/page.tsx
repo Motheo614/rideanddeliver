@@ -44,7 +44,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Affiliate Disclosure Banner */
+      {/* Affiliate Disclosure Banner */}
       <div className="bg-[#fffbea] border-b border-yellow-100 py-2 px-4">
         <div className="container mx-auto">
           <p className="text-[10px] md:text-xs text-yellow-800 text-center">
@@ -115,9 +115,10 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
 
-            {/* Content Section - FIXED VERSION */}
+            {/* Content Section */}
+            {/* ULTIMATE FIX 2: [&_*]:!max-w-full overrides inline CMS widths, forcing it to respect the grid */}
             <div 
-              className="blog-content prose prose-lg max-w-[72ch] prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline"
+              className="prose prose-lg max-w-none w-full break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline [&_*]:!max-w-full [&_img]:!h-auto [&_table]:!block [&_table]:!overflow-x-auto"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
