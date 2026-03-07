@@ -66,10 +66,11 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Main Layout Container */}
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1200px]">
-        <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
+        {/* ADDED: items-start prevents flex children from stretching weirdly */}
+        <div className="flex flex-col lg:flex-row items-start gap-8 xl:gap-12 w-full">
           
-          {/* Main Left Column (Removed w-full, kept flex-1 min-w-0) */}
-          <article className="flex-1 min-w-0">
+          {/* FIX: Mathematical Hard-Cap. It literally cannot be wider than 100% minus the sidebar minus the gap. */}
+          <article className="flex-1 min-w-0 w-full lg:max-w-[calc(100%-332px)] xl:max-w-[calc(100%-348px)]">
             
             {/* Title Section */}
             <header className="mb-8">
@@ -113,14 +114,9 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
 
-            {/* Content Section -> REMOVED w-full. Let the parent <article> container bound it. */}
+            {/* Content Section - Removed the inline styles to fix the ugly hyphenation, added overflow-hidden */}
             <div 
-              className="prose prose-lg max-w-none break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto"
-              style={{ 
-                wordBreak: 'normal',
-                overflowWrap: 'anywhere',
-                hyphens: 'auto'
-              }}
+              className="prose prose-lg max-w-none w-full overflow-hidden break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto [&_table]:overflow-x-auto [&_table]:block"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
@@ -143,7 +139,7 @@ export default async function BlogPostPage({ params }: Props) {
 
             {/* Related Posts */}
             {relatedPosts.length > 0 && (
-              <div className="mt-20 pt-12 border-t border-gray-100">
+              <div className="mt-20 pt-12 border-t border-gray-100 w-full">
                 <h3 className="text-2xl font-black text-[#1a1a1a] mb-8">Related Posts</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {relatedPosts.map((p) => (
@@ -173,15 +169,15 @@ export default async function BlogPostPage({ params }: Props) {
             )}
           </article>
 
-          {/* Sidebar with Google Ads -> REMOVED w-full. Added hard lock at 300px and shrink-0 */}
-          <aside className="hidden lg:block lg:w-[300px] shrink-0">
+          {/* Sidebar with Google Ads - Explicitly locked to 300px */}
+          <aside className="hidden lg:block w-[300px] min-w-[300px] shrink-0">
             <div className="sticky top-24 space-y-8">
               {/* Google Ad Slot 1 - Top */}
               <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
                 <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
                   <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
                 </div>
-                <div className="aspect-square flex items-center justify-center text-gray-400 text-sm">
+                <div className="aspect-square flex items-center justify-center text-gray-400 text-sm bg-white">
                   Google Ad 300x250
                 </div>
               </div>
@@ -191,7 +187,7 @@ export default async function BlogPostPage({ params }: Props) {
                 <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
                   <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
                 </div>
-                <div className="aspect-square flex items-center justify-center text-gray-400 text-sm">
+                <div className="aspect-square flex items-center justify-center text-gray-400 text-sm bg-white">
                   Google Ad 300x250
                 </div>
               </div>
@@ -201,7 +197,7 @@ export default async function BlogPostPage({ params }: Props) {
                 <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
                   <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
                 </div>
-                <div className="aspect-[300/600] flex items-center justify-center text-gray-400 text-sm">
+                <div className="aspect-[300/600] flex items-center justify-center text-gray-400 text-sm bg-white">
                   Google Ad 300x600
                 </div>
               </div>
