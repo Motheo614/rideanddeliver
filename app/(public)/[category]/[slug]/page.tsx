@@ -27,6 +27,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// Add inline styles for word breaking
+const style = `
+  .prose {
+    max-width: 100% !important;
+    width: 100%;
+  }
+  .prose * {
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    hyphens: auto !important;
+  }
+  .prose a {
+    word-break: break-all !important;
+  }
+  .prose img {
+    max-width: 100%;
+    height: auto;
+  }
+  .prose pre {
+    white-space: pre-wrap !important;
+  }
+`;
+
 export default async function BlogPostPage({ params }: Props) {
   const { category, slug } = await params;
   
@@ -55,6 +79,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-white">
+      <style>{style}</style>
       {/* Affiliate Disclosure Banner */}
       <div className="bg-[#fffbea] border-b border-yellow-100 py-2 px-4">
         <div className="container mx-auto">
