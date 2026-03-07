@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { AlertCircle, Home, LogIn } from 'lucide-react';
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
 
@@ -109,5 +109,38 @@ export default function AuthErrorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
+        <div className="max-w-md w-full">
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-block mb-6">
+              <Image
+                src="/Assets/Logo.png"
+                alt="Rider Section Logo"
+                width={400}
+                height={120}
+                className="object-contain"
+              />
+            </Link>
+          </div>
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                <AlertCircle size={32} className="text-gray-400" />
+              </div>
+              <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-3"></div>
+              <div className="h-4 w-64 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   );
 }
