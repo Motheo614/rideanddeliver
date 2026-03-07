@@ -5,13 +5,14 @@ import { Post } from './types';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.APP_URL || 'http://localhost:3000';
 
 /**
- * Fetch options with ISR revalidation (60 seconds)
+ * Fetch options with ISR revalidation (30 seconds)
  */
 const fetchOptions: RequestInit = {
-  next: { revalidate: 60 },
+  next: { revalidate: 30 },
   headers: {
     'Content-Type': 'application/json',
   },
+  cache: 'no-store', // Disable caching for now to ensure fresh data
 };
 
 /**

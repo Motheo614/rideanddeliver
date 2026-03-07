@@ -7,8 +7,8 @@ import EditorsPicks from '@/components/EditorsPicks';
 import SectionHeading from '@/components/SectionHeading';
 import { getFeaturedPost, getLatestPosts } from '@/lib/posts';
 
-// Force dynamic rendering since we need database data
-export const dynamic = 'force-dynamic';
+// Revalidate every 30 seconds
+export const revalidate = 30;
 
 export default async function HomePage() {
   // Fetch data server-side with ISR
