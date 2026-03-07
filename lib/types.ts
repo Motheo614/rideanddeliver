@@ -11,6 +11,7 @@ export interface Post {
   featured: boolean;
   trending: boolean;
   editorsPick: boolean;
+  tags?: string[];
   affiliateLinks?: {
     label: string;
     url: string;

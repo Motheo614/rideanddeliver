@@ -15,7 +15,7 @@ export async function GET() {
       status: 'published',
       trending: true 
     })
-      .select('title slug excerpt featuredImage category categoryLabel publishedAt readTime')
+      .select('title slug excerpt featuredImage category categoryLabel publishedAt readTime tags')
       .sort({ publishedAt: -1 })
       .limit(4)
       .lean();

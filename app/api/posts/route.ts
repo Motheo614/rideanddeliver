@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch posts with selected fields only
     const posts = await Post.find(query)
-      .select('title slug excerpt featuredImage category categoryLabel publishedAt readTime featured trending editorsPick status views createdAt')
+      .select('title slug excerpt featuredImage category categoryLabel publishedAt readTime featured trending editorsPick status views createdAt tags')
       .sort(sortObj)
       .skip(skip)
       .limit(limit)

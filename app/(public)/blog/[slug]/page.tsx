@@ -115,11 +115,28 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
 
             {/* Content Section */}
-            {/* FIX: Replaced max-w-none with max-w-full & added break-words to ensure text wraps properly strictly within grid bounds */}
             <div 
-              className="prose prose-lg w-full max-w-full break-words whitespace-normal prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto overflow-hidden [&>*]:max-w-full [&_*]:max-w-full"
+              className="prose prose-lg w-full max-w-full prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto [&>*]:max-w-full [&_*]:max-w-full"
+              style={{ wordWrap: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
+
+            {/* Tags Section */}
+            {post.tags && post.tags.length > 0 && (
+              <div className="mt-12 pt-8 border-t border-gray-100">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                  {post.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-block px-4 py-2 bg-gray-100 hover:bg-[#CC0000] hover:text-white text-gray-700 text-sm rounded-full transition-colors cursor-pointer"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Related Posts */}
             {relatedPosts.length > 0 && (
