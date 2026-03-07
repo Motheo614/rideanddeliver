@@ -34,7 +34,7 @@ async function fixMissingCategories() {
       console.log(`  Current category: ${post.category}`);
       
       // Try to guess category from title or default to safety-gear
-      let newCategory = 'safety-gear';
+      let newCategory: 'safety-gear' | 'tech-lighting' | 'bike-security' | 'delivery-gear' | 'platform-reviews' = 'safety-gear';
       const title = post.title.toLowerCase();
       
       if (title.includes('lock') || title.includes('security') || title.includes('theft')) {
