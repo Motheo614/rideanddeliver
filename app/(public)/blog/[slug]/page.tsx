@@ -65,8 +65,8 @@ export default async function BlogPostPage({ params }: Props) {
       </div>
 
       {/* Title Section */}
-      <div className="container mx-auto px-4 pt-8 md:pt-12 pb-6 max-w-[1400px]">
-        <div className="max-w-3xl">
+      <div className="container mx-auto px-4 pt-8 md:pt-12 pb-6 max-w-[1200px]">
+        <div className="max-w-2xl">
           <div className="flex items-center gap-4 mb-6">
             <span className="bg-[#CC0000] text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full">
               {post.category}
@@ -93,25 +93,27 @@ export default async function BlogPostPage({ params }: Props) {
       </div>
 
       {/* Hero Image */}
-      <div className="relative w-full h-[300px] md:h-[600px]">
-        {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
-          <Image
-            src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url}
-            alt={post.title}
-            fill
-            priority
-            className="object-cover"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-800" />
-        )}
+      <div className="relative w-full h-[300px] md:h-[500px] max-w-[1200px] mx-auto px-4">
+        <div className="relative w-full h-full rounded-lg overflow-hidden">
+          {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
+            <Image
+              src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url}
+              alt={post.title}
+              fill
+              priority
+              className="object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-800" />
+          )}
+        </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12 md:py-20 max-w-[1400px]">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
+      <div className="container mx-auto px-4 py-12 md:py-16 max-w-[1200px]">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 xl:gap-12">
           {/* Main Content */}
-          <article className="w-full max-w-3xl">
+          <article className="w-full max-w-2xl">
             <div 
               className="prose prose-lg prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto [&>*]:max-w-full [&_*]:max-w-full"
               dangerouslySetInnerHTML={{ __html: post.content }}
