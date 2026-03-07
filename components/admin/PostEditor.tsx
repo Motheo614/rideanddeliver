@@ -275,11 +275,11 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
         {/* Excerpt */}
         <div className="mb-6">
           <label className="block text-sm font-bold text-gray-700 mb-2">
-            Excerpt <span className="text-gray-400 font-normal">({excerpt.length}/300)</span>
+            Excerpt <span className="text-gray-400 font-normal">({excerpt.length}/800)</span>
           </label>
           <textarea
             value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value.slice(0, 300))}
+            onChange={(e) => setExcerpt(e.target.value.slice(0, 800))}
             placeholder="Brief description of your post..."
             rows={3}
             className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] resize-none"
