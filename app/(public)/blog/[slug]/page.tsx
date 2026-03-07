@@ -64,12 +64,13 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Main Layout Container (Includes Title, Image, Content, and Sidebar) */}
+      {/* Main Layout Container */}
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1200px]">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 xl:gap-12">
+        {/* FIX: Changed `1fr` to `minmax(0,1fr)` to prevent Grid Blowout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-8 xl:gap-12 w-full">
           
-          {/* Main Left Column (Reduced width automatically by the grid) */}
-          <article className="w-full min-w-0">
+          {/* Main Left Column */}
+          <article className="w-full min-w-0 max-w-full">
             
             {/* Title Section */}
             <header className="mb-8">
@@ -113,15 +114,16 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
 
-            {/* Content (Added max-w-none so it nicely fills the new restricted grid column) */}
+            {/* Content Section */}
+            {/* FIX: Replaced max-w-none with max-w-full & added break-words to ensure text wraps properly strictly within grid bounds */}
             <div 
-              className="prose prose-lg max-w-none prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto [&>*]:max-w-full [&_*]:max-w-full"
+              className="prose prose-lg w-full max-w-full break-words whitespace-normal prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto overflow-hidden [&>*]:max-w-full [&_*]:max-w-full"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
             {/* Related Posts */}
             {relatedPosts.length > 0 && (
-              <div className="mt-20 pt-12 border-t border-gray-100">
+              <div className="mt-20 pt-12 border-t border-gray-100 w-full">
                 <h3 className="text-2xl font-black text-[#1a1a1a] mb-8">Related Posts</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {relatedPosts.map((p) => (
@@ -151,8 +153,8 @@ export default async function BlogPostPage({ params }: Props) {
             )}
           </article>
 
-          {/* Sidebar with Google Ads (Now aligns parallel with Title & Hero Image) */}
-          <aside className="hidden lg:block">
+          {/* Sidebar with Google Ads */}
+          <aside className="hidden lg:block w-full">
             <div className="sticky top-24 space-y-8">
               {/* Google Ad Slot 1 - Top */}
               <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
