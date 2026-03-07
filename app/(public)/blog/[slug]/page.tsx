@@ -113,9 +113,9 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
 
-            {/* Content Section (Removed w-full so it respects the article boundary) */}
+            {/* Content Section -> REMOVED w-full. Let the parent <article> container bound it. */}
             <div 
-              className="prose prose-lg max-w-none prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto overflow-hidden [&>p]:break-words"
+              className="prose prose-lg max-w-none break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto"
               style={{ 
                 wordBreak: 'normal',
                 overflowWrap: 'anywhere',
@@ -143,7 +143,7 @@ export default async function BlogPostPage({ params }: Props) {
 
             {/* Related Posts */}
             {relatedPosts.length > 0 && (
-              <div className="mt-20 pt-12 border-t border-gray-100 w-full">
+              <div className="mt-20 pt-12 border-t border-gray-100">
                 <h3 className="text-2xl font-black text-[#1a1a1a] mb-8">Related Posts</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {relatedPosts.map((p) => (
@@ -173,9 +173,8 @@ export default async function BlogPostPage({ params }: Props) {
             )}
           </article>
 
-          {/* Sidebar with Google Ads */}
-          {/* FIX 4: Set explicit width and shrink-0 to guarantee the sidebar is never crushed by the article */}
-          <aside className="hidden lg:block w-full lg:w-[300px] shrink-0">
+          {/* Sidebar with Google Ads -> REMOVED w-full. Added hard lock at 300px and shrink-0 */}
+          <aside className="hidden lg:block lg:w-[300px] shrink-0">
             <div className="sticky top-24 space-y-8">
               {/* Google Ad Slot 1 - Top */}
               <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
