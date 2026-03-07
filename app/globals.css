@@ -104,6 +104,45 @@ pre, code {
   overflow-x: auto;
 }
 
+/* ULTIMATE WORD BREAK FIX */
+.prose, 
+.prose *,
+.prose p,
+.prose a,
+.prose div,
+.prose span,
+[class*="prose"] {
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  hyphens: auto !important;
+  white-space: normal !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.prose a {
+  word-break: break-all !important;
+  overflow-wrap: break-word !important;
+  display: inline-block !important;
+  max-width: 100% !important;
+}
+
+.prose pre,
+.prose code {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  overflow-x: auto !important;
+  max-width: 100% !important;
+}
+
+/* Force container to respect boundaries */
+.prose {
+  width: 100% !important;
+  max-width: 72ch !important;
+  overflow: hidden !important;
+}
+
 /* React DatePicker Custom Styles */
 .react-datepicker {
   font-family: inherit;
