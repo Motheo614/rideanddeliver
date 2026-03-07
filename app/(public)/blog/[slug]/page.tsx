@@ -66,11 +66,12 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Main Layout Container */}
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1200px]">
-        {/* ADDED: items-start prevents flex children from stretching weirdly */}
-        <div className="flex flex-col lg:flex-row items-start gap-8 xl:gap-12 w-full">
+        
+        {/* ULTIMATE FIX 1: 12-Column Mathematical Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start">
           
-          {/* FIX: Mathematical Hard-Cap. It literally cannot be wider than 100% minus the sidebar minus the gap. */}
-          <article className="flex-1 min-w-0 w-full lg:max-w-[calc(100%-332px)] xl:max-w-[calc(100%-348px)]">
+          {/* Main Left Column: Takes exactly 8 cols (66%) on lg, 9 cols (75%) on xl */}
+          <article className="lg:col-span-8 xl:col-span-9 min-w-0 overflow-hidden w-full">
             
             {/* Title Section */}
             <header className="mb-8">
@@ -114,9 +115,10 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
 
-            {/* Content Section - Removed the inline styles to fix the ugly hyphenation, added overflow-hidden */}
+            {/* Content Section */}
+            {/* ULTIMATE FIX 2: [&_*]:!max-w-full overrides inline CMS widths, forcing it to respect the grid */}
             <div 
-              className="prose prose-lg max-w-none w-full overflow-hidden break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto [&_table]:overflow-x-auto [&_table]:block"
+              className="prose prose-lg max-w-none w-full break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline [&_*]:!max-w-full [&_img]:!h-auto [&_table]:!block [&_table]:!overflow-x-auto"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
@@ -169,11 +171,11 @@ export default async function BlogPostPage({ params }: Props) {
             )}
           </article>
 
-          {/* Sidebar with Google Ads - Explicitly locked to 300px */}
-          <aside className="hidden lg:block w-[300px] min-w-[300px] shrink-0">
-            <div className="sticky top-24 space-y-8">
+          {/* Sidebar Column: Takes exactly 4 cols on lg, 3 cols on xl */}
+          <aside className="hidden lg:block lg:col-span-4 xl:col-span-3">
+            <div className="sticky top-24 space-y-8 w-full min-w-0">
               {/* Google Ad Slot 1 - Top */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden w-full">
                 <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
                   <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
                 </div>
@@ -183,7 +185,7 @@ export default async function BlogPostPage({ params }: Props) {
               </div>
 
               {/* Google Ad Slot 2 - Middle */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden w-full">
                 <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
                   <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
                 </div>
@@ -193,7 +195,7 @@ export default async function BlogPostPage({ params }: Props) {
               </div>
 
               {/* Google Ad Slot 3 - Bottom */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden w-full">
                 <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
                   <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
                 </div>
