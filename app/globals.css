@@ -14,6 +14,12 @@
   overflow-wrap: break-word;
 }
 
+.prose p {
+  margin-top: 1.2em;
+  margin-bottom: 1.2em;
+  text-wrap: pretty;
+}
+
 /* React DatePicker Custom Styles */
 .react-datepicker {
   font-family: inherit;
