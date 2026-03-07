@@ -7,6 +7,13 @@
   }
 }
 
+/* Prose Word Breaking Rules */
+.prose, .prose * {
+  text-wrap: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
 /* React DatePicker Custom Styles */
 .react-datepicker {
   font-family: inherit;
