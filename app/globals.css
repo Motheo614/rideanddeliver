@@ -8,10 +8,41 @@
 }
 
 /* Prose Word Breaking Rules */
-.prose, .prose * {
-  text-wrap: normal;
-  word-break: normal;
+/* Force break long words everywhere */
+* {
   overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* For code blocks and pre tags */
+pre, code {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Target any element that might contain long strings */
+.prose * {
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  hyphens: auto !important;
+}
+
+/* Specifically target links which often contain long URLs */
+.prose a {
+  word-break: break-all !important;
+  overflow-wrap: break-word !important;
+  display: inline;
+  max-width: 100%;
+}
+
+/* Container constraints */
+.prose {
+  max-width: 100% !important;
+  width: 100%;
 }
 
 .prose p {
