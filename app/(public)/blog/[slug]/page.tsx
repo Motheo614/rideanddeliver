@@ -26,29 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// Add inline styles for word breaking
-const style = `
-  .prose {
-    max-width: 100% !important;
-    width: 100%;
-  }
-  .prose * {
-    overflow-wrap: break-word !important;
-    word-wrap: break-word !important;
-    word-break: break-word !important;
-    hyphens: auto !important;
-  }
-  .prose a {
-    word-break: break-all !important;
-  }
-  .prose img {
-    max-width: 100%;
-    height: auto;
-  }
-  .prose pre {
-    white-space: pre-wrap !important;
-  }
-`;
+
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
@@ -68,8 +46,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-white">
-      <style>{style}</style>
-      {/* Affiliate Disclosure Banner */}
+      {/* Affiliate Disclosure Banner */
       <div className="bg-[#fffbea] border-b border-yellow-100 py-2 px-4">
         <div className="container mx-auto">
           <p className="text-[10px] md:text-xs text-yellow-800 text-center">
@@ -140,12 +117,44 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
 
-            {/* Content Section */}
-            {/* ULTIMATE FIX 2: [&_*]:!max-w-full overrides inline CMS widths, forcing it to respect the grid */}
-            <div 
-              className="blog-content prose prose-lg max-w-[72ch] prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline [&_img]:!h-auto [&_table]:!block [&_table]:!overflow-x-auto"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            {/* Content Section - FIXED VERSION */}
+            <div className="w-full overflow-hidden">
+              <style jsx>{`
+                .blog-content {
+                  max-width: 100%;
+                  width: 100%;
+                }
+                .blog-content * {
+                  max-width: 100% !important;
+                  overflow-wrap: break-word !important;
+                  word-wrap: break-word !important;
+                  word-break: break-word !important;
+                  hyphens: auto !important;
+                }
+                .blog-content a {
+                  word-break: break-all !important;
+                  color: #CC0000;
+                  text-decoration: none;
+                }
+                .blog-content a:hover {
+                  text-decoration: underline;
+                }
+                .blog-content img {
+                  max-width: 100%;
+                  height: auto !important;
+                }
+                .blog-content pre,
+                .blog-content code {
+                  white-space: pre-wrap !important;
+                  word-break: break-all !important;
+                  overflow-x: auto !important;
+                }
+              `}</style>
+              <div 
+                className="blog-content prose prose-lg prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            </div>
 
             {/* Tags Section */}
             {post.tags && post.tags.length > 0 && (
