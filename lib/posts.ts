@@ -1,8 +1,7 @@
 import { Post } from './types';
 
-// Base API URL - use environment variable or default to current domain
-// During build, use APP_URL, otherwise use empty string for relative URLs
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.APP_URL || 'http://localhost:3000';
+// Base API URL - use environment variable or empty string for relative URLs
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.APP_URL || '';
 
 /**
  * Fetch options with ISR revalidation (30 seconds)

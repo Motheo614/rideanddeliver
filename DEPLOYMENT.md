@@ -15,7 +15,11 @@ To fix the NextAuth session error, you need to configure the following environme
    - Set to: `https://ridercomplex.com`
    - This tells NextAuth the base URL of your application
 
-3. **MONGODB_URI**
+3. **APP_URL** (Recommended)
+   - Set to: `https://ridercomplex.com`
+   - Used for metadata and API calls
+
+4. **MONGODB_URI**
    - Your MongoDB connection string
    - Format: `mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority`
 
