@@ -64,7 +64,7 @@ const PostSchema = new Schema<IPost, IPostModel>(
     excerpt: {
       type: String,
       required: [true, 'Excerpt is required'],
-      maxlength: [300, 'Excerpt cannot exceed 300 characters'],
+      maxlength: [800, 'Excerpt cannot exceed 800 characters'],
     },
     content: {
       type: String,
