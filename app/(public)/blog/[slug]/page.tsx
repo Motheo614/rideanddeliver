@@ -117,7 +117,12 @@ export default async function BlogPostPage({ params }: Props) {
             {/* Content Section */}
             <div 
               className="prose prose-lg w-full max-w-full prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto [&>*]:max-w-full [&_*]:max-w-full"
-              style={{ wordWrap: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}
+              style={{ 
+                wordBreak: 'normal',
+                overflowWrap: 'break-word',
+                wordWrap: 'break-word',
+                hyphens: 'auto'
+              }}
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
