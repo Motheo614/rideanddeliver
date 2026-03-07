@@ -91,26 +91,25 @@ export default function PostsPage() {
   const paginatedPosts = filteredPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
 
   const handleDelete = async (post: Post) => {
-    if (!confirm(`Are you sure you want to archive "${post.title}"?`)) {
+    if (!confirm(`Are you sure you want to PERMANENTLY DELETE "${post.title}"? This cannot be undone!`)) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/posts/${post._id}`, {
+      const response = await fetch(`/api/posts/${post._id}?permanent=true`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-        },
       });
 
       if (response.ok) {
+        alert('Post deleted successfully!');
         fetchPosts(); // Refresh posts list
       } else {
-        alert('Failed to archive post');
+        const error = await response.json();
+        alert(`Failed to delete post: ${error.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error archiving post:', error);
-      alert('Failed to archive post');
+      console.error('Error deleting post:', error);
+      alert('Failed to delete post. Check console for details.');
     }
   };
 

@@ -118,7 +118,8 @@ export async function PUT(
 
 /**
  * DELETE /api/posts/[id]
- * Archive a post (admin only)
+ * Delete or archive a post (admin only)
+ * Use ?permanent=true to permanently delete instead of archiving
  */
 export async function DELETE(
   request: NextRequest,
@@ -137,21 +138,33 @@ export async function DELETE(
     await connectDB();
 
     const { id } = await params;
+    const { searchParams } = request.nextUrl;
+    const permanent = searchParams.get('permanent') === 'true';
 
-    // Set status to 'archived' instead of deleting
     let post;
-    if (mongoose.Types.ObjectId.isValid(id)) {
-      post = await Post.findByIdAndUpdate(
-        id,
-        { status: 'archived' },
-        { new: true }
-      );
+
+    if (permanent) {
+      // Permanently delete the post
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        post = await Post.findByIdAndDelete(id);
+      } else {
+        post = await Post.findOneAndDelete({ slug: id });
+      }
     } else {
-      post = await Post.findOneAndUpdate(
-        { slug: id },
-        { status: 'archived' },
-        { new: true }
-      );
+      // Archive the post (soft delete)
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        post = await Post.findByIdAndUpdate(
+          id,
+          { status: 'archived' },
+          { new: true }
+        );
+      } else {
+        post = await Post.findOneAndUpdate(
+          { slug: id },
+          { status: 'archived' },
+          { new: true }
+        );
+      }
     }
 
     if (!post) {
@@ -161,14 +174,16 @@ export async function DELETE(
       );
     }
 
+    const message = permanent ? 'Post deleted permanently' : 'Post archived successfully';
+    
     return NextResponse.json({ 
-      message: 'Post archived successfully',
-      post 
+      message,
+      post: permanent ? null : post
     });
   } catch (error) {
-    console.error('Error archiving post:', error);
+    console.error('Error deleting/archiving post:', error);
     return NextResponse.json(
-      { error: 'Failed to archive post' },
+      { error: 'Failed to delete/archive post' },
       { status: 500 }
     );
   }
