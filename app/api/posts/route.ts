@@ -19,12 +19,18 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'publishedAt';
 
     // Build query
-    const query: any = { status: 'published' };
+    const query: any = {};
 
     // For admin requests, allow different status filters
     const { authenticated } = await requireAdmin();
-    if (authenticated && status) {
-      query.status = status;
+    if (authenticated) {
+      // If status is 'all', don't filter by status
+      if (status && status !== 'all') {
+        query.status = status;
+      }
+    } else {
+      // Non-admin users can only see published posts
+      query.status = 'published';
     }
 
     if (category) {
