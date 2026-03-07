@@ -64,58 +64,58 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Title Section */}
-      <div className="container mx-auto px-4 pt-8 md:pt-12 pb-6 max-w-[1200px]">
-        <div className="max-w-2xl">
-          <div className="flex items-center gap-4 mb-6">
-            <span className="bg-[#CC0000] text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full">
-              {post.category}
-            </span>
-            <span className="text-gray-400 text-xs font-medium">
-              {formatDate(post.publishedAt)} • {post.readTime}
-            </span>
-          </div>
-
-          <h1 className="text-3xl md:text-5xl font-black text-[#1a1a1a] mb-6 leading-tight">
-            {post.title}
-          </h1>
-
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[#CC0000] font-bold">
-              RS
-            </div>
-            <div>
-              <p className="text-sm font-bold text-[#1a1a1a]">By Rider Section Team</p>
-              <p className="text-[10px] text-gray-400 uppercase font-bold">Expert Gear Reviewers</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Hero Image */}
-      <div className="relative w-full h-[300px] md:h-[500px] max-w-[1200px] mx-auto px-4">
-        <div className="relative w-full h-full rounded-lg overflow-hidden">
-          {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
-            <Image
-              src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url}
-              alt={post.title}
-              fill
-              priority
-              className="object-cover"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-800" />
-          )}
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-12 md:py-16 max-w-[1200px]">
+      {/* Main Layout Container (Includes Title, Image, Content, and Sidebar) */}
+      <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1200px]">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 xl:gap-12">
-          {/* Main Content */}
-          <article className="w-full max-w-2xl">
+          
+          {/* Main Left Column (Reduced width automatically by the grid) */}
+          <article className="w-full min-w-0">
+            
+            {/* Title Section */}
+            <header className="mb-8">
+              <div className="flex items-center gap-4 mb-4 md:mb-6">
+                <span className="bg-[#CC0000] text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full">
+                  {post.category}
+                </span>
+                <span className="text-gray-400 text-xs font-medium">
+                  {formatDate(post.publishedAt)} • {post.readTime}
+                </span>
+              </div>
+
+              <h1 className="text-3xl md:text-5xl font-black text-[#1a1a1a] mb-6 leading-tight">
+                {post.title}
+              </h1>
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[#CC0000] font-bold">
+                  RS
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[#1a1a1a]">By Rider Section Team</p>
+                  <p className="text-[10px] text-gray-400 uppercase font-bold">Expert Gear Reviewers</p>
+                </div>
+              </div>
+            </header>
+
+            {/* Hero Image */}
+            <div className="relative w-full h-[300px] md:h-[450px] rounded-xl overflow-hidden mb-8 md:mb-12">
+              {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
+                <Image
+                  src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url}
+                  alt={post.title}
+                  fill
+                  priority
+                  className="object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-800" />
+              )}
+            </div>
+
+            {/* Content (Added max-w-none so it nicely fills the new restricted grid column) */}
             <div 
-              className="prose prose-lg prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto [&>*]:max-w-full [&_*]:max-w-full"
+              className="prose prose-lg max-w-none prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto [&>*]:max-w-full [&_*]:max-w-full"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
@@ -151,7 +151,7 @@ export default async function BlogPostPage({ params }: Props) {
             )}
           </article>
 
-          {/* Sidebar with Google Ads */}
+          {/* Sidebar with Google Ads (Now aligns parallel with Title & Hero Image) */}
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-8">
               {/* Google Ad Slot 1 - Top */}
@@ -160,7 +160,6 @@ export default async function BlogPostPage({ params }: Props) {
                   <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
                 </div>
                 <div className="aspect-square flex items-center justify-center text-gray-400 text-sm">
-                  {/* Replace with your Google Ad code */}
                   Google Ad 300x250
                 </div>
               </div>
@@ -171,7 +170,6 @@ export default async function BlogPostPage({ params }: Props) {
                   <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
                 </div>
                 <div className="aspect-square flex items-center justify-center text-gray-400 text-sm">
-                  {/* Replace with your Google Ad code */}
                   Google Ad 300x250
                 </div>
               </div>
@@ -182,7 +180,6 @@ export default async function BlogPostPage({ params }: Props) {
                   <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
                 </div>
                 <div className="aspect-[300/600] flex items-center justify-center text-gray-400 text-sm">
-                  {/* Replace with your Google Ad code */}
                   Google Ad 300x600
                 </div>
               </div>
