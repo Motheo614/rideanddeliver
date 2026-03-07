@@ -3,6 +3,7 @@ import connectDB from '@/lib/db/mongoose';
 import Post from '@/lib/db/models/Post';
 import mongoose from 'mongoose';
 import { requireAdmin } from '@/lib/auth/requireAdmin';
+import { transformPost } from '@/lib/categoryMap';
 
 /**
  * GET /api/posts/[id]
@@ -38,7 +39,10 @@ export async function GET(
     post.views = (post.views || 0) + 1;
     await post.save();
 
-    return NextResponse.json({ post });
+    // Transform post to include proper category display names and slugs
+    const transformedPost = transformPost(post.toObject());
+
+    return NextResponse.json({ post: transformedPost });
   } catch (error) {
     console.error('Error fetching post:', error);
     return NextResponse.json(

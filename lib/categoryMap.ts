@@ -1,0 +1,64 @@
+/**
+ * Category mapping between database enums and frontend display/URLs
+ */
+
+export interface CategoryInfo {
+  slug: string;        // Database enum value
+  displayName: string; // Human-readable label
+  urlSlug: string;     // Category page URL path
+}
+
+export const CATEGORY_MAP: Record<string, CategoryInfo> = {
+  'safety-gear': {
+    slug: 'safety-gear',
+    displayName: 'Safety Gear',
+    urlSlug: 'bike-delivery-rider-gear',
+  },
+  'tech-lighting': {
+    slug: 'tech-lighting',
+    displayName: 'Tech & Lighting',
+    urlSlug: 'bike-delivery-tech-and-visibility',
+  },
+  'bike-security': {
+    slug: 'bike-security',
+    displayName: 'Bike Security',
+    urlSlug: 'bike-security-for-delivery-riders',
+  },
+  'platform-reviews': {
+    slug: 'platform-reviews',
+    displayName: 'Platform Reviews',
+    urlSlug: 'delivery-platform-reviews',
+  },
+  'delivery-gear': {
+    slug: 'delivery-gear',
+    displayName: 'Delivery Gear',
+    urlSlug: 'delivery-rider-equipment',
+  },
+};
+
+/**
+ * Get category info from database enum value
+ */
+export function getCategoryInfo(dbCategory: string): CategoryInfo | null {
+  return CATEGORY_MAP[dbCategory] || null;
+}
+
+/**
+ * Get category info from URL slug
+ */
+export function getCategoryInfoByUrlSlug(urlSlug: string): CategoryInfo | null {
+  return Object.values(CATEGORY_MAP).find(cat => cat.urlSlug === urlSlug) || null;
+}
+
+/**
+ * Transform a database post to frontend Post format
+ */
+export function transformPost(dbPost: any): any {
+  const categoryInfo = getCategoryInfo(dbPost.category);
+  
+  return {
+    ...dbPost,
+    category: categoryInfo?.displayName || dbPost.categoryLabel || dbPost.category,
+    categorySlug: categoryInfo?.urlSlug || dbPost.category,
+  };
+}

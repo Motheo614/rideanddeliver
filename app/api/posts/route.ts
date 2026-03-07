@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongoose';
 import Post from '@/lib/db/models/Post';
 import { requireAdmin } from '@/lib/auth/requireAdmin';
+import { transformPost } from '@/lib/categoryMap';
 
 /**
  * GET /api/posts
@@ -60,8 +61,11 @@ export async function GET(request: NextRequest) {
     const total = await Post.countDocuments(query);
     const totalPages = Math.ceil(total / limit);
 
+    // Transform posts to include proper category display names and slugs
+    const transformedPosts = posts.map(transformPost);
+
     return NextResponse.json({
-      posts,
+      posts: transformedPosts,
       total,
       page,
       totalPages,

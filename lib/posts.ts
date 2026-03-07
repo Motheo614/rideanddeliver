@@ -1,4 +1,5 @@
 import { Post } from './types';
+import { getCategoryInfoByUrlSlug } from './categoryMap';
 
 // Base API URL - use environment variable or empty string for relative URLs
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.APP_URL || '';
@@ -69,7 +70,11 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
  * Fetch posts by category slug
  */
 export async function getPostsByCategory(categorySlug: string): Promise<Post[]> {
-  return getPosts({ status: 'published', category: categorySlug });
+  // Convert URL slug to database category enum
+  const categoryInfo = getCategoryInfoByUrlSlug(categorySlug);
+  const dbCategory = categoryInfo?.slug || categorySlug;
+  
+  return getPosts({ status: 'published', category: dbCategory });
 }
 
 /**
