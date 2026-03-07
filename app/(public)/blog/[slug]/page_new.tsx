@@ -5,10 +5,9 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
 import { formatDate } from '@/lib/utils';
-import { CATEGORY_MAP } from '@/lib/categoryMap';
 
 interface Props {
-  params: Promise<{ category: string; slug: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -28,22 +27,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPostPage({ params }: Props) {
-  const { category, slug } = await params;
-  
-  // Validate category exists in our mapping
-  if (!CATEGORY_MAP[category]) {
-    notFound();
-  }
+  const { slug } = await params;
   
   // Fetch post from API (this increments view count server-side)
   const post = await getPostBySlug(slug);
 
   if (!post) {
-    notFound();
-  }
-
-  // Verify post belongs to this category
-  if (post.dbCategorySlug !== category) {
     notFound();
   }
 
@@ -55,7 +44,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Affiliate Disclosure Banner */
+      {/* Affiliate Disclosure Banner */}
       <div className="bg-[#fffbea] border-b border-yellow-100 py-2 px-4">
         <div className="container mx-auto">
           <p className="text-[10px] md:text-xs text-yellow-800 text-center">
@@ -127,10 +116,43 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
 
             {/* Content Section - FIXED VERSION */}
-            <div 
-              className="blog-content prose prose-lg max-w-[72ch] prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            <div className="w-full overflow-hidden">
+              <style jsx>{`
+                .blog-content {
+                  max-width: 100%;
+                  width: 100%;
+                }
+                .blog-content * {
+                  max-width: 100% !important;
+                  overflow-wrap: break-word !important;
+                  word-wrap: break-word !important;
+                  word-break: break-word !important;
+                  hyphens: auto !important;
+                }
+                .blog-content a {
+                  word-break: break-all !important;
+                  color: #CC0000;
+                  text-decoration: none;
+                }
+                .blog-content a:hover {
+                  text-decoration: underline;
+                }
+                .blog-content img {
+                  max-width: 100%;
+                  height: auto !important;
+                }
+                .blog-content pre,
+                .blog-content code {
+                  white-space: pre-wrap !important;
+                  word-break: break-all !important;
+                  overflow-x: auto !important;
+                }
+              `}</style>
+              <div 
+                className="blog-content prose prose-lg prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            </div>
 
             {/* Tags Section */}
             {post.tags && post.tags.length > 0 && (
@@ -155,7 +177,7 @@ export default async function BlogPostPage({ params }: Props) {
                 <h3 className="text-2xl font-black text-[#1a1a1a] mb-8">Related Posts</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {relatedPosts.map((p) => (
-                    <Link key={p.slug} href={`/${p.dbCategorySlug}/${p.slug}/`} className="group">
+                    <Link key={p.slug} href={`/blog/${p.slug}/`} className="group">
                       <div className="relative aspect-video rounded-xl overflow-hidden mb-4">
                         {p.featuredImage && (typeof p.featuredImage === 'string' ? p.featuredImage : (p.featuredImage as any).url) ? (
                           <Image
@@ -215,7 +237,6 @@ export default async function BlogPostPage({ params }: Props) {
               </div>
             </div>
           </aside>
-          
         </div>
       </div>
     </main>
