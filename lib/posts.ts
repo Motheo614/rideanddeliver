@@ -11,7 +11,6 @@ const fetchOptions: RequestInit = {
   headers: {
     'Content-Type': 'application/json',
   },
-  cache: 'no-store', // Disable caching for now to ensure fresh data
 };
 
 /**
