@@ -19,10 +19,22 @@ To fix the NextAuth session error, you need to configure the following environme
    - Your MongoDB connection string
    - Format: `mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority`
 
-4. **ADMIN_EMAIL** (Optional - for fallback auth)
+4. **CLOUDINARY_CLOUD_NAME** (Required for image uploads)
+   - Your Cloudinary cloud name
+   - Get from: https://cloudinary.com/console
+
+5. **CLOUDINARY_API_KEY** (Required for image uploads)
+   - Your Cloudinary API key
+   - Get from: https://cloudinary.com/console
+
+6. **CLOUDINARY_API_SECRET** (Required for image uploads)
+   - Your Cloudinary API secret
+   - Get from: https://cloudinary.com/console
+
+7. **ADMIN_EMAIL** (Optional - for fallback auth)
    - Your admin email address
 
-5. **ADMIN_PASSWORD** (Optional - for fallback auth)
+8. **ADMIN_PASSWORD** (Optional - for fallback auth)
    - Your admin password
 
 ### How to Add Environment Variables in Vercel
