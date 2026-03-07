@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const { authenticated } = await requireAdmin();
     if (!authenticated) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please login as admin' },
         { status: 401 }
       );
     }
@@ -111,6 +111,11 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('Error creating post:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      name: error.name,
+    });
     
     // Handle duplicate slug error
     if (error.code === 11000) {
@@ -121,7 +126,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Failed to create post' },
+      { error: `Failed to create post: ${error.message}` },
       { status: 500 }
     );
   }
