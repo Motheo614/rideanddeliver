@@ -66,11 +66,11 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Main Layout Container */}
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1200px]">
-        {/* FIX: Changed `1fr` to `minmax(0,1fr)` to prevent Grid Blowout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-8 xl:gap-12 w-full">
+        {/* FIX 1: Switched from Grid to Flexbox */}
+        <div className="flex flex-col lg:flex-row gap-8 xl:gap-12 w-full">
           
-          {/* Main Left Column */}
-          <article className="w-full min-w-0 max-w-full">
+          {/* FIX 2: Left Column - 'flex-1 min-w-0' guarantees it fills space but NEVER blows out */}
+          <article className="flex-1 min-w-0 w-full">
             
             {/* Title Section */}
             <header className="mb-8">
@@ -115,8 +115,9 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
 
             {/* Content Section */}
+            {/* FIX 3: Cleaned up Prose classes. max-w-none removes standard limits, break-words stops long URLs blowing it out */}
             <div 
-              className="prose prose-lg w-full max-w-full prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto [&>*]:max-w-full [&_*]:max-w-full"
+              className="prose prose-lg max-w-none w-full break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline prose-img:w-full prose-img:h-auto"
               style={{ 
                 wordBreak: 'normal',
                 overflowWrap: 'break-word',
@@ -176,7 +177,8 @@ export default async function BlogPostPage({ params }: Props) {
           </article>
 
           {/* Sidebar with Google Ads */}
-          <aside className="hidden lg:block w-full">
+          {/* FIX 4: Set explicit width and shrink-0 to guarantee the sidebar is never crushed by the article */}
+          <aside className="hidden lg:block w-full lg:w-[300px] shrink-0">
             <div className="sticky top-24 space-y-8">
               {/* Google Ad Slot 1 - Top */}
               <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
