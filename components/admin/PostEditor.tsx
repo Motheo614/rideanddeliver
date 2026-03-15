@@ -149,22 +149,34 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
   const insertInternalLink = (selectedPost: any) => {
     const quill = quillRef.current?.getEditor?.();
-    if (!quill) return;
-
-    const range = quill.getSelection(true);
-    const selectedText = range.length > 0 ? quill.getText(range.index, range.length) : selectedPost.title;
-    
-    const linkUrl = `/${selectedPost.category}/${selectedPost.slug}`;
-    
-    if (range.length > 0) {
-      quill.deleteText(range.index, range.length);
+    if (!quill) {
+      showToast('Editor not ready. Please try again.', 'error');
+      return;
     }
-    
-    quill.insertText(range.index, selectedText, 'link', linkUrl);
-    quill.setSelection(range.index + selectedText.length);
-    
-    setShowLinkModal(false);
-    showToast('Internal link added successfully!', 'success');
+
+    try {
+      const range = quill.getSelection(true);
+      if (!range) {
+        showToast('Could not get editor selection', 'error');
+        return;
+      }
+
+      const selectedText = range.length > 0 ? quill.getText(range.index, range.length) : selectedPost.title;
+      const linkUrl = `/${selectedPost.category}/${selectedPost.slug}`;
+      
+      if (range.length > 0) {
+        quill.deleteText(range.index, range.length);
+      }
+      
+      quill.insertText(range.index, selectedText, 'link', linkUrl);
+      quill.setSelection(range.index + selectedText.length);
+      
+      setShowLinkModal(false);
+      showToast('Internal link added successfully!', 'success');
+    } catch (error) {
+      console.error('Error inserting link:', error);
+      showToast('Failed to insert link', 'error');
+    }
   };
 
   // Capture Quill instance from the DOM
