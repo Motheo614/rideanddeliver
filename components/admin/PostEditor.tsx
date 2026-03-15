@@ -82,8 +82,23 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
   // Custom toolbar handlers
   const insertTable = () => {
-    const quill = quillRef.current?.getEditor?.();
+    console.log('insertTable called');
+    
+    // Try to get Quill instance
+    let quill = quillRef.current?.getEditor?.();
+    
+    // If not found via ref, try to find it in the DOM
     if (!quill) {
+      const container = document.getElementById('quill-container');
+      const reactQuillElement = container?.querySelector('.ql-container') as any;
+      if (reactQuillElement && reactQuillElement.__quill) {
+        quill = reactQuillElement.__quill;
+        quillRef.current = { getEditor: () => reactQuillElement.__quill };
+      }
+    }
+
+    if (!quill) {
+      console.error('Quill editor not found');
       showToast('Editor not ready', 'error');
       return;
     }
@@ -116,6 +131,8 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     const range = quill.getSelection(true);
     quill.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
     quill.setSelection(range.index + 1);
+    
+    console.log('Table inserted successfully');
   };
 
   const openInternalLinkModal = () => {
@@ -148,21 +165,43 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   };
 
   const insertInternalLink = (selectedPost: any) => {
-    const quill = quillRef.current?.getEditor?.();
+    console.log('insertInternalLink called', selectedPost);
+    
+    // Try to get Quill instance
+    let quill = quillRef.current?.getEditor?.();
+    
+    // If not found via ref, try to find it in the DOM
     if (!quill) {
+      console.log('Quill not found in ref, searching DOM...');
+      const container = document.getElementById('quill-container');
+      const reactQuillElement = container?.querySelector('.ql-container') as any;
+      if (reactQuillElement && reactQuillElement.__quill) {
+        quill = reactQuillElement.__quill;
+        quillRef.current = { getEditor: () => reactQuillElement.__quill };
+        console.log('Found Quill in DOM');
+      }
+    }
+
+    if (!quill) {
+      console.error('Quill editor not found');
       showToast('Editor not ready. Please try again.', 'error');
       return;
     }
 
     try {
+      console.log('Getting selection...');
       const range = quill.getSelection(true);
       if (!range) {
+        console.error('Could not get selection');
         showToast('Could not get editor selection', 'error');
         return;
       }
 
+      console.log('Selection range:', range);
       const selectedText = range.length > 0 ? quill.getText(range.index, range.length) : selectedPost.title;
       const linkUrl = `/${selectedPost.category}/${selectedPost.slug}`;
+      
+      console.log('Inserting link:', { selectedText, linkUrl });
       
       if (range.length > 0) {
         quill.deleteText(range.index, range.length);
@@ -171,6 +210,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       quill.insertText(range.index, selectedText, 'link', linkUrl);
       quill.setSelection(range.index + selectedText.length);
       
+      console.log('Link inserted successfully');
       setShowLinkModal(false);
       showToast('Internal link added successfully!', 'success');
     } catch (error) {
