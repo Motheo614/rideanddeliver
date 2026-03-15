@@ -53,6 +53,7 @@ const categoryOptions = [
 export default function PostEditor({ post, mode }: PostEditorProps) {
   const quillRef = useRef<any>(null);
   const quillInstanceRef = useRef<any>(null);
+  const savedSelectionRef = useRef<any>(null);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -135,26 +136,29 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     }
 
     try {
-      console.log('Getting selection...');
-      const range = quill.getSelection(true);
+      // Use saved selection (from when modal was opened)
+      const range = savedSelectionRef.current;
+      console.log('Using saved selection:', range);
+      
       if (!range) {
-        console.error('Could not get selection');
-        showToast('Could not get editor selection', 'error');
-        return;
+        console.error('No saved selection, using cursor position');
+        // If no saved selection, just insert at current cursor or end
+        const fallbackRange = quill.getSelection() || { index: quill.getLength(), length: 0 };
+        savedSelectionRef.current = fallbackRange;
       }
 
-      console.log('Selection range:', range);
-      const selectedText = range.length > 0 ? quill.getText(range.index, range.length) : selectedPost.title;
+      const selectedText = range && range.length > 0 ? quill.getText(range.index, range.length) : selectedPost.title;
       const linkUrl = `/${selectedPost.category}/${selectedPost.slug}`;
       
-      console.log('Inserting link:', { selectedText, linkUrl });
+      console.log('Inserting link:', { selectedText, linkUrl, range });
       
-      if (range.length > 0) {
+      if (range && range.length > 0) {
         quill.deleteText(range.index, range.length);
       }
       
-      quill.insertText(range.index, selectedText, 'link', linkUrl);
-      quill.setSelection(range.index + selectedText.length);
+      const insertIndex = range ? range.index : quill.getLength();
+      quill.insertText(insertIndex, selectedText, 'link', linkUrl);
+      quill.setSelection(insertIndex + selectedText.length);
       
       console.log('Link inserted successfully');
       setShowLinkModal(false);
@@ -234,10 +238,11 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
           const quill = this.quill;
           console.log('Internal link handler called, quill:', quill);
           
-          // Store quill instance for modal
+          // Store quill instance and current selection for modal
           if (quill) {
             quillInstanceRef.current = quill;
-            console.log('Stored quill instance in ref');
+            savedSelectionRef.current = quill.getSelection(true);
+            console.log('Stored quill instance and selection:', savedSelectionRef.current);
           }
           
           openInternalLinkModal();
