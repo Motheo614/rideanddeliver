@@ -51,7 +51,7 @@ const categoryOptions = [
 ];
 
 export default function PostEditor({ post, mode }: PostEditorProps) {
-  const [quillInstance, setQuillInstance] = useState<any>(null);
+  const quillRef = useRef<any>(null);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -82,7 +82,8 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
   // Custom toolbar handlers
   const insertTable = () => {
-    if (!quillInstance) {
+    const quill = quillRef.current?.getEditor?.();
+    if (!quill) {
       showToast('Editor not ready', 'error');
       return;
     }
@@ -112,9 +113,9 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     
     tableHTML += '</tbody></table>';
 
-    const range = quillInstance.getSelection(true);
-    quillInstance.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
-    quillInstance.setSelection(range.index + 1);
+    const range = quill.getSelection(true);
+    quill.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
+    quill.setSelection(range.index + 1);
   };
 
   const openInternalLinkModal = () => {
@@ -147,34 +148,38 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   };
 
   const insertInternalLink = (selectedPost: any) => {
-    if (!quillInstance) return;
+    const quill = quillRef.current?.getEditor?.();
+    if (!quill) return;
 
-    const range = quillInstance.getSelection(true);
-    const selectedText = range.length > 0 ? quillInstance.getText(range.index, range.length) : selectedPost.title;
+    const range = quill.getSelection(true);
+    const selectedText = range.length > 0 ? quill.getText(range.index, range.length) : selectedPost.title;
     
     const linkUrl = `/${selectedPost.category}/${selectedPost.slug}`;
     
     if (range.length > 0) {
-      quillInstance.deleteText(range.index, range.length);
+      quill.deleteText(range.index, range.length);
     }
     
-    quillInstance.insertText(range.index, selectedText, 'link', linkUrl);
-    quillInstance.setSelection(range.index + selectedText.length);
+    quill.insertText(range.index, selectedText, 'link', linkUrl);
+    quill.setSelection(range.index + selectedText.length);
     
     setShowLinkModal(false);
     showToast('Internal link added successfully!', 'success');
   };
 
-  // Capture Quill instance when editor loads
+  // Capture Quill instance from the DOM
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const quill = (document.querySelector('.ql-editor') as any)?.parentElement?.__quill;
-      if (quill) {
-        setQuillInstance(quill);
+    const interval = setInterval(() => {
+      const container = document.getElementById('quill-container');
+      const reactQuillElement = container?.querySelector('.ql-container') as any;
+      if (reactQuillElement && reactQuillElement.__quill) {
+        quillRef.current = { getEditor: () => reactQuillElement.__quill };
+        clearInterval(interval);
       }
     }, 100);
-    return () => clearTimeout(timer);
-  }, [content]);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -471,7 +476,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
           {/* Rich Text Editor */}
           <div className="mb-6">
             <label className="block text-sm font-bold text-gray-700 mb-2">Content</label>
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden" id="quill-container">
               <ReactQuill
                 value={content}
                 onChange={setContent}
