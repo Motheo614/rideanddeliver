@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { Save, Eye, Upload, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Save, Eye, Upload, X, ChevronDown, ChevronUp, Link2, Search } from 'lucide-react';
 import 'react-quill-new/dist/quill.snow.css';
 import '@/app/quill-custom.css';
 
@@ -50,22 +50,17 @@ const categoryOptions = [
   { value: 'platform-reviews', label: 'Platform Reviews' },
 ];
 
-const quillModules = {
-  toolbar: [
-    [{ 'header': [2, 3, false] }],
-    ['bold', 'italic'],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    ['link', 'image'],
-    ['blockquote'],
-  ],
-};
-
 export default function PostEditor({ post, mode }: PostEditorProps) {
+  const [quillInstance, setQuillInstance] = useState<any>(null);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [seoCollapsed, setSeoCollapsed] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [linkSearchQuery, setLinkSearchQuery] = useState('');
+  const [linkSearchResults, setLinkSearchResults] = useState<any[]>([]);
+  const [linkSearching, setLinkSearching] = useState(false);
   
   // Form state
   const [title, setTitle] = useState(post?.title || '');
@@ -84,6 +79,130 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [metaTitle, setMetaTitle] = useState(post?.seoMetadata?.metaTitle || '');
   const [metaDescription, setMetaDescription] = useState(post?.seoMetadata?.metaDescription || '');
   const [keywords, setKeywords] = useState(post?.seoMetadata?.keywords?.join(', ') || '');
+
+  // Custom toolbar handlers
+  const insertTable = () => {
+    if (!quillInstance) {
+      showToast('Editor not ready', 'error');
+      return;
+    }
+
+    const rows = prompt('Number of rows:', '3');
+    const cols = prompt('Number of columns:', '3');
+
+    if (!rows || !cols) return;
+
+    const numRows = parseInt(rows);
+    const numCols = parseInt(cols);
+
+    if (isNaN(numRows) || isNaN(numCols) || numRows < 1 || numCols < 1) {
+      showToast('Invalid table dimensions', 'error');
+      return;
+    }
+
+    let tableHTML = '<table border="1" style="border-collapse: collapse; width: 100%; margin: 1em 0;"><tbody>';
+    
+    for (let i = 0; i < numRows; i++) {
+      tableHTML += '<tr>';
+      for (let j = 0; j < numCols; j++) {
+        tableHTML += '<td style="border: 1px solid #ddd; padding: 8px;">&nbsp;</td>';
+      }
+      tableHTML += '</tr>';
+    }
+    
+    tableHTML += '</tbody></table>';
+
+    const range = quillInstance.getSelection(true);
+    quillInstance.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
+    quillInstance.setSelection(range.index + 1);
+  };
+
+  const openInternalLinkModal = () => {
+    setShowLinkModal(true);
+    setLinkSearchQuery('');
+    setLinkSearchResults([]);
+  };
+
+  const searchInternalLinks = async (query: string) => {
+    if (!query.trim()) {
+      setLinkSearchResults([]);
+      return;
+    }
+
+    setLinkSearching(true);
+    try {
+      const response = await fetch(`/api/posts?search=${encodeURIComponent(query)}&limit=10`, {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLinkSearchResults(data.posts || []);
+      }
+    } catch (error) {
+      console.error('Error searching posts:', error);
+    } finally {
+      setLinkSearching(false);
+    }
+  };
+
+  const insertInternalLink = (selectedPost: any) => {
+    if (!quillInstance) return;
+
+    const range = quillInstance.getSelection(true);
+    const selectedText = range.length > 0 ? quillInstance.getText(range.index, range.length) : selectedPost.title;
+    
+    const linkUrl = `/${selectedPost.category}/${selectedPost.slug}`;
+    
+    if (range.length > 0) {
+      quillInstance.deleteText(range.index, range.length);
+    }
+    
+    quillInstance.insertText(range.index, selectedText, 'link', linkUrl);
+    quillInstance.setSelection(range.index + selectedText.length);
+    
+    setShowLinkModal(false);
+    showToast('Internal link added successfully!', 'success');
+  };
+
+  // Capture Quill instance when editor loads
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const quill = (document.querySelector('.ql-editor') as any)?.parentElement?.__quill;
+      if (quill) {
+        setQuillInstance(quill);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [content]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (linkSearchQuery) {
+        searchInternalLinks(linkSearchQuery);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [linkSearchQuery]);
+
+  const quillModules = {
+    toolbar: {
+      container: [
+        [{ 'header': [2, 3, false] }],
+        ['bold', 'italic'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link', 'image'],
+        ['blockquote'],
+        [{ 'table': 'insert-table' }],
+        [{ 'internal-link': 'internal-link' }],
+      ],
+      handlers: {
+        'table': insertTable,
+        'internal-link': openInternalLinkModal,
+      },
+    },
+  };
 
   // Auto-generate slug from title
   useEffect(() => {
@@ -244,297 +363,370 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   };
 
   return (
-    <div className="flex gap-8">
-      {/* LEFT COLUMN - Main Editor */}
-      <div className="flex-1" style={{ width: '70%' }}>
-        {/* Title */}
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Post Title"
-          className="w-full text-4xl font-black text-[#1a1a1a] mb-4 border-none outline-none focus:ring-0 p-0"
-          autoFocus
-        />
-
-        {/* Slug */}
-        <div className="mb-6">
-          <label className="block text-sm font-bold text-gray-700 mb-2">URL Slug</label>
-          <input
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder="post-url-slug"
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            ridersection.com/{category || 'category'}/{slug || 'your-post-slug'}
-          </p>
-        </div>
-
-        {/* Excerpt */}
-        <div className="mb-6">
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Excerpt <span className="text-gray-400 font-normal">({excerpt.length}/800)</span>
-          </label>
-          <textarea
-            value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value.slice(0, 800))}
-            placeholder="Brief description of your post..."
-            rows={3}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] resize-none"
-          />
-        </div>
-
-        {/* Rich Text Editor */}
-        <div className="mb-6">
-          <label className="block text-sm font-bold text-gray-700 mb-2">Content</label>
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <ReactQuill
-              value={content}
-              onChange={setContent}
-              modules={quillModules}
-              placeholder="Write your post content here..."
-              className="h-[500px]"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* RIGHT COLUMN - Settings Panel */}
-      <div className="w-[30%]">
-        <div className="sticky top-8 space-y-4">
-          {/* Status Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h3 className="text-sm font-bold text-gray-700 mb-3">Status</h3>
-            
-            <div className="flex gap-2 mb-4">
+    <>
+      {/* Internal Link Modal */}
+      {showLinkModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Insert Internal Link</h3>
               <button
-                onClick={() => handleSave(false)}
-                disabled={saving}
-                className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors disabled:opacity-50"
+                onClick={() => setShowLinkModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                {saving ? 'Saving...' : 'Save Draft'}
-              </button>
-              <button
-                onClick={() => handleSave(true)}
-                disabled={saving}
-                className="flex-1 bg-[#CC0000] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#AA0000] transition-colors disabled:opacity-50"
-              >
-                Publish
+                <X size={24} />
               </button>
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Status:</span>
-              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-              }`}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </span>
-            </div>
-
-            {lastSaved && (
-              <p className="text-xs text-gray-400 mt-2">
-                Last saved: {lastSaved.toLocaleTimeString()}
-              </p>
-            )}
-          </div>
-
-          {/* Featured Image Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h3 className="text-sm font-bold text-gray-700 mb-3">Featured Image</h3>
-            
-            {imageUrl && (
-              <div className="mb-3 relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                <Image
-                  src={imageUrl}
-                  alt={imageAlt || 'Featured image preview'}
-                  fill
-                  className="object-cover"
-                />
-                <button
-                  onClick={() => setImageUrl('')}
-                  className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition-colors"
-                  title="Remove image"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-
-            <div className="mb-3">
-              <label 
-                htmlFor="imageUpload" 
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors border border-gray-200"
-              >
-                <Upload size={18} />
-                {uploading ? 'Uploading...' : 'Upload Image'}
-              </label>
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
-                id="imageUpload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                disabled={uploading}
-                className="hidden"
+                type="text"
+                value={linkSearchQuery}
+                onChange={(e) => setLinkSearchQuery(e.target.value)}
+                placeholder="Search for articles to link..."
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                autoFocus
               />
             </div>
 
+            <div className="flex-1 overflow-y-auto">
+              {linkSearching ? (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#CC0000] mx-auto mb-2"></div>
+                  Searching...
+                </div>
+              ) : linkSearchResults.length > 0 ? (
+                <div className="space-y-2">
+                  {linkSearchResults.map((result) => (
+                    <button
+                      key={result._id}
+                      onClick={() => insertInternalLink(result)}
+                      className="w-full text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-[#CC0000] transition-all"
+                    >
+                      <div className="font-bold text-gray-900 mb-1">{result.title}</div>
+                      <div className="text-sm text-gray-500 mb-2">{result.excerpt?.slice(0, 100)}...</div>
+                      <div className="text-xs text-[#CC0000] font-medium">
+                        /{result.category}/{result.slug}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : linkSearchQuery ? (
+                <div className="text-center py-8 text-gray-500">
+                  No articles found. Try a different search term.
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  Start typing to search for articles...
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex gap-8">
+        {/* LEFT COLUMN - Main Editor */}
+        <div className="flex-1" style={{ width: '70%' }}>
+          {/* Title */}
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Post Title"
+            className="w-full text-4xl font-black text-[#1a1a1a] mb-4 border-none outline-none focus:ring-0 p-0"
+            autoFocus
+          />
+
+          {/* Slug */}
+          <div className="mb-6">
+            <label className="block text-sm font-bold text-gray-700 mb-2">URL Slug</label>
             <input
               type="text"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="Or paste image URL"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder="post-url-slug"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
             />
-            <input
-              type="text"
-              value={imageAlt}
-              onChange={(e) => setImageAlt(e.target.value)}
-              placeholder="Alt text"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+            <p className="text-xs text-gray-500 mt-1">
+              ridersection.com/{category || 'category'}/{slug || 'your-post-slug'}
+            </p>
+          </div>
+
+          {/* Excerpt */}
+          <div className="mb-6">
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              Excerpt <span className="text-gray-400 font-normal">({excerpt.length}/800)</span>
+            </label>
+            <textarea
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value.slice(0, 800))}
+              placeholder="Brief description of your post..."
+              rows={3}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] resize-none"
             />
           </div>
 
-          {/* Category & Tags Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h3 className="text-sm font-bold text-gray-700 mb-3">Category & Tags</h3>
-            
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
-            >
-              <option value="">Select category</option>
-              {categoryOptions.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
+          {/* Rich Text Editor */}
+          <div className="mb-6">
+            <label className="block text-sm font-bold text-gray-700 mb-2">Content</label>
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <ReactQuill
+                value={content}
+                onChange={setContent}
+                modules={quillModules}
+                placeholder="Write your post content here..."
+                className="h-[500px]"
+                theme="snow"
+              />
+            </div>
+            <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <strong>Table:</strong> Click the ⊞ icon in toolbar
+              </span>
+              <span className="flex items-center gap-1">
+                <strong>Internal Link:</strong> Select text, then click the 🔗 icon
+              </span>
+            </div>
+          </div>
+        </div>
 
-            <div className="mb-2">
+        {/* RIGHT COLUMN - Settings Panel */}
+        <div className="w-[30%]">
+          <div className="sticky top-8 space-y-4">
+            {/* Status Card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-3">Status</h3>
+              
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => handleSave(false)}
+                  disabled={saving}
+                  className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save Draft'}
+                </button>
+                <button
+                  onClick={() => handleSave(true)}
+                  disabled={saving}
+                  className="flex-1 bg-[#CC0000] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#AA0000] transition-colors disabled:opacity-50"
+                >
+                  Publish
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Status:</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                  status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+              </div>
+
+              {lastSaved && (
+                <p className="text-xs text-gray-400 mt-2">
+                  Last saved: {lastSaved.toLocaleTimeString()}
+                </p>
+              )}
+            </div>
+
+            {/* Featured Image Card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-3">Featured Image</h3>
+              
+              {imageUrl && (
+                <div className="mb-3 relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                  <Image
+                    src={imageUrl}
+                    alt={imageAlt || 'Featured image preview'}
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    onClick={() => setImageUrl('')}
+                    className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition-colors"
+                    title="Remove image"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+
+              <div className="mb-3">
+                <label 
+                  htmlFor="imageUpload" 
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors border border-gray-200"
+                >
+                  <Upload size={18} />
+                  {uploading ? 'Uploading...' : 'Upload Image'}
+                </label>
+                <input
+                  id="imageUpload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+              </div>
+
               <input
                 type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleAddTag}
-                placeholder="Add tags (press Enter or comma)"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="Or paste image URL"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+              />
+              <input
+                type="text"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+                placeholder="Alt text"
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
               />
             </div>
 
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
-                  >
-                    {tag}
-                    <button onClick={() => handleRemoveTag(tag)} className="hover:text-red-600">
-                      <X size={12} />
-                    </button>
-                  </span>
+            {/* Category & Tags Card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-3">Category & Tags</h3>
+              
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+              >
+                <option value="">Select category</option>
+                {categoryOptions.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
                 ))}
+              </select>
+
+              <div className="mb-2">
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleAddTag}
+                  placeholder="Add tags (press Enter or comma)"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                />
               </div>
-            )}
-          </div>
 
-          {/* Post Settings Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h3 className="text-sm font-bold text-gray-700 mb-3">Post Settings</h3>
-            
-            <label className="flex items-center justify-between mb-3 cursor-pointer">
-              <span className="text-sm text-gray-600">Featured Post</span>
-              <input
-                type="checkbox"
-                checked={featured}
-                onChange={(e) => setFeatured(e.target.checked)}
-                className="w-4 h-4 text-[#CC0000] border-gray-300 rounded focus:ring-[#CC0000]"
-              />
-            </label>
-
-            <label className="flex items-center justify-between mb-3 cursor-pointer">
-              <span className="text-sm text-gray-600">Trending</span>
-              <input
-                type="checkbox"
-                checked={trending}
-                onChange={(e) => setTrending(e.target.checked)}
-                className="w-4 h-4 text-[#CC0000] border-gray-300 rounded focus:ring-[#CC0000]"
-              />
-            </label>
-
-            <label className="flex items-center justify-between mb-3 cursor-pointer">
-              <span className="text-sm text-gray-600">Editor's Pick</span>
-              <input
-                type="checkbox"
-                checked={editorsPick}
-                onChange={(e) => setEditorsPick(e.target.checked)}
-                className="w-4 h-4 text-[#CC0000] border-gray-300 rounded focus:ring-[#CC0000]"
-              />
-            </label>
-
-            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-              <span className="text-sm text-gray-600">Read Time</span>
-              <span className="text-sm font-bold text-gray-900">{readTime} min</span>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
+                    >
+                      {tag}
+                      <button onClick={() => handleRemoveTag(tag)} className="hover:text-red-600">
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* SEO Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <button
-              onClick={() => setSeoCollapsed(!seoCollapsed)}
-              className="flex items-center justify-between w-full text-sm font-bold text-gray-700 mb-3"
-            >
-              SEO Metadata
-              {seoCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            </button>
+            {/* Post Settings Card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-3">Post Settings</h3>
+              
+              <label className="flex items-center justify-between mb-3 cursor-pointer">
+                <span className="text-sm text-gray-600">Featured Post</span>
+                <input
+                  type="checkbox"
+                  checked={featured}
+                  onChange={(e) => setFeatured(e.target.checked)}
+                  className="w-4 h-4 text-[#CC0000] border-gray-300 rounded focus:ring-[#CC0000]"
+                />
+              </label>
 
-            {!seoCollapsed && (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Meta Title ({metaTitle.length}/60)
-                  </label>
-                  <input
-                    type="text"
-                    value={metaTitle}
-                    onChange={(e) => setMetaTitle(e.target.value.slice(0, 60))}
-                    placeholder={title || 'Meta title'}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
-                  />
-                </div>
+              <label className="flex items-center justify-between mb-3 cursor-pointer">
+                <span className="text-sm text-gray-600">Trending</span>
+                <input
+                  type="checkbox"
+                  checked={trending}
+                  onChange={(e) => setTrending(e.target.checked)}
+                  className="w-4 h-4 text-[#CC0000] border-gray-300 rounded focus:ring-[#CC0000]"
+                />
+              </label>
 
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Meta Description ({metaDescription.length}/160)
-                  </label>
-                  <textarea
-                    value={metaDescription}
-                    onChange={(e) => setMetaDescription(e.target.value.slice(0, 160))}
-                    placeholder={excerpt || 'Meta description'}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000] resize-none"
-                  />
-                </div>
+              <label className="flex items-center justify-between mb-3 cursor-pointer">
+                <span className="text-sm text-gray-600">Editor's Pick</span>
+                <input
+                  type="checkbox"
+                  checked={editorsPick}
+                  onChange={(e) => setEditorsPick(e.target.checked)}
+                  className="w-4 h-4 text-[#CC0000] border-gray-300 rounded focus:ring-[#CC0000]"
+                />
+              </label>
 
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Keywords (comma-separated)</label>
-                  <input
-                    type="text"
-                    value={keywords}
-                    onChange={(e) => setKeywords(e.target.value)}
-                    placeholder="keyword1, keyword2, keyword3"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
-                  />
-                </div>
+              <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span className="text-sm text-gray-600">Read Time</span>
+                <span className="text-sm font-bold text-gray-900">{readTime} min</span>
               </div>
-            )}
+            </div>
+
+            {/* SEO Card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <button
+                onClick={() => setSeoCollapsed(!seoCollapsed)}
+                className="flex items-center justify-between w-full text-sm font-bold text-gray-700 mb-3"
+              >
+                SEO Metadata
+                {seoCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              </button>
+
+              {!seoCollapsed && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Meta Title ({metaTitle.length}/60)
+                    </label>
+                    <input
+                      type="text"
+                      value={metaTitle}
+                      onChange={(e) => setMetaTitle(e.target.value.slice(0, 60))}
+                      placeholder={title || 'Meta title'}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Meta Description ({metaDescription.length}/160)
+                    </label>
+                    <textarea
+                      value={metaDescription}
+                      onChange={(e) => setMetaDescription(e.target.value.slice(0, 160))}
+                      placeholder={excerpt || 'Meta description'}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000] resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Keywords (comma-separated)</label>
+                    <input
+                      type="text"
+                      value={keywords}
+                      onChange={(e) => setKeywords(e.target.value)}
+                      placeholder="keyword1, keyword2, keyword3"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
