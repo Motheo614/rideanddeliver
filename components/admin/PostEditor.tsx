@@ -52,6 +52,7 @@ const categoryOptions = [
 
 export default function PostEditor({ post, mode }: PostEditorProps) {
   const quillRef = useRef<any>(null);
+  const quillInstanceRef = useRef<any>(null);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -111,18 +112,18 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
   const insertInternalLink = (selectedPost: any) => {
     console.log('insertInternalLink called', selectedPost);
+    console.log('Stored quill instance:', quillInstanceRef.current);
     
-    // Try to get Quill instance
-    let quill = quillRef.current?.getEditor?.();
+    let quill = quillInstanceRef.current;
     
-    // If not found via ref, try to find it in the DOM
+    // If not found in stored ref, try to find it in the DOM
     if (!quill) {
-      console.log('Quill not found in ref, searching DOM...');
+      console.log('Quill not found in stored ref, searching DOM...');
       const container = document.getElementById('quill-container');
       const reactQuillElement = container?.querySelector('.ql-container') as any;
       if (reactQuillElement && reactQuillElement.__quill) {
         quill = reactQuillElement.__quill;
-        quillRef.current = { getEditor: () => reactQuillElement.__quill };
+        quillInstanceRef.current = quill;
         console.log('Found Quill in DOM');
       }
     }
@@ -195,6 +196,9 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
             return;
           }
 
+          // Store quill instance
+          quillInstanceRef.current = quill;
+
           const rows = prompt('Number of rows:', '3');
           const cols = prompt('Number of columns:', '3');
 
@@ -231,8 +235,9 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
           console.log('Internal link handler called, quill:', quill);
           
           // Store quill instance for modal
-          if (quill && quillRef.current) {
-            quillRef.current = { getEditor: () => quill };
+          if (quill) {
+            quillInstanceRef.current = quill;
+            console.log('Stored quill instance in ref');
           }
           
           openInternalLinkModal();
