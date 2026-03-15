@@ -18,9 +18,19 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const status = searchParams.get('status') || 'published';
     const sort = searchParams.get('sort') || 'publishedAt';
+    const search = searchParams.get('search');
 
     // Build query
     const query: any = {};
+
+    // Add search functionality
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { excerpt: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } }
+      ];
+    }
 
     // For admin requests, allow different status filters
     const { authenticated } = await requireAdmin();
