@@ -80,61 +80,6 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [metaDescription, setMetaDescription] = useState(post?.seoMetadata?.metaDescription || '');
   const [keywords, setKeywords] = useState(post?.seoMetadata?.keywords?.join(', ') || '');
 
-  // Custom toolbar handlers
-  const insertTable = () => {
-    console.log('insertTable called');
-    
-    // Try to get Quill instance
-    let quill = quillRef.current?.getEditor?.();
-    
-    // If not found via ref, try to find it in the DOM
-    if (!quill) {
-      const container = document.getElementById('quill-container');
-      const reactQuillElement = container?.querySelector('.ql-container') as any;
-      if (reactQuillElement && reactQuillElement.__quill) {
-        quill = reactQuillElement.__quill;
-        quillRef.current = { getEditor: () => reactQuillElement.__quill };
-      }
-    }
-
-    if (!quill) {
-      console.error('Quill editor not found');
-      showToast('Editor not ready', 'error');
-      return;
-    }
-
-    const rows = prompt('Number of rows:', '3');
-    const cols = prompt('Number of columns:', '3');
-
-    if (!rows || !cols) return;
-
-    const numRows = parseInt(rows);
-    const numCols = parseInt(cols);
-
-    if (isNaN(numRows) || isNaN(numCols) || numRows < 1 || numCols < 1) {
-      showToast('Invalid table dimensions', 'error');
-      return;
-    }
-
-    let tableHTML = '<table border="1" style="border-collapse: collapse; width: 100%; margin: 1em 0;"><tbody>';
-    
-    for (let i = 0; i < numRows; i++) {
-      tableHTML += '<tr>';
-      for (let j = 0; j < numCols; j++) {
-        tableHTML += '<td style="border: 1px solid #ddd; padding: 8px;">&nbsp;</td>';
-      }
-      tableHTML += '</tr>';
-    }
-    
-    tableHTML += '</tbody></table>';
-
-    const range = quill.getSelection(true);
-    quill.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
-    quill.setSelection(range.index + 1);
-    
-    console.log('Table inserted successfully');
-  };
-
   const openInternalLinkModal = () => {
     setShowLinkModal(true);
     setLinkSearchQuery('');
@@ -219,20 +164,6 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     }
   };
 
-  // Capture Quill instance from the DOM
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const container = document.getElementById('quill-container');
-      const reactQuillElement = container?.querySelector('.ql-container') as any;
-      if (reactQuillElement && reactQuillElement.__quill) {
-        quillRef.current = { getEditor: () => reactQuillElement.__quill };
-        clearInterval(interval);
-      }
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, []);
-
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (linkSearchQuery) {
@@ -255,8 +186,57 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
         [{ 'internal-link': 'internal-link' }],
       ],
       handlers: {
-        'table': insertTable,
-        'internal-link': openInternalLinkModal,
+        'table': function(this: any) {
+          const quill = this.quill;
+          console.log('Table handler called, quill:', quill);
+          
+          if (!quill) {
+            alert('Editor not ready');
+            return;
+          }
+
+          const rows = prompt('Number of rows:', '3');
+          const cols = prompt('Number of columns:', '3');
+
+          if (!rows || !cols) return;
+
+          const numRows = parseInt(rows);
+          const numCols = parseInt(cols);
+
+          if (isNaN(numRows) || isNaN(numCols) || numRows < 1 || numCols < 1) {
+            alert('Invalid table dimensions');
+            return;
+          }
+
+          let tableHTML = '<table border="1" style="border-collapse: collapse; width: 100%; margin: 1em 0;"><tbody>';
+          
+          for (let i = 0; i < numRows; i++) {
+            tableHTML += '<tr>';
+            for (let j = 0; j < numCols; j++) {
+              tableHTML += '<td style="border: 1px solid #ddd; padding: 8px;">&nbsp;</td>';
+            }
+            tableHTML += '</tr>';
+          }
+          
+          tableHTML += '</tbody></table>';
+
+          const range = quill.getSelection(true);
+          quill.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
+          quill.setSelection(range.index + 1);
+          
+          console.log('Table inserted');
+        },
+        'internal-link': function(this: any) {
+          const quill = this.quill;
+          console.log('Internal link handler called, quill:', quill);
+          
+          // Store quill instance for modal
+          if (quill && quillRef.current) {
+            quillRef.current = { getEditor: () => quill };
+          }
+          
+          openInternalLinkModal();
+        },
       },
     },
   };
