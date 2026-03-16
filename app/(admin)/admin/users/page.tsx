@@ -182,7 +182,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Users Table */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {loading ? (
             <div className="p-12 text-center text-gray-400">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#CC0000] mx-auto mb-4"></div>
@@ -216,31 +216,31 @@ export default function AdminUsersPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-100">
+                <thead className="bg-gradient-to-r from-gray-800 to-gray-900">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '200px' }}>
                       User
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '220px' }}>
                       Email
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '100px' }}>
                       Role
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '100px' }}>
                       2FA
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '140px' }}>
                       Created
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '110px' }}>
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredUsers.map((user) => (
-                    <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                <tbody>
+                  {filteredUsers.map((user, index) => (
+                    <tr key={user._id} className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[#CC0000] font-bold">
@@ -249,8 +249,8 @@ export default function AdminUsersPage() {
                           <span className="font-bold text-[#1a1a1a]">{user.name}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-600">{user.email}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${getRoleBadge(
                             user.role
@@ -260,7 +260,7 @@ export default function AdminUsersPage() {
                           {user.role.toUpperCase()}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-bold ${
                             user.twoFactorEnabled
@@ -271,10 +271,10 @@ export default function AdminUsersPage() {
                           {user.twoFactorEnabled ? 'Enabled' : 'Disabled'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-600 text-sm">
+                      <td className="px-6 py-4 text-gray-600 text-sm whitespace-nowrap">
                         {formatDate(user.createdAt)}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-4 text-right whitespace-nowrap">
                         <button
                           onClick={() => {
                             setSelectedUser(user);

@@ -431,40 +431,40 @@ export default function AdminAffiliatePage() {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gradient-to-r from-gray-800 to-gray-900">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '250px' }}>
                       Product
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '140px' }}>
                       Category
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '120px' }}>
                       ASIN
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '100px' }}>
                       Price
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '100px' }}>
                       Clicks
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '130px' }}>
                       Earnings
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '110px' }}>
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '150px' }}>
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredProducts.map((product) => (
-                    <tr key={product._id} className="hover:bg-gray-50 transition-colors">
+                <tbody>
+                  {filteredProducts.map((product, index) => (
+                    <tr key={product._id} className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {product.imageUrl && (
@@ -482,24 +482,24 @@ export default function AdminAffiliatePage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">
                           {product.category}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-mono text-gray-600">{product.asin}</span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-bold text-[#1a1a1a]">{product.price || 'N/A'}</span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <MousePointer size={14} className="text-gray-400" />
                           <span className="text-sm font-bold text-[#1a1a1a]">{product.clickCount}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-green-600">
                             ${(product.estimatedEarnings || 0).toFixed(2)}
@@ -509,7 +509,7 @@ export default function AdminAffiliatePage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 text-xs font-bold rounded-full ${
                           product.isActive 
                             ? 'bg-green-50 text-green-700' 
@@ -518,7 +518,7 @@ export default function AdminAffiliatePage() {
                           {product.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => copyToClipboard(product.affiliateLink)}

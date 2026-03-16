@@ -235,34 +235,34 @@ export default function PostsPage() {
 
         {/* Posts Table */}
         {!loading && paginatedPosts.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gradient-to-r from-gray-800 to-gray-900">
                   <tr>
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '300px' }}>
                       Post
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '140px' }}>
                       Category
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '110px' }}>
                       Status
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '140px' }}>
                       Published
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '100px' }}>
                       Views
                     </th>
-                    <th className="text-right px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <th className="text-right px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '110px' }}>
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {paginatedPosts.map((post) => (
-                    <tr key={post._id} className="hover:bg-gray-50 transition-colors">
+                <tbody>
+                  {paginatedPosts.map((post, index) => (
+                    <tr key={post._id} className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           {/* Thumbnail */}
@@ -315,21 +315,21 @@ export default function PostsPage() {
                         </span>
                       </td>
 
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Calendar size={14} className="text-gray-400" />
-                          {formatDate(post.publishedAt)}
+                          <span className="text-sm text-gray-600">{formatDate(post.publishedAt)}</span>
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Eye size={14} className="text-gray-400" />
-                          {post.views.toLocaleString()}
+                          <span className="text-sm text-gray-600">{post.views.toLocaleString()}</span>
                         </div>
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/admin/posts/${post._id}/edit`}
