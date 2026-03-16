@@ -241,7 +241,7 @@
 /* Header styling - applies to first row if no thead, or actual thead */
 .prose table thead,
 .prose table tbody tr:first-child {
-  background: linear-gradient(to right, #1f2937, #111827);
+  background: linear-gradient(to right, #1f2937, #111827) !important;
 }
 
 .prose table thead th,
@@ -249,16 +249,16 @@
 .prose table tbody tr:first-child th,
 .prose table tbody tr:first-child td {
   color: white !important;
-  font-weight: 700;
+  font-weight: 700 !important;
   text-transform: uppercase;
-  font-size: 12px;
+  font-size: 12px !important;
   letter-spacing: 0.05em;
-  padding: 16px;
-  text-align: left;
+  padding: 16px !important;
+  text-align: left !important;
   white-space: nowrap;
   min-width: 150px;
-  border: none;
-  background: transparent;
+  border: none !important;
+  background: transparent !important;
 }
 
 .prose table thead th:first-child,
