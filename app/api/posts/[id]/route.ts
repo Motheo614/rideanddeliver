@@ -90,8 +90,20 @@ export async function PUT(
       );
     }
 
-    // Update post fields and save (this triggers pre-save hooks)
-    Object.assign(post, body);
+    // Update post fields selectively to avoid validation issues
+    const allowedFields = [
+      'title', 'slug', 'excerpt', 'content', 'featuredImage',
+      'category', 'categoryLabel', 'tags', 'author', 'amazonProducts',
+      'seoMetadata', 'status', 'publishedAt', 'readTime',
+      'featured', 'trending', 'editorsPick'
+    ];
+
+    allowedFields.forEach(field => {
+      if (field in body) {
+        post[field] = body[field];
+      }
+    });
+
     await post.save();
 
     return NextResponse.json({ 
@@ -100,6 +112,12 @@ export async function PUT(
     });
   } catch (error: any) {
     console.error('Error updating post:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      errors: error.errors,
+      stack: error.stack?.split('\n').slice(0, 3),
+    });
 
     // Handle duplicate slug error
     if (error.code === 11000) {
@@ -109,8 +127,19 @@ export async function PUT(
       );
     }
 
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors || {})
+        .map((err: any) => err.message)
+        .join(', ');
+      return NextResponse.json(
+        { error: `Validation failed: ${messages}` },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Failed to update post' },
+      { error: `Failed to update post: ${error.message}` },
       { status: 500 }
     );
   }

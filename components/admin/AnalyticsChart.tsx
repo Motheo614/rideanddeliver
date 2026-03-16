@@ -65,8 +65,8 @@ export default function AnalyticsChart({ data = [] }: AnalyticsChartProps) {
       </div>
 
       {chartData.length > 0 ? (
-        <div className="h-[400px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-[400px] w-full" style={{ minHeight: '400px' }}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={400}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
               <XAxis 
