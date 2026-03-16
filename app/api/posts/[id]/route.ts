@@ -91,7 +91,7 @@ export async function PUT(
     }
 
     // Update post fields selectively to avoid validation issues
-    const allowedFields = [
+    const allowedFields: (keyof typeof body)[] = [
       'title', 'slug', 'excerpt', 'content', 'featuredImage',
       'category', 'categoryLabel', 'tags', 'author', 'amazonProducts',
       'seoMetadata', 'status', 'publishedAt', 'readTime',
@@ -100,7 +100,7 @@ export async function PUT(
 
     allowedFields.forEach(field => {
       if (field in body) {
-        post[field] = body[field];
+        (post as any)[field] = body[field];
       }
     });
 
