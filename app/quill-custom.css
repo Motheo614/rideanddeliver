@@ -98,29 +98,29 @@
   color: #CC0000;
 }
 
-/* Comparison Table Styles */
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  margin: 2em 0;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  background: white;
-}
-
-.comparison-table {
+/* Comparison Table Styles - Apply to ALL tables in editor */
+.ql-editor table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
+  margin: 2em 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  overflow: hidden;
 }
 
-.comparison-table thead {
+/* Header styling */
+.ql-editor table thead,
+.ql-editor table tbody tr:first-child {
   background: linear-gradient(to right, #1f2937, #111827);
 }
 
-.comparison-table thead th {
-  color: white;
+.ql-editor table thead th,
+.ql-editor table thead td,
+.ql-editor table tbody tr:first-child th,
+.ql-editor table tbody tr:first-child td {
+  color: white !important;
   font-weight: 700;
   text-transform: uppercase;
   font-size: 12px;
@@ -129,34 +129,52 @@
   text-align: left;
   white-space: nowrap;
   min-width: 150px;
-  border-bottom: 2px solid #374151;
+  border: none;
 }
 
-.comparison-table thead th:first-child {
+.ql-editor table thead th:first-child,
+.ql-editor table tbody tr:first-child th:first-child,
+.ql-editor table tbody tr:first-child td:first-child {
   border-top-left-radius: 12px;
 }
 
-.comparison-table thead th:last-child {
+.ql-editor table thead th:last-child,
+.ql-editor table tbody tr:first-child th:last-child,
+.ql-editor table tbody tr:first-child td:last-child {
   border-top-right-radius: 12px;
 }
 
-.comparison-table tbody tr {
+/* Body rows */
+.ql-editor table tbody tr:not(:first-child) {
   transition: background-color 0.2s;
 }
 
-.comparison-table tbody tr:nth-child(odd) {
+.ql-editor table thead ~ tbody tr {
+  transition: background-color 0.2s;
+}
+
+.ql-editor table tbody tr:nth-child(odd) {
   background-color: #ffffff;
 }
 
-.comparison-table tbody tr:nth-child(even) {
+.ql-editor table tbody tr:nth-child(even) {
   background-color: #f9fafb;
 }
 
-.comparison-table tbody tr:hover {
+.ql-editor table thead ~ tbody tr:nth-child(odd) {
+  background-color: #f9fafb;
+}
+
+.ql-editor table thead ~ tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.ql-editor table tbody tr:hover {
   background-color: #eff6ff;
 }
 
-.comparison-table tbody td {
+.ql-editor table tbody td,
+.ql-editor table tbody th {
   padding: 16px;
   border-bottom: 1px solid #e5e7eb;
   white-space: nowrap;
@@ -164,41 +182,55 @@
   color: #1f2937;
 }
 
-.comparison-table tbody tr:last-child td:first-child {
+.ql-editor table tbody tr:last-child td:first-child,
+.ql-editor table tbody tr:last-child th:first-child {
   border-bottom-left-radius: 12px;
 }
 
-.comparison-table tbody tr:last-child td:last-child {
+.ql-editor table tbody tr:last-child td:last-child,
+.ql-editor table tbody tr:last-child th:last-child {
   border-bottom-right-radius: 12px;
 }
 
-.comparison-table tbody tr:last-child td {
+.ql-editor table tbody tr:last-child td,
+.ql-editor table tbody tr:last-child th {
   border-bottom: none;
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  .table-wrapper {
+  .ql-editor table {
     border-radius: 8px;
     margin: 1.5em 0;
+    font-size: 13px;
   }
   
-  .comparison-table thead th,
-  .comparison-table tbody td {
+  .ql-editor table thead th,
+  .ql-editor table thead td,
+  .ql-editor table tbody tr:first-child th,
+  .ql-editor table tbody tr:first-child td,
+  .ql-editor table tbody td,
+  .ql-editor table tbody th {
     padding: 12px;
     font-size: 13px;
     min-width: 120px;
   }
   
-  .comparison-table thead th {
+  .ql-editor table thead th,
+  .ql-editor table tbody tr:first-child th,
+  .ql-editor table tbody tr:first-child td {
     font-size: 11px;
   }
 }
 
 /* For very small screens */
 @media (max-width: 480px) {
-  .comparison-table thead th,
-  .comparison-table tbody td {
+  .ql-editor table thead th,
+  .ql-editor table thead td,
+  .ql-editor table tbody tr:first-child th,
+  .ql-editor table tbody tr:first-child td,
+  .ql-editor table tbody td,
+  .ql-editor table tbody th {
     padding: 10px;
     font-size: 12px;
     min-width: 100px;

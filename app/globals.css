@@ -204,40 +204,51 @@
   border-color: #CC0000;
 }
 
-/* Comparison Table Styles for Rendered Posts */
-.prose .table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  margin: 2em 0;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  background: white;
-  /* Override prose word-break for tables */
-  word-break: normal !important;
-  overflow-wrap: normal !important;
-}
-
-.prose .comparison-table {
+/* Comparison Table Styles for Rendered Posts - Apply to ALL tables */
+.prose table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
+  margin: 2em 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+  display: table;
   /* Override prose word-break for tables */
   word-break: normal !important;
   overflow-wrap: normal !important;
+  white-space: normal !important;
 }
 
-.prose .comparison-table * {
+.prose table * {
   word-break: normal !important;
   overflow-wrap: normal !important;
 }
 
-.prose .comparison-table thead {
+/* Table wrapper for horizontal scroll */
+.prose .table-wrapper,
+.prose > table {
+  overflow-x: auto;
+  display: block;
+  width: 100%;
+}
+
+.prose .table-wrapper table {
+  display: table;
+}
+
+/* Header styling - applies to first row if no thead, or actual thead */
+.prose table thead,
+.prose table tbody tr:first-child {
   background: linear-gradient(to right, #1f2937, #111827);
 }
 
-.prose .comparison-table thead th {
-  color: white;
+.prose table thead th,
+.prose table thead td,
+.prose table tbody tr:first-child th,
+.prose table tbody tr:first-child td {
+  color: white !important;
   font-weight: 700;
   text-transform: uppercase;
   font-size: 12px;
@@ -246,76 +257,118 @@
   text-align: left;
   white-space: nowrap;
   min-width: 150px;
-  border-bottom: 2px solid #374151;
+  border: none;
+  background: transparent;
 }
 
-.prose .comparison-table thead th:first-child {
+.prose table thead th:first-child,
+.prose table tbody tr:first-child th:first-child,
+.prose table tbody tr:first-child td:first-child {
   border-top-left-radius: 12px;
 }
 
-.prose .comparison-table thead th:last-child {
+.prose table thead th:last-child,
+.prose table tbody tr:first-child th:last-child,
+.prose table tbody tr:first-child td:last-child {
   border-top-right-radius: 12px;
 }
 
-.prose .comparison-table tbody tr {
+/* Body rows - skip first row if no thead exists */
+.prose table tbody tr:not(:first-child) {
   transition: background-color 0.2s;
 }
 
-.prose .comparison-table tbody tr:nth-child(odd) {
+/* When thead exists, style all tbody rows */
+.prose table thead ~ tbody tr {
+  transition: background-color 0.2s;
+}
+
+.prose table tbody tr:nth-child(odd) {
   background-color: #ffffff;
 }
 
-.prose .comparison-table tbody tr:nth-child(even) {
+.prose table tbody tr:nth-child(even) {
   background-color: #f9fafb;
 }
 
-.prose .comparison-table tbody tr:hover {
+/* When thead exists, alternate starting from first tbody row */
+.prose table thead ~ tbody tr:nth-child(odd) {
+  background-color: #f9fafb;
+}
+
+.prose table thead ~ tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.prose table tbody tr:hover {
   background-color: #eff6ff;
 }
 
-.prose .comparison-table tbody td {
+/* Don't apply hover to header row when no thead */
+.prose table:not(:has(thead)) tbody tr:first-child:hover {
+  background: linear-gradient(to right, #1f2937, #111827);
+}
+
+.prose table tbody td,
+.prose table tbody th {
   padding: 16px;
   border-bottom: 1px solid #e5e7eb;
   white-space: nowrap;
   min-width: 150px;
   color: #1f2937;
+  text-align: left;
 }
 
-.prose .comparison-table tbody tr:last-child td:first-child {
+.prose table tbody tr:last-child td:first-child,
+.prose table tbody tr:last-child th:first-child {
   border-bottom-left-radius: 12px;
 }
 
-.prose .comparison-table tbody tr:last-child td:last-child {
+.prose table tbody tr:last-child td:last-child,
+.prose table tbody tr:last-child th:last-child {
   border-bottom-right-radius: 12px;
 }
 
-.prose .comparison-table tbody tr:last-child td {
+.prose table tbody tr:last-child td,
+.prose table tbody tr:last-child th {
   border-bottom: none;
 }
 
 /* Mobile Responsive for Tables */
 @media (max-width: 768px) {
-  .prose .table-wrapper {
+  .prose table {
     border-radius: 8px;
     margin: 1.5em 0;
+    font-size: 13px;
   }
   
-  .prose .comparison-table thead th,
-  .prose .comparison-table tbody td {
+  .prose table thead th,
+  .prose table thead td,
+  .prose table tbody tr:first-child th,
+  .prose table tbody tr:first-child td,
+  .prose table tbody td,
+  .prose table tbody th {
     padding: 12px;
     font-size: 13px;
     min-width: 120px;
   }
   
-  .prose .comparison-table thead th {
+  .prose table thead th,
+  .prose table thead td,
+  .prose table tbody tr:first-child th,
+  .prose table tbody tr:first-child td {
     font-size: 11px;
   }
 }
 
 /* For very small screens */
 @media (max-width: 480px) {
-  .prose .comparison-table thead th,
-  .prose .comparison-table tbody td {
+  .prose table thead th,
+  .prose table thead td,
+  .prose table tbody tr:first-child th,
+  .prose table tbody tr:first-child td,
+  .prose table tbody td,
+  .prose table tbody th {
     padding: 10px;
     font-size: 12px;
     min-width: 100px;
