@@ -216,17 +216,25 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
             return;
           }
 
-          let tableHTML = '<table border="1" style="border-collapse: collapse; width: 100%; margin: 1em 0;"><tbody>';
+          let tableHTML = '<div class="table-wrapper"><table class="comparison-table"><thead>';
           
-          for (let i = 0; i < numRows; i++) {
+          // Header row
+          tableHTML += '<tr>';
+          for (let j = 0; j < numCols; j++) {
+            tableHTML += '<th>Header</th>';
+          }
+          tableHTML += '</tr></thead><tbody>';
+          
+          // Data rows
+          for (let i = 0; i < numRows - 1; i++) {
             tableHTML += '<tr>';
             for (let j = 0; j < numCols; j++) {
-              tableHTML += '<td style="border: 1px solid #ddd; padding: 8px;">&nbsp;</td>';
+              tableHTML += '<td>Data</td>';
             }
             tableHTML += '</tr>';
           }
           
-          tableHTML += '</tbody></table>';
+          tableHTML += '</tbody></table></div>';
 
           const range = quill.getSelection(true);
           quill.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
