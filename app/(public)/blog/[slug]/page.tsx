@@ -48,7 +48,7 @@ export default async function BlogPostPage({ params }: Props) {
     : (post.featuredImage as any)?.url;
 
   return (
-    <main className="min-h-screen bg-white">
+    <>
       {/* Affiliate Disclosure Banner */}
       <div className="bg-amber-50 border-b border-amber-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
@@ -259,19 +259,15 @@ export default async function BlogPostPage({ params }: Props) {
 
         {/* Back to Top */}
         <div className="mt-16 md:mt-20 text-center">
-          <a 
-            href="#" 
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#CC0000] transition-colors group"
-            onClick={(e) => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+          <button 
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#CC0000] transition-colors group cursor-pointer"
           >
             <ArrowUp size={16} className="group-hover:-translate-y-1 transition-transform" />
             Back to Top
-          </a>
+          </button>
         </div>
       </article>
-    </main>
+    </>
   );
 }
