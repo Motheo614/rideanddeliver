@@ -29,14 +29,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   
-  // Fetch post from API (this increments view count server-side)
   const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  // Fetch related posts
   const categoryPosts = await getPostsByCategory(post.categorySlug);
   const relatedPosts = categoryPosts
     .filter(p => p.slug !== post.slug)
@@ -45,167 +43,276 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-white">
       {/* Affiliate Disclosure Banner */}
-      <div className="bg-[#fffbea] border-b border-yellow-100 py-2 px-4">
-        <div className="container mx-auto">
-          <p className="text-[10px] md:text-xs text-yellow-800 text-center">
-            Disclosure: This post contains affiliate links. If you click through and make a purchase, we may earn a commission at no extra cost to you.
+      <div className="bg-amber-50 border-b border-amber-100 py-3">
+        <div className="max-w-4xl mx-auto px-4">
+          <p className="text-xs md:text-sm text-amber-900 text-center leading-relaxed">
+            <strong className="font-semibold">Disclosure:</strong> This post contains affiliate links. 
+            If you make a purchase through these links, we may earn a commission at no extra cost to you.
           </p>
         </div>
       </div>
 
       {/* Breadcrumbs */}
-      <div className="bg-gray-50 py-4 border-b border-gray-100">
-        <div className="container mx-auto px-4 text-[10px] uppercase font-bold tracking-widest text-gray-400">
-          <Link href="/" className="hover:text-[#CC0000]">Home</Link>
-          <span className="mx-2">/</span>
-          <Link href={`/${post.categorySlug}/`} className="hover:text-[#CC0000]">{post.category}</Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-600">{post.title}</span>
+      <nav className="bg-gray-50 border-b border-gray-200" aria-label="Breadcrumb">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <ol className="flex items-center space-x-2 text-xs md:text-sm">
+            <li>
+              <Link 
+                href="/" 
+                className="text-gray-500 hover:text-[#CC0000] transition-colors font-medium"
+              >
+                Home
+              </Link>
+            </li>
+            <li className="text-gray-300">/</li>
+            <li>
+              <Link 
+                href={`/${post.categorySlug}/`} 
+                className="text-gray-500 hover:text-[#CC0000] transition-colors font-medium"
+              >
+                {post.category}
+              </Link>
+            </li>
+            <li className="text-gray-300">/</li>
+            <li className="text-gray-700 truncate" aria-current="page">
+              {post.title}
+            </li>
+          </ol>
         </div>
-      </div>
+      </nav>
 
-      {/* Main Layout Container */}
-      <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1200px]">
+      {/* Article Container */}
+      <article className="max-w-4xl mx-auto px-4 py-8 md:py-12 lg:py-16">
         
-        {/* ULTIMATE FIX 1: 12-Column Mathematical Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start">
-          
-          {/* Main Left Column: Takes exactly 8 cols (66%) on lg, 9 cols (75%) on xl */}
-          <article className="lg:col-span-8 xl:col-span-9 min-w-0 overflow-hidden w-full">
+        {/* Header Section */}
+        <header className="mb-8 md:mb-12">
+          {/* Category & Meta */}
+          <div className="flex flex-wrap items-center gap-3 mb-4 md:mb-6">
+            <span className="inline-flex items-center bg-[#CC0000] text-white text-xs font-bold uppercase px-4 py-1.5 rounded-full">
+              {post.category}
+            </span>
+            <time 
+              dateTime={new Date(post.publishedAt).toISOString()} 
+              className="text-sm text-gray-500 font-medium"
+            >
+              {formatDate(post.publishedAt)}
+            </time>
+            <span className="text-gray-300">•</span>
+            <span className="text-sm text-gray-500 font-medium">
+              {post.readTime}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6 md:mb-8">
+            {post.title}
+          </h1>
+
+          {/* Excerpt */}
+          {post.excerpt && (
+            <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-6 md:mb-8">
+              {post.excerpt}
+            </p>
+          )}
+
+          {/* Author Info */}
+          <div className="flex items-center gap-3 py-4 border-y border-gray-200">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-[#CC0000] to-red-700 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">RS</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm md:text-base font-bold text-gray-900">Rider Section Team</p>
+              <p className="text-xs md:text-sm text-gray-500">Expert Gear Reviewers</p>
+            </div>
+          </div>
+        </header>
+
+        {/* Featured Image */}
+        <figure className="mb-10 md:mb-14 lg:mb-16">
+          <div className="relative w-full aspect-video md:aspect-[21/9] rounded-xl md:rounded-2xl overflow-hidden bg-gray-100 shadow-xl">
+            {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
+              <Image
+                src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url}
+                alt={post.title}
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 896px, 896px"
+                className="object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                <span className="text-gray-400 text-lg">No image available</span>
+              </div>
+            )}
+          </div>
+        </figure>
+
+        {/* Article Content */}
+        <div 
+          className="prose prose-lg md:prose-xl max-w-none
+            prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
+            prose-h2:text-2xl prose-h2:md:text-3xl prose-h2:mt-12 prose-h2:mb-6
+            prose-h3:text-xl prose-h3:md:text-2xl prose-h3:mt-10 prose-h3:mb-4
+            prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
+            prose-a:text-[#CC0000] prose-a:font-semibold prose-a:no-underline hover:prose-a:underline prose-a:transition-all
+            prose-strong:text-gray-900 prose-strong:font-bold
+            prose-ul:my-6 prose-ul:space-y-2
+            prose-ol:my-6 prose-ol:space-y-2
+            prose-li:text-gray-700 prose-li:leading-relaxed
+            prose-blockquote:border-l-4 prose-blockquote:border-[#CC0000] prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600
+            prose-img:rounded-xl prose-img:shadow-lg prose-img:my-8
+            prose-code:text-[#CC0000] prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm
+            prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:shadow-lg"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
+
+        {/* Comparison Table Section */}
+        <section className="mt-12 md:mt-16 lg:mt-20">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 md:p-8 lg:p-10 border border-gray-200 shadow-sm">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Quick Comparison</h2>
             
-            {/* Title Section */}
-            <header className="mb-8">
-              <div className="flex items-center gap-4 mb-4 md:mb-6">
-                <span className="bg-[#CC0000] text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full">
-                  {post.category}
-                </span>
-                <span className="text-gray-400 text-xs font-medium">
-                  {formatDate(post.publishedAt)} • {post.readTime}
-                </span>
-              </div>
-
-              <h1 className="text-3xl md:text-5xl font-black text-[#1a1a1a] mb-6 leading-tight">
-                {post.title}
-              </h1>
-
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[#CC0000] font-bold">
-                  RS
+            {/* Mobile-friendly table wrapper */}
+            <div className="overflow-x-auto -mx-6 md:mx-0">
+              <div className="inline-block min-w-full align-middle px-6 md:px-0">
+                <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+                  <table className="min-w-full divide-y divide-gray-200 bg-white">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          Feature
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          Details
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider hidden sm:table-cell">
+                          Rating
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      <tr className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-4 text-sm font-semibold text-gray-900 whitespace-nowrap">
+                          Quality
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-700">
+                          Premium materials
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 font-medium hidden sm:table-cell">
+                          ★★★★★
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-4 text-sm font-semibold text-gray-900 whitespace-nowrap">
+                          Price
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-700">
+                          Mid-range
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 font-medium hidden sm:table-cell">
+                          ★★★★☆
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-4 text-sm font-semibold text-gray-900 whitespace-nowrap">
+                          Durability
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-700">
+                          Long-lasting
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 font-medium hidden sm:table-cell">
+                          ★★★★★
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-[#1a1a1a]">By Rider Section Team</p>
-                  <p className="text-[10px] text-gray-400 uppercase font-bold">Expert Gear Reviewers</p>
-                </div>
               </div>
-            </header>
-
-            {/* Hero Image */}
-            <div className="relative w-full h-[300px] md:h-[450px] rounded-xl overflow-hidden mb-8 md:mb-12">
-              {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
-                <Image
-                  src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url}
-                  alt={post.title}
-                  fill
-                  priority
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-800" />
-              )}
             </div>
+            
+            <p className="mt-4 text-sm text-gray-600 italic">
+              * This comparison table can be customized based on the article content
+            </p>
+          </div>
+        </section>
 
-            {/* Content Section */}
-            <div 
-              className="prose prose-lg max-w-none w-full break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline [&_*]:!max-w-full [&_img]:!h-auto"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+        {/* Tags Section */}
+        {post.tags && post.tags.length > 0 && (
+          <section className="mt-12 md:mt-16 pt-8 border-t border-gray-200">
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">
+              Related Topics
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-[#CC0000] hover:text-white text-gray-700 text-sm font-medium rounded-full transition-all duration-200 cursor-pointer transform hover:scale-105"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
 
-            {/* Tags Section */}
-            {post.tags && post.tags.length > 0 && (
-              <div className="mt-12 pt-8 border-t border-gray-100">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Tags</h3>
-                <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-block px-4 py-2 bg-gray-100 hover:bg-[#CC0000] hover:text-white text-gray-700 text-sm rounded-full transition-colors cursor-pointer"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Related Posts */}
-            {relatedPosts.length > 0 && (
-              <div className="mt-20 pt-12 border-t border-gray-100 w-full">
-                <h3 className="text-2xl font-black text-[#1a1a1a] mb-8">Related Posts</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {relatedPosts.map((p) => (
-                    <Link key={p.slug} href={`/blog/${p.slug}/`} className="group">
-                      <div className="relative aspect-video rounded-xl overflow-hidden mb-4">
-                        {p.featuredImage && (typeof p.featuredImage === 'string' ? p.featuredImage : (p.featuredImage as any).url) ? (
-                          <Image
-                            src={typeof p.featuredImage === 'string' ? p.featuredImage : (p.featuredImage as any).url}
-                            alt={p.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            referrerPolicy="no-referrer"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400 text-sm">No Image</span>
-                          </div>
-                        )}
+        {/* Related Posts */}
+        {relatedPosts.length > 0 && (
+          <section className="mt-16 md:mt-20 lg:mt-24 pt-12 border-t border-gray-200">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 md:mb-10">
+              Continue Reading
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {relatedPosts.map((p) => (
+                <Link 
+                  key={p.slug} 
+                  href={`/blog/${p.slug}/`} 
+                  className="group flex flex-col bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-[#CC0000] hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="relative aspect-video overflow-hidden bg-gray-100">
+                    {p.featuredImage && (typeof p.featuredImage === 'string' ? p.featuredImage : (p.featuredImage as any).url) ? (
+                      <Image
+                        src={typeof p.featuredImage === 'string' ? p.featuredImage : (p.featuredImage as any).url}
+                        alt={p.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <span className="text-gray-400 text-xs">No Image</span>
                       </div>
-                      <h4 className="text-sm font-bold text-[#1a1a1a] group-hover:text-[#CC0000] transition-colors leading-snug">
-                        {p.title}
-                      </h4>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </article>
-
-          {/* Sidebar Column: Takes exactly 4 cols on lg, 3 cols on xl */}
-          <aside className="hidden lg:block lg:col-span-4 xl:col-span-3">
-            <div className="sticky top-24 space-y-8 w-full min-w-0">
-              {/* Google Ad Slot 1 - Top */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden w-full">
-                <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
-                  <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
-                </div>
-                <div className="aspect-square flex items-center justify-center text-gray-400 text-sm bg-white">
-                  Google Ad 300x250
-                </div>
-              </div>
-
-              {/* Google Ad Slot 2 - Middle */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden w-full">
-                <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
-                  <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
-                </div>
-                <div className="aspect-square flex items-center justify-center text-gray-400 text-sm bg-white">
-                  Google Ad 300x250
-                </div>
-              </div>
-
-              {/* Google Ad Slot 3 - Bottom */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden w-full">
-                <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
-                  <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
-                </div>
-                <div className="aspect-[300/600] flex items-center justify-center text-gray-400 text-sm bg-white">
-                  Google Ad 300x600
-                </div>
-              </div>
+                    )}
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col">
+                    <h3 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-[#CC0000] transition-colors leading-snug line-clamp-2">
+                      {p.title}
+                    </h3>
+                    {p.excerpt && (
+                      <p className="mt-2 text-sm text-gray-600 line-clamp-2 flex-1">
+                        {p.excerpt}
+                      </p>
+                    )}
+                    <div className="mt-3 text-xs font-semibold text-[#CC0000] group-hover:underline">
+                      Read More →
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
-          </aside>
+          </section>
+        )}
+
+        {/* Back to Top */}
+        <div className="mt-16 md:mt-20 text-center">
+          <a 
+            href="#" 
+            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#CC0000] transition-colors"
+          >
+            <span>↑</span> Back to Top
+          </a>
         </div>
-      </div>
+      </article>
     </main>
   );
 }
