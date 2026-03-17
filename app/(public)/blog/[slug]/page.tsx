@@ -7,6 +7,7 @@ import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
 import { formatDate } from '@/lib/utils';
 import { Calendar, Clock, User, ArrowUp, Tag } from 'lucide-react';
 import ComparisonTable from '@/components/ComparisonTable';
+import TableWrapper from '@/components/TableWrapper';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -155,27 +156,29 @@ export default async function BlogPostPage({ params }: Props) {
         )}
 
         {/* Article Content - Clean typography with proper constraints */}
-        <div 
-          className="
-            prose prose-base sm:prose-lg max-w-none
-            prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
-            prose-h2:text-2xl sm:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4
-            prose-h3:text-xl sm:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
-            prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
-            prose-a:text-[#CC0000] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
-            prose-strong:text-gray-900
-            prose-ul:my-6 prose-ul:space-y-2
-            prose-ol:my-6 prose-ol:space-y-2
-            prose-li:text-gray-700
-            prose-blockquote:border-l-4 prose-blockquote:border-[#CC0000] prose-blockquote:pl-4 sm:prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-gray-50 prose-blockquote:py-2 prose-blockquote:pr-4 sm:prose-blockquote:pr-6
-            prose-img:rounded-xl prose-img:shadow-md prose-img:my-8
-            prose-code:text-[#CC0000] prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm
-            prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:shadow-lg prose-pre:overflow-x-auto
-            prose-hr:my-12 prose-hr:border-gray-200
-            break-words
-          "
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
+        <TableWrapper>
+          <div 
+            className="
+              prose prose-base sm:prose-lg max-w-none
+              prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
+              prose-h2:text-2xl sm:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4
+              prose-h3:text-xl sm:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
+              prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
+              prose-a:text-[#CC0000] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+              prose-strong:text-gray-900
+              prose-ul:my-6 prose-ul:space-y-2
+              prose-ol:my-6 prose-ol:space-y-2
+              prose-li:text-gray-700
+              prose-blockquote:border-l-4 prose-blockquote:border-[#CC0000] prose-blockquote:pl-4 sm:prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-gray-50 prose-blockquote:py-2 prose-blockquote:pr-4 sm:prose-blockquote:pr-6
+              prose-img:rounded-xl prose-img:shadow-md prose-img:my-8
+              prose-code:text-[#CC0000] prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm
+              prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:shadow-lg prose-pre:overflow-x-auto
+              prose-hr:my-12 prose-hr:border-gray-200
+              break-words
+            "
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+        </TableWrapper>
 
         {/* Comparison Table Section */}
         <ComparisonTable />
