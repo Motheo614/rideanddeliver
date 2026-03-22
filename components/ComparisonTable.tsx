@@ -2,11 +2,18 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
+import { Star, Award, DollarSign } from 'lucide-react';
 
 interface ComparisonItem {
-  feature: string;
-  details: string;
-  rating: string;
+  name: string;
+  image?: string;
+  rating: number; // 1-5
+  price: string;
+  bestFor: string;
+  keyFeatures: string[];
+  affiliateLink?: string;
+  badge?: string; // e.g., "Best Overall", "Best Value"
 }
 
 interface ComparisonTableProps {
@@ -16,71 +23,147 @@ interface ComparisonTableProps {
 }
 
 const defaultItems: ComparisonItem[] = [
-  { feature: 'Quality', details: 'Premium materials', rating: '★★★★★' },
-  { feature: 'Price', details: 'Mid-range', rating: '★★★★☆' },
-  { feature: 'Durability', details: 'Long-lasting', rating: '★★★★★' },
+  {
+    name: 'Premium Delivery Backpack',
+    rating: 5,
+    price: '$89.99',
+    bestFor: 'All-weather deliveries',
+    keyFeatures: ['Waterproof', '40L capacity', 'Insulated'],
+    badge: 'Best Overall'
+  },
+  {
+    name: 'Budget Courier Bag',
+    rating: 4,
+    price: '$39.99',
+    bestFor: 'Light urban deliveries',
+    keyFeatures: ['Lightweight', '25L capacity', 'Reflective'],
+    badge: 'Best Value'
+  },
+  {
+    name: 'Heavy Duty Carrier',
+    rating: 4.5,
+    price: '$129.99',
+    bestFor: 'Large orders',
+    keyFeatures: ['Reinforced', '60L capacity', 'Multiple compartments'],
+  },
 ];
 
-export default function ComparisonTable({ 
-  items = defaultItems, 
-  title = 'Quick Comparison',
-  description = '* This comparison table can be customized based on the article content'
+const StarRating = ({ rating }: { rating: number }) => {
+  return (
+    <div className="flex items-center gap-1">
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          size={16}
+          className={i < Math.floor(rating) ? 'fill-[#CC0000] text-[#CC0000]' : 'text-gray-300'}
+        />
+      ))}
+      <span className="ml-1 text-sm font-semibold text-gray-900">{rating.toFixed(1)}</span>
+    </div>
+  );
+};
+
+export default function ComparisonTable({
+  items = defaultItems,
+  title = 'Our Top Picks',
+  description = '* Based on extensive testing and real-world delivery experience'
 }: ComparisonTableProps) {
   return (
-    <section className="my-12 md:my-16 lg:my-20">
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 md:p-8 border border-gray-200">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">{title}</h2>
-        
-        {/* Mobile-responsive table with horizontal scroll */}
-        <div className="-mx-6 md:mx-0 overflow-x-auto">
-          <div className="inline-block min-w-full align-middle px-6 md:px-0">
-            <div className="border border-gray-200 rounded-xl bg-white shadow-sm">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                      Feature
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                      Details
-                    </th>
-                    <th scope="col" className="hidden sm:table-cell px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                      Rating
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {items.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-900 whitespace-nowrap">
-                        {item.feature}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {item.details}
-                      </td>
-                      <td className="hidden sm:table-cell px-4 py-3 text-sm text-gray-900 font-medium">
-                        {item.rating}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+    <section className="my-12 md:my-16 lg:my-20 w-full max-w-none" style={{ maxWidth: '100%' }}>
+      <div className="w-full max-w-none bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <Award className="text-[#CC0000]" size={28} />
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{title}</h2>
         </div>
-        
-        {/* Mobile-only rating summary */}
-        <div className="mt-4 sm:hidden space-y-2">
+
+        <div className="space-y-6 md:space-y-8">
           {items.map((item, index) => (
-            <div key={index} className="flex justify-between text-sm border-b border-gray-200 pb-2 last:border-0">
-              <span className="font-medium text-gray-700">{item.feature}:</span>
-              <span className="text-gray-900">{item.rating}</span>
+            <div
+              key={index}
+              className="bg-gray-50 rounded-xl p-5 md:p-6 border border-gray-200 hover:border-[#CC0000] transition-all duration-300 hover:shadow-md"
+            >
+              {/* Badge */}
+              {item.badge && (
+                <div className="mb-3">
+                  <span className="inline-flex items-center gap-1.5 bg-[#CC0000] text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full">
+                    <Award size={12} />
+                    {item.badge}
+                  </span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                {/* Image */}
+                {item.image && (
+                  <div className="md:col-span-3">
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-white border border-gray-200">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 200px"
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Details */}
+                <div className={item.image ? 'md:col-span-9' : 'md:col-span-12'}>
+                  <div className="flex flex-col h-full">
+                    {/* Product Name */}
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                      {item.name}
+                    </h3>
+
+                    {/* Rating & Price Row */}
+                    <div className="flex flex-wrap items-center gap-4 mb-3">
+                      <StarRating rating={item.rating} />
+                      <div className="flex items-center gap-1.5 text-lg font-bold text-gray-900">
+                        <DollarSign size={18} className="text-gray-500" />
+                        {item.price.replace('$', '')}
+                      </div>
+                    </div>
+
+                    {/* Best For */}
+                    <div className="mb-4">
+                      <span className="text-sm font-semibold text-gray-700">Best for: </span>
+                      <span className="text-sm text-gray-600">{item.bestFor}</span>
+                    </div>
+
+                    {/* Key Features */}
+                    <div className="mb-4 flex-grow">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Key Features</p>
+                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {item.keyFeatures.map((feature, idx) => (
+                          <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                            <span className="w-1.5 h-1.5 bg-[#CC0000] rounded-full flex-shrink-0"></span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* CTA Button */}
+                    <div className="mt-auto">
+                      <a
+                        href={item.affiliateLink || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer sponsored"
+                        className="inline-flex items-center justify-center w-full md:w-auto px-6 py-3 bg-[#CC0000] hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-200 hover:shadow-lg text-sm"
+                      >
+                        Check Price on Amazon →
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
-        
+
         {description && (
-          <p className="mt-6 text-sm text-gray-600 italic border-t border-gray-200 pt-4">
+          <p className="mt-6 text-xs text-gray-500 italic border-t border-gray-200 pt-4">
             {description}
           </p>
         )}

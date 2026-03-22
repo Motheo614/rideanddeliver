@@ -48,7 +48,7 @@ export default function EditPostPage() {
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/posts/${postId}`);
+      const response = await fetch(`/api/posts/${postId}?raw=true`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch post');

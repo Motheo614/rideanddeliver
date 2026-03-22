@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { Save, Eye, Upload, X, ChevronDown, ChevronUp, Link2, Search } from 'lucide-react';
+import { Save, Eye, Upload, X, ChevronDown, ChevronUp, Link2, Search, Move } from 'lucide-react';
 import 'react-quill-new/dist/quill.snow.css';
 import '@/app/quill-custom.css';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+const ReactQuillEditor = ReactQuill as any;
+const SELECTED_TABLE_CLASS = 'rs-selected-table';
 
 interface Post {
   _id?: string;
@@ -50,10 +51,32 @@ const categoryOptions = [
   { value: 'platform-reviews', label: 'Platform Reviews' },
 ];
 
+const normalizeCategoryValue = (value?: string) => {
+  if (!value) return '';
+
+  // Already a valid enum slug
+  if (categoryOptions.some((opt) => opt.value === value)) {
+    return value;
+  }
+
+  // Convert display label (e.g. "Safety Gear") to enum slug
+  const byLabel = categoryOptions.find((opt) => opt.label.toLowerCase() === value.toLowerCase());
+  if (byLabel) {
+    return byLabel.value;
+  }
+
+  return value;
+};
+
 export default function PostEditor({ post, mode }: PostEditorProps) {
   const quillRef = useRef<any>(null);
   const quillInstanceRef = useRef<any>(null);
   const savedSelectionRef = useRef<any>(null);
+  const selectedTableElementRef = useRef<HTMLElement | null>(null);
+  const selectedTableIndexRef = useRef<number>(-1);
+  const hoveredTableElementRef = useRef<HTMLElement | null>(null);
+  const selectorTargetTableRef = useRef<HTMLElement | null>(null);
+  const tableSelectorHoveredRef = useRef(false);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -63,6 +86,12 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [linkSearchQuery, setLinkSearchQuery] = useState('');
   const [linkSearchResults, setLinkSearchResults] = useState<any[]>([]);
   const [linkSearching, setLinkSearching] = useState(false);
+  const [tableSelected, setTableSelected] = useState(false);
+  const [tableSelectorUI, setTableSelectorUI] = useState({
+    visible: false,
+    top: 0,
+    left: 0,
+  });
   
   // Form state
   const [title, setTitle] = useState(post?.title || '');
@@ -71,7 +100,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [content, setContent] = useState(post?.content || '');
   const [imageUrl, setImageUrl] = useState(post?.featuredImage?.url || '');
   const [imageAlt, setImageAlt] = useState(post?.featuredImage?.alt || '');
-  const [category, setCategory] = useState(post?.category || '');
+  const [category, setCategory] = useState(normalizeCategoryValue(post?.category));
   const [tags, setTags] = useState<string[]>(post?.tags || []);
   const [tagInput, setTagInput] = useState('');
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>(post?.status || 'draft');
@@ -82,10 +111,101 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [metaDescription, setMetaDescription] = useState(post?.seoMetadata?.metaDescription || '');
   const [keywords, setKeywords] = useState(post?.seoMetadata?.keywords?.join(', ') || '');
 
+  const getQuillInstance = () => {
+    let quill = quillInstanceRef.current;
+
+    if (!quill && quillRef.current?.getEditor) {
+      try {
+        quill = quillRef.current.getEditor();
+        if (quill) {
+          quillInstanceRef.current = quill;
+        }
+      } catch (error) {
+        console.error('Unable to access Quill editor from ref:', error);
+      }
+    }
+
+    if (!quill) {
+      const container = document.getElementById('quill-container');
+      const reactQuillElement = container?.querySelector('.ql-container') as any;
+      if (reactQuillElement && reactQuillElement.__quill) {
+        quill = reactQuillElement.__quill;
+        quillInstanceRef.current = quill;
+      }
+    }
+
+    return quill;
+  };
+
   const openInternalLinkModal = () => {
     setShowLinkModal(true);
     setLinkSearchQuery('');
     setLinkSearchResults([]);
+  };
+
+  const clearTableSelection = () => {
+    const selected = selectedTableElementRef.current;
+    if (selected) {
+      selected.style.outline = '';
+      selected.style.outlineOffset = '';
+      selected.classList.remove(SELECTED_TABLE_CLASS);
+    }
+
+    const editorContainer = document.getElementById('quill-container');
+    if (editorContainer) {
+      const markedTables = editorContainer.querySelectorAll(`.${SELECTED_TABLE_CLASS}`);
+      markedTables.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.outline = '';
+        htmlEl.style.outlineOffset = '';
+        htmlEl.classList.remove(SELECTED_TABLE_CLASS);
+      });
+    }
+
+    selectedTableElementRef.current = null;
+    selectedTableIndexRef.current = -1;
+    setTableSelected(false);
+  };
+
+  const getSelectableTables = (container?: HTMLElement | null) => {
+    const editorContainer = container || (document.getElementById('quill-container') as HTMLElement | null);
+    if (!editorContainer) return [] as HTMLElement[];
+
+    const wrappers = Array.from(editorContainer.querySelectorAll('.table-wrapper')) as HTMLElement[];
+    const standaloneTables = Array.from(editorContainer.querySelectorAll('table'))
+      .filter((table) => !table.closest('.table-wrapper')) as HTMLElement[];
+
+    return [...wrappers, ...standaloneTables];
+  };
+
+  const resolveTableElement = (node: Node | null) => {
+    const target = (node instanceof HTMLElement ? node : node?.parentElement) || null;
+    if (!target) return null;
+
+    const tableWrapper = target.closest('.table-wrapper') as HTMLElement | null;
+    const table = target.closest('table') as HTMLElement | null;
+    const cell = target.closest('td, th') as HTMLElement | null;
+    const row = target.closest('tr') as HTMLElement | null;
+    const section = target.closest('tbody, thead, tfoot') as HTMLElement | null;
+
+    return (tableWrapper || table || cell?.closest('table') || row?.closest('table') || section?.closest('table')) as HTMLElement | null;
+  };
+
+  const selectTableElement = (tableElement: HTMLElement | null) => {
+    if (!tableElement) {
+      showToast('No table found to select.', 'error');
+      return;
+    }
+
+    clearTableSelection();
+    const candidates = getSelectableTables();
+    selectedTableIndexRef.current = candidates.findIndex((el) => el === tableElement);
+    tableElement.classList.add(SELECTED_TABLE_CLASS);
+    tableElement.style.outline = '3px solid #CC0000';
+    tableElement.style.outlineOffset = '2px';
+    selectedTableElementRef.current = tableElement;
+    setTableSelected(true);
+    showToast('Table selected. Click remove to delete it.', 'success');
   };
 
   const searchInternalLinks = async (query: string) => {
@@ -114,20 +234,8 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const insertInternalLink = (selectedPost: any) => {
     console.log('insertInternalLink called', selectedPost);
     console.log('Stored quill instance:', quillInstanceRef.current);
-    
-    let quill = quillInstanceRef.current;
-    
-    // If not found in stored ref, try to find it in the DOM
-    if (!quill) {
-      console.log('Quill not found in stored ref, searching DOM...');
-      const container = document.getElementById('quill-container');
-      const reactQuillElement = container?.querySelector('.ql-container') as any;
-      if (reactQuillElement && reactQuillElement.__quill) {
-        quill = reactQuillElement.__quill;
-        quillInstanceRef.current = quill;
-        console.log('Found Quill in DOM');
-      }
-    }
+
+    const quill = getQuillInstance();
 
     if (!quill) {
       console.error('Quill editor not found');
@@ -169,6 +277,50 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     }
   };
 
+  const removeSelectedTable = () => {
+    let target = selectedTableElementRef.current;
+    const editorContainer = document.getElementById('quill-container') as HTMLElement | null;
+
+    if (!target || !document.body.contains(target)) {
+      const marked = editorContainer?.querySelector(`.${SELECTED_TABLE_CLASS}`) as HTMLElement | null;
+      if (marked) {
+        target = marked;
+        selectedTableElementRef.current = marked;
+      }
+    }
+
+    if ((!target || !document.body.contains(target)) && selectedTableIndexRef.current >= 0) {
+      const candidates = getSelectableTables(editorContainer);
+      const byIndex = candidates[selectedTableIndexRef.current] || null;
+      if (byIndex) {
+        target = byIndex;
+        selectedTableElementRef.current = byIndex;
+      }
+    }
+
+    if (!target || !document.body.contains(target)) {
+      clearTableSelection();
+      showToast('Select a table first, then click remove.', 'error');
+      return;
+    }
+
+    const quill = getQuillInstance();
+
+    if (!quill) {
+      showToast('Editor not ready. Please try again.', 'error');
+      return;
+    }
+
+    target.remove();
+
+    const updatedHtml = quill.root.innerHTML;
+    quill.clipboard.dangerouslyPasteHTML(updatedHtml, 'user');
+    setContent(updatedHtml);
+    clearTableSelection();
+
+    showToast('Table removed successfully!', 'success');
+  };
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (linkSearchQuery) {
@@ -179,7 +331,124 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     return () => clearTimeout(delayDebounceFn);
   }, [linkSearchQuery]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const container = document.getElementById('quill-container');
+      const reactQuillElement = container?.querySelector('.ql-container') as any;
+      const quill = reactQuillElement?.__quill;
+      if (!quill) return;
+
+      // Prevent Ctrl+Z from jumping back to an empty/initial snapshot.
+      quill.history?.clear();
+      quill.history?.cutoff();
+      quillInstanceRef.current = quill;
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [mode, post?._id]);
+
+  useEffect(() => {
+    const updateSelectorPosition = (tableElement: HTMLElement) => {
+      const rect = tableElement.getBoundingClientRect();
+      setTableSelectorUI((prev) => {
+        const nextTop = Math.max(8, rect.top - 14);
+        const nextLeft = Math.max(8, rect.left - 14);
+        if (prev.visible && Math.abs(prev.top - nextTop) < 1 && Math.abs(prev.left - nextLeft) < 1) {
+          return prev;
+        }
+
+        return {
+          visible: true,
+          top: nextTop,
+          left: nextLeft,
+        };
+      });
+    };
+
+    const hideSelector = () => {
+      setTableSelectorUI((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const editorRoot = document.querySelector('#quill-container .ql-editor') as HTMLElement | null;
+      if (!editorRoot) {
+        if (!tableSelectorHoveredRef.current) hideSelector();
+        return;
+      }
+
+      const tableElement = resolveTableElement(event.target as Node | null);
+
+      if (!tableElement || !editorRoot.contains(tableElement)) {
+        hoveredTableElementRef.current = null;
+        if (!tableSelectorHoveredRef.current) hideSelector();
+        return;
+      }
+
+      hoveredTableElementRef.current = tableElement;
+      selectorTargetTableRef.current = tableElement;
+      updateSelectorPosition(tableElement);
+    };
+
+    const handleViewportChange = () => {
+      const hovered = hoveredTableElementRef.current;
+      if (hovered && document.body.contains(hovered)) {
+        updateSelectorPosition(hovered);
+        return;
+      }
+
+      const selectorTarget = selectorTargetTableRef.current;
+      if (selectorTarget && document.body.contains(selectorTarget)) {
+        updateSelectorPosition(selectorTarget);
+        return;
+      }
+
+      if (!tableSelectorHoveredRef.current) {
+        hideSelector();
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove, true);
+    window.addEventListener('scroll', handleViewportChange, true);
+    window.addEventListener('resize', handleViewportChange);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove, true);
+      window.removeEventListener('scroll', handleViewportChange, true);
+      window.removeEventListener('resize', handleViewportChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearTableSelection();
+    };
+  }, []);
+
   const quillModules = {
+    history: {
+      delay: 1000,
+      maxStack: 500,
+      userOnly: true,
+    },
+    keyboard: {
+      bindings: {
+        undo: {
+          key: 'z',
+          shortKey: true,
+          handler(this: any) {
+            this.quill.history.undo();
+          },
+        },
+        redo: {
+          key: 'z',
+          shortKey: true,
+          shiftKey: true,
+          handler(this: any) {
+            this.quill.history.redo();
+          },
+        },
+      },
+    },
     toolbar: {
       container: [
         [{ 'header': [2, 3, false] }],
@@ -216,14 +485,15 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
             return;
           }
 
-          let tableHTML = '<div class="table-wrapper"><table class="comparison-table"><thead>';
-          
-          // Header row
+          // Quill's HTML parser is more reliable with tbody/td than thead/th.
+          // Build a first "header" row using bold text inside td cells.
+          let tableHTML = '<div class="table-wrapper"><table class="comparison-table"><tbody>';
+
           tableHTML += '<tr>';
           for (let j = 0; j < numCols; j++) {
-            tableHTML += '<th>Header</th>';
+            tableHTML += '<td><strong>Header</strong></td>';
           }
-          tableHTML += '</tr></thead><tbody>';
+          tableHTML += '</tr>';
           
           // Data rows
           for (let i = 0; i < numRows - 1; i++) {
@@ -279,6 +549,16 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     return Math.max(1, Math.round(words / 200));
   };
 
+  const normalizeEditorContent = (html: string) => {
+    return html
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\u00A0/g, ' ')
+      .replace(/â€“|–/g, '-')
+      .replace(/â€”|—/g, '-')
+      .replace(/<table[^>]*>/g, '<table>')
+      .replace(/<(td|th)[^>]*>/g, '<$1>');
+  };
+
   const readTime = calculateReadTime(content);
 
   // Handle tag input
@@ -306,18 +586,20 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
     setSaving(true);
 
+    const normalizedContent = normalizeEditorContent(content);
+
     const postData = {
       title,
       slug,
       excerpt,
-      content,
+      content: normalizedContent,
       featuredImage: imageUrl ? { url: imageUrl, alt: imageAlt } : undefined,
       category,
       categoryLabel: categoryOptions.find(c => c.value === category)?.label,
       tags,
       status: publishPost ? 'published' : status,
       publishedAt: publishPost ? new Date().toISOString() : post?.publishedAt,
-      readTime,
+      readTime: calculateReadTime(normalizedContent),
       featured,
       trending,
       editorsPick,
@@ -481,6 +763,30 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
         </div>
       )}
 
+      {tableSelectorUI.visible && (
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onMouseEnter={() => {
+            tableSelectorHoveredRef.current = true;
+          }}
+          onMouseLeave={() => {
+            tableSelectorHoveredRef.current = false;
+            if (!hoveredTableElementRef.current) {
+              selectorTargetTableRef.current = null;
+              setTableSelectorUI((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+            }
+          }}
+          onClick={() => selectTableElement(selectorTargetTableRef.current)}
+          className="fixed z-[60] h-7 w-7 rounded-md border border-gray-300 bg-white text-gray-700 shadow-md hover:bg-gray-100"
+          style={{ top: tableSelectorUI.top, left: tableSelectorUI.left }}
+          title="Select table"
+          aria-label="Select table"
+        >
+          <Move size={14} className="mx-auto" />
+        </button>
+      )}
+
       <div className="flex gap-8">
         {/* LEFT COLUMN - Main Editor */}
         <div className="flex-1" style={{ width: '70%' }}>
@@ -527,7 +833,8 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
           <div className="mb-6">
             <label className="block text-sm font-bold text-gray-700 mb-2">Content</label>
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden" id="quill-container">
-              <ReactQuill
+              <ReactQuillEditor
+                ref={quillRef}
                 value={content}
                 onChange={setContent}
                 modules={quillModules}
@@ -543,6 +850,17 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
               <span className="flex items-center gap-1">
                 <strong>Internal Link:</strong> Select text, then click the 🔗 icon
               </span>
+              <div className="ml-auto flex items-center gap-3">
+                <span className="text-gray-500">Use the four-arrow handle to select table</span>
+                <button
+                  type="button"
+                  onClick={removeSelectedTable}
+                  disabled={!tableSelected}
+                  className={`font-bold ${tableSelected ? 'text-[#CC0000] hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
+                >
+                  Remove selected table
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -593,11 +911,11 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
               
               {imageUrl && (
                 <div className="mb-3 relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                  <Image
+                  <img
                     src={imageUrl}
                     alt={imageAlt || 'Featured image preview'}
-                    fill
-                    className="object-cover"
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
                   />
                   <button
                     onClick={() => setImageUrl('')}

@@ -3,6 +3,9 @@
 /* Only apply these styles within the editor context */
 .quill {
   font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
 }
 
 .quill .ql-toolbar {
@@ -11,6 +14,9 @@
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
   padding: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .quill .ql-container {
@@ -19,11 +25,13 @@
   border-bottom-right-radius: 0.5rem;
   font-size: 16px;
   font-family: inherit;
-  min-height: 500px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .quill .ql-editor {
-  min-height: 500px;
+  min-height: 100%;
   padding: 20px;
   line-height: 1.7;
 }
@@ -173,113 +181,113 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  .ql-editor table {
+  .quill .ql-editor table {
     border-radius: 8px;
     margin: 1.5em 0;
     font-size: 13px;
   }
   
-  .ql-editor table thead th,
-  .ql-editor table thead td,
-  .ql-editor table tbody tr:first-child th,
-  .ql-editor table tbody tr:first-child td,
-  .ql-editor table tbody td,
-  .ql-editor table tbody th {
+  .quill .ql-editor table thead th,
+  .quill .ql-editor table thead td,
+  .quill .ql-editor table tbody tr:first-child th,
+  .quill .ql-editor table tbody tr:first-child td,
+  .quill .ql-editor table tbody td,
+  .quill .ql-editor table tbody th {
     padding: 12px;
     font-size: 13px;
     min-width: 120px;
   }
   
-  .ql-editor table thead th,
-  .ql-editor table tbody tr:first-child th,
-  .ql-editor table tbody tr:first-child td {
+  .quill .ql-editor table thead th,
+  .quill .ql-editor table tbody tr:first-child th,
+  .quill .ql-editor table tbody tr:first-child td {
     font-size: 11px;
   }
 }
 
 /* For very small screens */
 @media (max-width: 480px) {
-  .ql-editor table thead th,
-  .ql-editor table thead td,
-  .ql-editor table tbody tr:first-child th,
-  .ql-editor table tbody tr:first-child td,
-  .ql-editor table tbody td,
-  .ql-editor table tbody th {
+  .quill .ql-editor table thead th,
+  .quill .ql-editor table thead td,
+  .quill .ql-editor table tbody tr:first-child th,
+  .quill .ql-editor table tbody tr:first-child td,
+  .quill .ql-editor table tbody td,
+  .quill .ql-editor table tbody th {
     padding: 10px;
     font-size: 12px;
     min-width: 100px;
   }
 }
 
-.ql-toolbar .ql-stroke {
+.quill .ql-toolbar .ql-stroke {
   stroke: #4b5563;
 }
 
-.ql-toolbar button:hover .ql-stroke {
+.quill .ql-toolbar button:hover .ql-stroke {
   stroke: #CC0000;
 }
 
-.ql-toolbar button.ql-active .ql-stroke {
+.quill .ql-toolbar button.ql-active .ql-stroke {
   stroke: #CC0000;
 }
 
-.ql-toolbar .ql-fill {
+.quill .ql-toolbar .ql-fill {
   fill: #4b5563;
 }
 
-.ql-toolbar button:hover .ql-fill {
+.quill .ql-toolbar button:hover .ql-fill {
   fill: #CC0000;
 }
 
-.ql-toolbar button.ql-active .ql-fill {
+.quill .ql-toolbar button.ql-active .ql-fill {
   fill: #CC0000;
 }
 
 /* Picker styling */
-.ql-toolbar .ql-picker-label {
+.quill .ql-toolbar .ql-picker-label {
   color: #4b5563;
 }
 
-.ql-toolbar .ql-picker-label:hover {
+.quill .ql-toolbar .ql-picker-label:hover {
   color: #CC0000;
 }
 
-.ql-toolbar .ql-picker-label.ql-active {
+.quill .ql-toolbar .ql-picker-label.ql-active {
   color: #CC0000;
 }
 
 /* Custom toolbar icons for table and internal link */
-.ql-toolbar button.ql-table::before {
+.quill .ql-toolbar button.ql-table::before {
   content: '⊞';
   font-size: 18px;
   font-weight: bold;
 }
 
-.ql-toolbar button.ql-internal-link::before {
+.quill .ql-toolbar button.ql-internal-link::before {
   content: '🔗';
   font-size: 16px;
 }
 
 /* Table styles in editor */
-.ql-editor table {
+.quill .ql-editor table {
   border-collapse: collapse;
   width: 100%;
   margin: 1em 0;
 }
 
-.ql-editor table td,
-.ql-editor table th {
+.quill .ql-editor table td,
+.quill .ql-editor table th {
   border: 1px solid #ddd;
   padding: 8px 12px;
   min-width: 50px;
 }
 
-.ql-editor table th {
+.quill .ql-editor table th {
   background-color: #f3f4f6;
   font-weight: 600;
   text-align: left;
 }
 
-.ql-editor table tr:hover {
+.quill .ql-editor table tr:hover {
   background-color: #f9fafb;
 }

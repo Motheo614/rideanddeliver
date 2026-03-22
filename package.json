@@ -12,6 +12,7 @@
     "create-admin": "tsx scripts/create-admin.ts",
     "seed-analytics": "tsx scripts/seed-analytics.ts",
     "seed-notifications": "tsx scripts/seed-notifications.ts",
+    "backfill-read-time": "tsx scripts/backfill-read-time.ts",
     "ngrok": "ngrok http 3002"
   },
   "dependencies": {

@@ -18,6 +18,8 @@ export async function GET(
 
     const { id } = await params;
 
+    const rawMode = request.nextUrl.searchParams.get('raw') === 'true';
+
     // Try to find by MongoDB _id first, then by slug
     let post;
     if (mongoose.Types.ObjectId.isValid(id)) {
@@ -35,7 +37,12 @@ export async function GET(
       );
     }
 
-    // Increment views count
+    // In raw mode (admin editor), return raw DB values and do not increment views.
+    if (rawMode) {
+      return NextResponse.json({ post });
+    }
+
+    // Increment views count for public reads
     post.views = (post.views || 0) + 1;
     await post.save();
 

@@ -3,9 +3,12 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { Calendar, Clock, User, Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
-import { formatDate } from '@/lib/utils';
+import { formatDateAbsolute } from '@/lib/utils';
 import { CATEGORY_MAP } from '@/lib/categoryMap';
+import ComparisonTable from '@/components/ComparisonTable';
+import TableWrapper from '@/components/TableWrapper';
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
@@ -16,207 +19,293 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPostBySlug(slug);
   if (!post) return { title: 'Post Not Found' };
 
+  const featuredImageUrl = typeof post.featuredImage === 'string'
+    ? post.featuredImage
+    : (post.featuredImage as any)?.url;
+
   return {
     title: `${post.title} | Rider Section`,
     description: post.excerpt,
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: [post.featuredImage],
+      images: featuredImageUrl ? [featuredImageUrl] : [],
     },
   };
 }
 
 export default async function BlogPostPage({ params }: Props) {
   const { category, slug } = await params;
-  
-  // Validate category exists in our mapping
+
   if (!CATEGORY_MAP[category]) {
     notFound();
   }
-  
-  // Fetch post from API (this increments view count server-side)
-  const post = await getPostBySlug(slug);
 
+  const post = await getPostBySlug(slug);
   if (!post) {
     notFound();
   }
 
-  // Verify post belongs to this category
   if (post.dbCategorySlug !== category) {
     notFound();
   }
 
-  // Fetch related posts
   const categoryPosts = await getPostsByCategory(post.categorySlug);
   const relatedPosts = categoryPosts
-    .filter(p => p.slug !== post.slug)
+    .filter((p) => p.slug !== post.slug)
     .slice(0, 3);
 
+  const featuredImageUrl = typeof post.featuredImage === 'string'
+    ? post.featuredImage
+    : (post.featuredImage as any)?.url;
+
+  const renderContent = () => {
+    if (!post.content) return null;
+    return post.content
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\u00A0/g, ' ')
+      .replace(/â€“|–/g, '-')
+      .replace(/â€”|—/g, '-');
+  };
+
+  const estimateReadTimeFromHtml = (html: string) => {
+    const text = html
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const words = text ? text.split(' ').length : 0;
+    return Math.max(1, Math.ceil(words / 200));
+  };
+
+  const normalizedContent = renderContent() || '';
+  const estimatedReadTime =
+    typeof post.readTime === 'number' && post.readTime > 0
+      ? post.readTime
+      : estimateReadTimeFromHtml(normalizedContent);
   return (
-    <main className="min-h-screen bg-white">
-      {/* Affiliate Disclosure Banner */}
-      <div className="bg-[#fffbea] border-b border-yellow-100 py-2 px-4">
-        <div className="container mx-auto">
-          <p className="text-[10px] md:text-xs text-yellow-800 text-center">
-            Disclosure: This post contains affiliate links. If you click through and make a purchase, we may earn a commission at no extra cost to you.
+    <main className="bg-white" id="top">
+      <div className="bg-amber-50 border-b border-amber-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <p className="text-xs sm:text-sm text-amber-900 text-center">
+            <strong className="font-semibold">Disclosure:</strong> This post contains affiliate links.
+            If you make a purchase through these links, we may earn a commission at no extra cost to you.
           </p>
         </div>
       </div>
 
-      {/* Breadcrumbs */}
-      <div className="bg-gray-50 py-4 border-b border-gray-100">
-        <div className="container mx-auto px-4 text-[10px] uppercase font-bold tracking-widest text-gray-400">
-          <Link href="/" className="hover:text-[#CC0000]">Home</Link>
-          <span className="mx-2">/</span>
-          <Link href={`/${post.categorySlug}/`} className="hover:text-[#CC0000]">{post.category}</Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-600">{post.title}</span>
+      <nav className="bg-gray-50 border-b border-gray-200" aria-label="Breadcrumb">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <ol className="flex flex-wrap items-center gap-1 text-xs sm:text-sm">
+            <li>
+              <Link href="/" className="text-gray-500 hover:text-[#CC0000] transition-colors">
+                Home
+              </Link>
+            </li>
+            <ChevronRight size={14} className="text-gray-400" />
+            <li>
+              <Link
+                href={`/category/${post.categorySlug}/`}
+                className="text-gray-500 hover:text-[#CC0000] transition-colors"
+              >
+                {post.category}
+              </Link>
+            </li>
+            <ChevronRight size={14} className="text-gray-400" />
+            <li className="text-gray-700 truncate max-w-[200px] sm:max-w-xs font-medium" title={post.title}>
+              {post.title}
+            </li>
+          </ol>
         </div>
-      </div>
+      </nav>
 
-      {/* Main Layout Container */}
-      <div className="container mx-auto px-4 py-8 md:py-12 max-w-[1200px]">
-        
-        {/* ULTIMATE FIX 1: 12-Column Mathematical Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start">
-          
-          {/* Main Left Column: Takes exactly 8 cols (66%) on lg, 9 cols (75%) on xl */}
-          <article className="lg:col-span-8 xl:col-span-9 min-w-0 overflow-hidden w-full">
-            
-            {/* Title Section */}
-            <header className="mb-8">
-              <div className="flex items-center gap-4 mb-4 md:mb-6">
-                <span className="bg-[#CC0000] text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full">
-                  {post.category}
-                </span>
-                <span className="text-gray-400 text-xs font-medium">
-                  {formatDate(post.publishedAt)} • {post.readTime}
-                </span>
-              </div>
-
-              <h1 className="text-3xl md:text-5xl font-black text-[#1a1a1a] mb-6 leading-tight">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-8 xl:gap-12">
+          <article className="lg:col-span-8 xl:col-span-8 w-full min-w-0">
+            <header className="mb-8 md:mb-10">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
                 {post.title}
               </h1>
 
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[#CC0000] font-bold">
-                  RS
+              {post.excerpt && (
+                <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-6">
+                  {post.excerpt}
+                </p>
+              )}
+
+              <div className="flex items-center gap-3 py-4 border-t border-b border-gray-200">
+                <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#CC0000] to-red-700 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm sm:text-base">RC</span>
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-[#1a1a1a]">By Rider Section Team</p>
-                  <p className="text-[10px] text-gray-400 uppercase font-bold">Expert Gear Reviewers</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5">
+                    <User size={14} className="text-gray-400" />
+                    Rider Complex Team
+                    <span className="text-gray-300" aria-hidden="true">•</span>
+                    <time dateTime={new Date(post.publishedAt).toISOString()} className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-gray-500">
+                      <Calendar size={12} className="text-gray-400" />
+                      {formatDateAbsolute(post.publishedAt)}
+                    </time>
+                    <span className="text-gray-300" aria-hidden="true">•</span>
+                    <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-gray-500">
+                      <Clock size={12} className="text-gray-400" />
+                      {estimatedReadTime} min read
+                    </span>
+                  </p>
                 </div>
               </div>
             </header>
 
-            {/* Hero Image */}
-            <div className="relative w-full h-[300px] md:h-[450px] rounded-xl overflow-hidden mb-8 md:mb-12">
-              {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
-                <Image
-                  src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url}
-                  alt={post.title}
-                  fill
-                  priority
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
+            {featuredImageUrl && (
+              <figure className="mb-10 md:mb-12">
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 shadow-lg">
+                  <Image
+                    src={featuredImageUrl}
+                    alt={post.title}
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    className="object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              </figure>
+            )}
+
+            <div className="w-full max-w-full" style={{ maxWidth: '100%' }}>
+              <TableWrapper>
+                <div
+                className="
+                  w-full
+                  prose prose-base sm:prose-lg !max-w-none
+                  prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
+                  prose-h2:text-2xl sm:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4
+                  prose-h3:text-xl sm:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
+                  prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
+                  prose-a:text-[#CC0000] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+                  prose-strong:text-gray-900
+                  prose-ul:my-6 prose-ul:space-y-2
+                  prose-ol:my-6 prose-ol:space-y-2
+                  prose-li:text-gray-700
+                  prose-blockquote:border-l-4 prose-blockquote:border-[#CC0000] prose-blockquote:pl-4 sm:prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-gray-50 prose-blockquote:py-2 prose-blockquote:pr-4 sm:prose-blockquote:pr-6
+                  prose-img:rounded-xl prose-img:shadow-md prose-img:my-8
+                  prose-code:text-[#CC0000] prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm
+                  prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:shadow-lg prose-pre:overflow-x-auto
+                  prose-hr:my-12 prose-hr:border-gray-200
+                  [&>*]:!max-w-none [&_table]:w-full [&_img]:w-full
+                  break-words
+                "
+                  dangerouslySetInnerHTML={{ __html: normalizedContent }}
                 />
-              ) : (
-                <div className="w-full h-full bg-gray-800" />
-              )}
+              </TableWrapper>
             </div>
 
-            {/* Content Section */}
-            <div 
-              className="prose prose-lg max-w-none w-full break-words prose-headings:text-[#1a1a1a] prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#CC0000] prose-a:no-underline hover:prose-a:underline [&_*]:!max-w-full [&_img]:!h-auto"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            <div className="w-full max-w-full" style={{ maxWidth: '100%' }}>
+              <ComparisonTable />
+            </div>
 
-            {/* Tags Section */}
             {post.tags && post.tags.length > 0 && (
-              <div className="mt-12 pt-8 border-t border-gray-100">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Tags</h3>
+              <section className="mt-12 md:mt-16 pt-8 border-t border-gray-200">
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <Tag size={16} className="text-gray-400" />
+                  Tags
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {post.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-block px-4 py-2 bg-gray-100 hover:bg-[#CC0000] hover:text-white text-gray-700 text-sm rounded-full transition-colors cursor-pointer"
+                      className="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-[#CC0000] hover:text-white text-gray-700 text-sm font-medium rounded-full transition-all duration-200 cursor-default"
                     >
                       #{tag}
                     </span>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
-            {/* Related Posts */}
-            {relatedPosts.length > 0 && (
-              <div className="mt-20 pt-12 border-t border-gray-100 w-full">
-                <h3 className="text-2xl font-black text-[#1a1a1a] mb-8">Related Posts</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {relatedPosts.map((p) => (
-                    <Link key={p.slug} href={`/${p.dbCategorySlug}/${p.slug}/`} className="group">
-                      <div className="relative aspect-video rounded-xl overflow-hidden mb-4">
-                        {p.featuredImage && (typeof p.featuredImage === 'string' ? p.featuredImage : (p.featuredImage as any).url) ? (
-                          <Image
-                            src={typeof p.featuredImage === 'string' ? p.featuredImage : (p.featuredImage as any).url}
-                            alt={p.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            referrerPolicy="no-referrer"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400 text-sm">No Image</span>
-                          </div>
-                        )}
-                      </div>
-                      <h4 className="text-sm font-bold text-[#1a1a1a] group-hover:text-[#CC0000] transition-colors leading-snug">
-                        {p.title}
-                      </h4>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="mt-16 md:mt-20 text-center">
+              <a
+                href="#top"
+                className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#CC0000] transition-colors"
+              >
+                Back to Top
+              </a>
+            </div>
           </article>
 
-          {/* Sidebar Column: Takes exactly 4 cols on lg, 3 cols on xl */}
-          <aside className="hidden lg:block lg:col-span-4 xl:col-span-3">
-            <div className="sticky top-24 space-y-8 w-full min-w-0">
-              {/* Google Ad Slot 1 - Top */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden w-full">
-                <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
-                  <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
+          <aside className="lg:col-span-4 xl:col-span-4 mt-12 lg:mt-0">
+            <div className="lg:sticky lg:top-8 space-y-8">
+              <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
+                <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Advertisement</p>
+                <div className="bg-gray-200 w-full h-[250px] flex items-center justify-center rounded-lg">
+                  <span className="text-gray-400">Google Ad (300x250)</span>
                 </div>
-                <div className="aspect-square flex items-center justify-center text-gray-400 text-sm bg-white">
-                  Google Ad 300x250
-                </div>
+                <p className="text-xs text-gray-400 mt-2">Ad placeholder</p>
               </div>
 
-              {/* Google Ad Slot 2 - Middle */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden w-full">
-                <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
-                  <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
+              <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
+                <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Advertisement</p>
+                <div className="bg-gray-200 w-full h-[600px] flex items-center justify-center rounded-lg">
+                  <span className="text-gray-400">Google Ad (300x600)</span>
                 </div>
-                <div className="aspect-square flex items-center justify-center text-gray-400 text-sm bg-white">
-                  Google Ad 300x250
-                </div>
-              </div>
-
-              {/* Google Ad Slot 3 - Bottom */}
-              <div className="bg-gray-100 border border-gray-200 rounded-lg overflow-hidden w-full">
-                <div className="bg-gray-50 px-3 py-1 border-b border-gray-200">
-                  <p className="text-[10px] text-gray-400 text-center font-medium">ADVERTISEMENT</p>
-                </div>
-                <div className="aspect-[300/600] flex items-center justify-center text-gray-400 text-sm bg-white">
-                  Google Ad 300x600
-                </div>
+                <p className="text-xs text-gray-400 mt-2">Skyscraper ad placeholder</p>
               </div>
             </div>
           </aside>
-          
         </div>
+
+        {relatedPosts.length > 0 && (
+          <section className="mt-16 md:mt-20 lg:mt-24 pt-12 border-t border-gray-200">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+              <span className="w-1 h-6 bg-[#CC0000] rounded-full" />
+              Continue Reading
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedPosts.map((p) => {
+                const relatedImageUrl = typeof p.featuredImage === 'string'
+                  ? p.featuredImage
+                  : (p.featuredImage as any)?.url;
+
+                return (
+                  <Link
+                    key={p.slug}
+                    href={`/${p.dbCategorySlug}/${p.slug}/`}
+                    className="group flex flex-col bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-[#CC0000] hover:shadow-lg transition-all duration-300"
+                  >
+                    <div className="relative aspect-video overflow-hidden bg-gray-100">
+                      {relatedImageUrl ? (
+                        <Image
+                          src={relatedImageUrl}
+                          alt={p.title}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">No Image</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h3 className="text-base font-bold text-gray-900 group-hover:text-[#CC0000] transition-colors line-clamp-2">
+                        {p.title}
+                      </h3>
+                      {p.excerpt && (
+                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                          {p.excerpt}
+                        </p>
+                      )}
+                      <div className="mt-3 text-xs font-semibold text-[#CC0000] group-hover:underline">
+                        Read More -&gt;
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );

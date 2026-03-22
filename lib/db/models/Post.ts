@@ -1,5 +1,17 @@
 import mongoose, { Schema, Model, Document } from 'mongoose';
 
+function estimateReadTimeFromHtml(html: string): number {
+  const text = (html || '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\u00A0/g, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const words = text ? text.split(' ').length : 0;
+  return Math.max(1, Math.ceil(words / 200));
+}
+
 // TypeScript interface for Post document
 export interface IPost extends Document {
   title: string;
@@ -164,6 +176,13 @@ PostSchema.pre('save', function () {
   // Auto-set publishedAt when status changes to 'published'
   if (this.status === 'published' && !this.publishedAt) {
     this.publishedAt = new Date();
+  }
+
+  // Ensure readTime is always a valid positive number.
+  // Recalculate when content changes, or when readTime is missing/invalid.
+  const hasValidReadTime = typeof this.readTime === 'number' && Number.isFinite(this.readTime) && this.readTime > 0;
+  if (this.isModified('content') || !hasValidReadTime) {
+    this.readTime = estimateReadTimeFromHtml(this.content || '');
   }
 });
 
