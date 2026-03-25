@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Save, Eye, Upload, X, ChevronDown, ChevronUp, Link2, Search, Move } from 'lucide-react';
+import { marked } from 'marked';
 import 'react-quill-new/dist/quill.snow.css';
 import '@/app/quill-custom.css';
 
@@ -82,6 +83,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [seoCollapsed, setSeoCollapsed] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [markdownUploading, setMarkdownUploading] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkSearchQuery, setLinkSearchQuery] = useState('');
   const [linkSearchResults, setLinkSearchResults] = useState<any[]>([]);
@@ -141,6 +143,25 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     setShowLinkModal(true);
     setLinkSearchQuery('');
     setLinkSearchResults([]);
+  };
+
+  const getSafeRange = (quill: any) => {
+    if (!quill) return null;
+
+    const focusedRange = quill.getSelection?.(true);
+    if (focusedRange && typeof focusedRange.index === 'number') {
+      return focusedRange;
+    }
+
+    const currentRange = quill.getSelection?.();
+    if (currentRange && typeof currentRange.index === 'number') {
+      return currentRange;
+    }
+
+    return {
+      index: Math.max(0, (quill.getLength?.() || 1) - 1),
+      length: 0,
+    };
   };
 
   const clearTableSelection = () => {
@@ -245,14 +266,15 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
     try {
       // Use saved selection (from when modal was opened)
-      const range = savedSelectionRef.current;
+      let range = savedSelectionRef.current;
       console.log('Using saved selection:', range);
       
       if (!range) {
         console.error('No saved selection, using cursor position');
-        // If no saved selection, just insert at current cursor or end
-        const fallbackRange = quill.getSelection() || { index: quill.getLength(), length: 0 };
+        // If no saved selection, just insert at current cursor or end.
+        const fallbackRange = getSafeRange(quill);
         savedSelectionRef.current = fallbackRange;
+        range = fallbackRange;
       }
 
       const selectedText = range && range.length > 0 ? quill.getText(range.index, range.length) : selectedPost.title;
@@ -264,9 +286,9 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
         quill.deleteText(range.index, range.length);
       }
       
-      const insertIndex = range ? range.index : quill.getLength();
+      const insertIndex = range ? range.index : Math.max(0, quill.getLength() - 1);
       quill.insertText(insertIndex, selectedText, 'link', linkUrl);
-      quill.setSelection(insertIndex + selectedText.length);
+      quill.setSelection(insertIndex + selectedText.length, 0, 'silent');
       
       console.log('Link inserted successfully');
       setShowLinkModal(false);
@@ -506,9 +528,10 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
           
           tableHTML += '</tbody></table></div>';
 
-          const range = quill.getSelection(true);
-          quill.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
-          quill.setSelection(range.index + 1);
+          const range = getSafeRange(quill);
+          const insertIndex = range ? range.index : 0;
+          quill.clipboard.dangerouslyPasteHTML(insertIndex, tableHTML);
+          quill.setSelection(insertIndex + 1, 0, 'silent');
           
           console.log('Table inserted');
         },
@@ -519,7 +542,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
           // Store quill instance and current selection for modal
           if (quill) {
             quillInstanceRef.current = quill;
-            savedSelectionRef.current = quill.getSelection(true);
+            savedSelectionRef.current = getSafeRange(quill);
             console.log('Stored quill instance and selection:', savedSelectionRef.current);
           }
           
@@ -699,6 +722,78 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     }
   };
 
+  const sanitizeImportedHtml = (rawHtml: string) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(rawHtml, 'text/html');
+
+    doc.querySelectorAll('script, style, iframe, object, embed, link, meta').forEach((node) => {
+      node.remove();
+    });
+
+    doc.querySelectorAll('*').forEach((element) => {
+      Array.from(element.attributes).forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        const value = attr.value.trim().toLowerCase();
+
+        if (name.startsWith('on')) {
+          element.removeAttribute(attr.name);
+          return;
+        }
+
+        if ((name === 'href' || name === 'src') && value.startsWith('javascript:')) {
+          element.removeAttribute(attr.name);
+        }
+      });
+    });
+
+    return doc.body.innerHTML;
+  };
+
+  const handleMarkdownUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputElement = e.target;
+    const file = inputElement.files?.[0];
+    if (!file) return;
+
+    const hasMarkdownExtension = /\.(md|markdown|txt)$/i.test(file.name);
+    if (!hasMarkdownExtension && file.type && !file.type.includes('markdown') && !file.type.includes('text')) {
+      showToast('Please select a Markdown or text file', 'error');
+      inputElement.value = '';
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Markdown file should be less than 2MB', 'error');
+      inputElement.value = '';
+      return;
+    }
+
+    setMarkdownUploading(true);
+
+    try {
+      const markdown = await file.text();
+      if (!markdown.trim()) {
+        showToast('The selected file is empty', 'error');
+        return;
+      }
+
+      const html = await marked.parse(markdown, {
+        gfm: true,
+        breaks: true,
+      });
+      const sanitizedHtml = sanitizeImportedHtml(html);
+
+      setContent(sanitizedHtml);
+      clearTableSelection();
+      showToast('Markdown imported into editor', 'success');
+    } catch (error) {
+      console.error('Markdown import error:', error);
+      showToast('Failed to import Markdown file', 'error');
+    } finally {
+      setMarkdownUploading(false);
+      inputElement.value = '';
+    }
+  };
+
   return (
     <>
       {/* Internal Link Modal */}
@@ -831,7 +926,24 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
           {/* Rich Text Editor */}
           <div className="mb-6">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Content</label>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <label className="block text-sm font-bold text-gray-700">Content</label>
+              <label
+                htmlFor="markdownUpload"
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200 cursor-pointer"
+              >
+                <Upload size={14} />
+                {markdownUploading ? 'Importing Markdown...' : 'Import Markdown File'}
+              </label>
+              <input
+                id="markdownUpload"
+                type="file"
+                accept=".md,.markdown,.txt,text/markdown,text/plain"
+                onChange={handleMarkdownUpload}
+                disabled={markdownUploading}
+                className="hidden"
+              />
+            </div>
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden" id="quill-container">
               <ReactQuillEditor
                 ref={quillRef}

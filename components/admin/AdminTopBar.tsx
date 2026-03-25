@@ -24,6 +24,23 @@ interface SearchResults {
   query: string;
 }
 
+const getPostImageUrl = (featuredImage: unknown): string | null => {
+  if (!featuredImage) return null;
+
+  if (typeof featuredImage === 'string') {
+    return featuredImage.trim() || null;
+  }
+
+  if (typeof featuredImage === 'object' && featuredImage !== null && 'url' in featuredImage) {
+    const url = (featuredImage as { url?: unknown }).url;
+    if (typeof url === 'string' && url.trim()) {
+      return url.trim();
+    }
+  }
+
+  return null;
+};
+
 export default function AdminTopBar() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -358,6 +375,7 @@ export default function AdminTopBar() {
                     </div>
                     {searchResults.posts.map((post, index) => {
                       const flatIndex = index;
+                      const postImage = getPostImageUrl(post.featuredImage);
                       return (
                         <button
                           key={post._id}
@@ -366,11 +384,14 @@ export default function AdminTopBar() {
                             selectedResultIndex === flatIndex ? 'bg-blue-50' : ''
                           }`}
                         >
-                          {post.featuredImage ? (
+                          {postImage ? (
                             <img
-                              src={post.featuredImage}
+                              src={postImage}
                               alt={post.title}
                               className="w-12 h-12 rounded object-cover flex-shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
                             />
                           ) : (
                             <div className="w-12 h-12 rounded bg-blue-100 flex items-center justify-center flex-shrink-0">

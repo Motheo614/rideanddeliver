@@ -26,6 +26,7 @@
     "date-fns": "^4.1.0",
     "export-to-csv": "^1.4.0",
     "lucide-react": "^0.553.0",
+    "marked": "^13.0.3",
     "mongoose": "^9.2.2",
     "motion": "^12.23.24",
     "next": "^15.4.9",

@@ -52,6 +52,22 @@ export default function AdminDashboard() {
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
 
+  const getPostImageUrl = (featuredImage: unknown): string | null => {
+    if (!featuredImage) return null;
+    if (typeof featuredImage === 'string') {
+      return featuredImage.trim() || null;
+    }
+
+    if (typeof featuredImage === 'object' && featuredImage !== null && 'url' in featuredImage) {
+      const url = (featuredImage as { url?: unknown }).url;
+      if (typeof url === 'string' && url.trim()) {
+        return url.trim();
+      }
+    }
+
+    return null;
+  };
+
   useEffect(() => {
     fetchDashboardData();
   }, [startDate, endDate]);
@@ -338,17 +354,23 @@ export default function AdminDashboard() {
                 
                 {recentPosts.length > 0 ? (
                   <div className="space-y-4">
-                    {recentPosts.map((post: any) => (
+                    {recentPosts.map((post: any) => {
+                      const imageUrl = getPostImageUrl(post.featuredImage);
+
+                      return (
                       <div
                         key={post._id}
                         onClick={() => router.push(`/admin/posts/${post._id}/edit`)}
                         className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200"
                       >
-                        {post.featuredImage && (
+                        {imageUrl && (
                           <img
-                            src={post.featuredImage}
+                            src={imageUrl}
                             alt={post.title}
                             className="w-16 h-16 object-cover rounded-lg"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
                           />
                         )}
                         <div className="flex-1 min-w-0">
@@ -375,7 +397,7 @@ export default function AdminDashboard() {
                         </div>
                         <Edit size={16} className="text-gray-400" />
                       </div>
-                    ))}
+                    )})}
                   </div>
                 ) : (
                   <div className="text-center py-8">
