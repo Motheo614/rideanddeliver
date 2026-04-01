@@ -6,9 +6,19 @@ import { formatDate } from '@/lib/utils';
 
 interface ArticleCardProps {
   post: Post;
+  replaceDateWithReadTime?: boolean;
 }
 
-export default function ArticleCard({ post }: ArticleCardProps) {
+export default function ArticleCard({ post, replaceDateWithReadTime = false }: ArticleCardProps) {
+  const normalizedReadTime = (() => {
+    const raw = (post.readTime || '').toString().trim();
+    if (!raw) return '5 min read';
+    if (/min\s+read/i.test(raw)) return raw;
+
+    const minutes = raw.match(/\d+/)?.[0];
+    return minutes ? `${minutes} min read` : raw;
+  })();
+
   return (
     <Link href={`/${post.dbCategorySlug}/${post.slug}/`} className="group flex flex-col md:flex-row gap-6 mb-8 pb-8 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
       <div className="w-full md:w-[60%] flex flex-col justify-center order-2 md:order-1">
@@ -17,7 +27,7 @@ export default function ArticleCard({ post }: ArticleCardProps) {
             {post.category}
           </span>
           <span className="text-[10px] text-gray-400 font-medium">
-            {formatDate(post.publishedAt)}
+            {replaceDateWithReadTime ? normalizedReadTime.toUpperCase() : formatDate(post.publishedAt)}
           </span>
         </div>
         
@@ -29,9 +39,11 @@ export default function ArticleCard({ post }: ArticleCardProps) {
           {post.excerpt}
         </p>
         
-        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-          {post.readTime}
-        </span>
+        {!replaceDateWithReadTime && (
+          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+            {normalizedReadTime}
+          </span>
+        )}
       </div>
       
       <div className="w-full md:w-[40%] aspect-video relative overflow-hidden rounded-lg order-1 md:order-2">

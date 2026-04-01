@@ -4,6 +4,15 @@ import Link from 'next/link';
 import SectionHeading from './SectionHeading';
 import { getTrendingPosts } from '@/lib/posts';
 
+function formatReadTime(readTime: unknown): string {
+  const raw = String(readTime ?? '').trim();
+  if (!raw) return '5 MIN READ';
+  if (/min\s+read/i.test(raw)) return raw.toUpperCase();
+
+  const minutes = raw.match(/\d+/)?.[0];
+  return minutes ? `${minutes} MIN READ` : raw.toUpperCase();
+}
+
 export default async function TrendingNow() {
   const trendingPosts = await getTrendingPosts();
 
@@ -42,7 +51,7 @@ export default async function TrendingNow() {
                   {post.title}
                 </h3>
                 <span className="text-[10px] text-gray-400 font-medium">
-                  {post.readTime}
+                  {formatReadTime(post.readTime)}
                 </span>
               </div>
             </Link>

@@ -3,6 +3,7 @@ import ArticleCard from '@/components/ArticleCard';
 import SectionHeading from '@/components/SectionHeading';
 import { getPostsByCategory } from '@/lib/posts';
 import Link from 'next/link';
+import { unstable_noStore as noStore } from 'next/cache';
 
 interface HubPageProps {
   title: string;
@@ -12,6 +13,9 @@ interface HubPageProps {
 }
 
 export default async function HubPage({ title, description, categorySlug, intro }: HubPageProps) {
+  // Render category hubs with fresh data to avoid stale empty states after publishing.
+  noStore();
+
   // Fetch posts from API
   const categoryPosts = await getPostsByCategory(categorySlug);
 

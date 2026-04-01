@@ -110,7 +110,12 @@ export async function getFeaturedPost(): Promise<Post | null> {
 export async function getTrendingPosts(): Promise<Post[]> {
   try {
     const url = `${API_BASE}/api/posts/trending`;
-    const response = await fetch(url, fetchOptions);
+    const response = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) {
       return [];
@@ -130,7 +135,12 @@ export async function getTrendingPosts(): Promise<Post[]> {
 export async function getEditorsPicks(): Promise<Post[]> {
   try {
     const url = `${API_BASE}/api/posts/editors-picks`;
-    const response = await fetch(url, fetchOptions);
+    const response = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) {
       return [];

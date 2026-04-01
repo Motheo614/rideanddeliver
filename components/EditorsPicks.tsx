@@ -4,6 +4,15 @@ import Link from 'next/link';
 import SectionHeading from './SectionHeading';
 import { getEditorsPicks } from '@/lib/posts';
 
+function formatReadTime(readTime: unknown): string {
+  const raw = String(readTime ?? '').trim();
+  if (!raw) return '5 MIN READ';
+  if (/min\s+read/i.test(raw)) return raw.toUpperCase();
+
+  const minutes = raw.match(/\d+/)?.[0];
+  return minutes ? `${minutes} MIN READ` : raw.toUpperCase();
+}
+
 export default async function EditorsPicks() {
   const picks = await getEditorsPicks();
   
@@ -43,7 +52,7 @@ export default async function EditorsPicks() {
                   {mainPick.title}
                 </h3>
                 <span className="text-gray-300 text-xs font-medium">
-                  {mainPick.readTime}
+                  {formatReadTime(mainPick.readTime)}
                 </span>
               </div>
             </Link>
@@ -75,7 +84,7 @@ export default async function EditorsPicks() {
                   {post.title}
                 </h4>
                 <span className="text-[10px] text-gray-400 font-medium">
-                  {post.readTime}
+                  {formatReadTime(post.readTime)}
                 </span>
               </Link>
             ))}
