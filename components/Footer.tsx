@@ -12,7 +12,7 @@ export default function Footer() {
           <Link href="/" className="flex items-center">
             <Image
               src="/Assets/LogoBlack.png"
-              alt="Rider Section Logo"
+              alt="Rider Complex Logo"
               width={360}
               height={79}
               className="h-20 w-auto"
@@ -31,7 +31,7 @@ export default function Footer() {
 
         {/* Bottom Row */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-400">
-          <p>© Copyright Rider Section 2026 All Rights Reserved</p>
+          <p>© Copyright Rider Complex 2026 All Rights Reserved</p>
           <div className="flex flex-wrap justify-center gap-4 md:gap-8">
             <Link href="/terms/" className="hover:text-[#CC0000] transition-colors">Terms of Service</Link>
             <Link href="/privacy-policy/" className="hover:text-[#CC0000] transition-colors">Privacy Policy</Link>

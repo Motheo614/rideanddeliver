@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Admin Dashboard serves as the central hub for managing your Rider Section website. It provides real-time analytics, quick actions, and an overview of recent content and products.
+The Admin Dashboard serves as the central hub for managing your Rider Complex website. It provides real-time analytics, quick actions, and an overview of recent content and products.
 
 ## Features
 
@@ -531,4 +531,4 @@ For issues or questions:
 
 **Version**: 1.0.0  
 **Last Updated**: March 3, 2026  
-**Maintainer**: Rider Section Development Team
+**Maintainer**: Rider Complex Development Team

@@ -40,7 +40,7 @@ export default function AdminSidebar() {
         <Link href="/" className="flex items-center justify-center">
           <Image 
             src="/Assets/LogoBlack.png"
-            alt="Rider Section Logo"
+            alt="Rider Complex Logo"
             width={180}
             height={50}
             className="object-contain"

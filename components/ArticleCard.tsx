@@ -2,14 +2,21 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Post } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateAbsolute } from '@/lib/utils';
 
 interface ArticleCardProps {
   post: Post;
   replaceDateWithReadTime?: boolean;
+  useAbsoluteUpperDate?: boolean;
+  swapDateWithReadTime?: boolean;
 }
 
-export default function ArticleCard({ post, replaceDateWithReadTime = false }: ArticleCardProps) {
+export default function ArticleCard({
+  post,
+  replaceDateWithReadTime = false,
+  useAbsoluteUpperDate = false,
+  swapDateWithReadTime = false,
+}: ArticleCardProps) {
   const normalizedReadTime = (() => {
     const raw = (post.readTime || '').toString().trim();
     if (!raw) return '5 min read';
@@ -18,6 +25,9 @@ export default function ArticleCard({ post, replaceDateWithReadTime = false }: A
     const minutes = raw.match(/\d+/)?.[0];
     return minutes ? `${minutes} min read` : raw;
   })();
+  const formattedDate = useAbsoluteUpperDate
+    ? formatDateAbsolute(post.publishedAt).toUpperCase()
+    : formatDate(post.publishedAt);
 
   return (
     <Link href={`/${post.dbCategorySlug}/${post.slug}/`} className="group flex flex-col md:flex-row gap-6 mb-8 pb-8 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
@@ -27,7 +37,11 @@ export default function ArticleCard({ post, replaceDateWithReadTime = false }: A
             {post.category}
           </span>
           <span className="text-[10px] text-gray-400 font-medium">
-            {replaceDateWithReadTime ? normalizedReadTime.toUpperCase() : formatDate(post.publishedAt)}
+            {replaceDateWithReadTime
+              ? normalizedReadTime.toUpperCase()
+              : swapDateWithReadTime
+                ? normalizedReadTime.toUpperCase()
+                : formattedDate}
           </span>
         </div>
         
@@ -41,7 +55,7 @@ export default function ArticleCard({ post, replaceDateWithReadTime = false }: A
         
         {!replaceDateWithReadTime && (
           <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-            {normalizedReadTime}
+            {swapDateWithReadTime ? formattedDate : normalizedReadTime}
           </span>
         )}
       </div>

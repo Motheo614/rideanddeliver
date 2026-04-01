@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : (post.featuredImage as any)?.url;
 
   return {
-    title: `${post.title} | Rider Section`,
+    title: `${post.title} | Rider Complex`,
     description: post.excerpt,
     openGraph: {
       title: post.title,
@@ -140,7 +140,7 @@ export default async function BlogPostPage({ params }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5">
                     <User size={14} className="text-gray-400" />
-                    Rider Section Team
+                    Rider Complex Team
                   </p>
                   <p className="text-xs sm:text-sm text-gray-500">Expert Gear Reviewers</p>
                 </div>

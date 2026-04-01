@@ -22,7 +22,7 @@ export default async function StartHerePage() {
             New to Delivery Riding?
           </h1>
           <p className="text-xl md:text-2xl font-medium opacity-90 leading-relaxed">
-            Welcome to Rider Section. We help you find the best gear to stay safe, secure your bike, and maximize your earnings.
+            Welcome to Rider Complex. We help you find the best gear to stay safe, secure your bike, and maximize your earnings.
           </p>
         </div>
       </section>

@@ -49,7 +49,7 @@ function AuthErrorContent() {
           <Link href="/" className="inline-block mb-6">
             <Image
               src="/Assets/Logo.png"
-              alt="Rider Section Logo"
+              alt="Rider Complex Logo"
               width={400}
               height={120}
               className="object-contain"
@@ -121,7 +121,7 @@ export default function AuthErrorPage() {
             <Link href="/" className="inline-block mb-6">
               <Image
                 src="/Assets/Logo.png"
-                alt="Rider Section Logo"
+                alt="Rider Complex Logo"
                 width={400}
                 height={120}
                 className="object-contain"

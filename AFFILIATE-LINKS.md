@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Affiliate Links Management page provides a comprehensive interface for managing affiliate products, tracking performance metrics, and monitoring revenue. This feature is designed specifically for affiliate marketers using the Rider Section platform.
+The Affiliate Links Management page provides a comprehensive interface for managing affiliate products, tracking performance metrics, and monitoring revenue. This feature is designed specifically for affiliate marketers using the Rider Complex platform.
 
 ## Features
 
@@ -460,4 +460,4 @@ Planned features for future releases:
 
 **Version**: 1.0.0  
 **Last Updated**: March 3, 2026  
-**Maintainer**: Rider Section Development Team
+**Maintainer**: Rider Complex Development Team

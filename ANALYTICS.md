@@ -315,4 +315,4 @@ For issues or questions:
 
 **Version**: 1.0.0  
 **Last Updated**: March 3, 2026  
-**Maintainer**: Rider Section Development Team
+**Maintainer**: Rider Complex Development Team

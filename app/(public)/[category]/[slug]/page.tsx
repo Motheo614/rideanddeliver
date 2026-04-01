@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : (post.featuredImage as any)?.url;
 
   return {
-    title: `${post.title} | Rider Section`,
+    title: `${post.title} | Rider Complex`,
     description: post.excerpt,
     openGraph: {
       title: post.title,

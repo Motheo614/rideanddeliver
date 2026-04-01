@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Rider Section | Gear Up. Ride Smart. Earn More.',
+  title: 'Rider Complex | Gear Up. Ride Smart. Earn More.',
   description: 'The ultimate gear review and buying guide site for bike delivery riders. Uber Eats, DoorDash, and more.',
   metadataBase: new URL(process.env.APP_URL || 'http://localhost:3000'),
 };

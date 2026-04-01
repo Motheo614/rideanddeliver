@@ -26,7 +26,7 @@ export default async function CategoryPage({ params }: Props) {
         <SectionHeading title={`Category: ${categoryName}`} />
         <div className="max-w-4xl">
           {categoryPosts.map((post) => (
-            <ArticleCard key={post.slug} post={post} />
+            <ArticleCard key={post.slug} post={post} useAbsoluteUpperDate swapDateWithReadTime />
           ))}
         </div>
       </div>

@@ -95,7 +95,7 @@ export default function Header() {
           <Link href="/" className="flex items-center group">
             <Image
               src="/Assets/Logo.png"
-              alt="Rider Section Logo"
+              alt="Rider Complex Logo"
               width={360}
               height={79}
               priority

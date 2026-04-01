@@ -45,7 +45,7 @@ export default async function HubPage({ title, description, categorySlug, intro 
           <div className="flex flex-col">
             {categoryPosts.length > 0 ? (
               categoryPosts.map((post) => (
-                <ArticleCard key={post.slug} post={post} />
+                <ArticleCard key={post.slug} post={post} useAbsoluteUpperDate swapDateWithReadTime />
               ))
             ) : (
               <p className="text-gray-400 italic">No articles found in this category yet.</p>
