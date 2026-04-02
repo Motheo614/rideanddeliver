@@ -1,4 +1,5 @@
 import React from 'react';
+import AuthorHeader from '@/components/AuthorHeader';
 
 export default function AboutPage() {
   return (
@@ -7,6 +8,12 @@ export default function AboutPage() {
         <h1 className="text-4xl md:text-5xl font-black text-[#1a1a1a] leading-tight">
           About Rider Complex
         </h1>
+
+        <div className="mt-10">
+          <AuthorHeader />
+        </div>
+
+        <div className="mt-8 border-b border-gray-200" />
 
         <h2 className="mt-8 text-2xl md:text-3xl font-extrabold text-[#1a1a1a] leading-tight">
           I Started This Site Because I Wasted Too Much Money Learning the Hard Way

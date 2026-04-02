@@ -3,10 +3,11 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Calendar, Clock, User, ArrowUp, Tag, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, ArrowUp, Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
 import { formatDate } from '@/lib/utils';
 import ComparisonTable from '@/components/ComparisonTable';
+import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import TableWrapper from '@/components/TableWrapper';
 
 interface Props {
@@ -133,17 +134,8 @@ export default async function BlogPostPage({ params }: Props) {
                 </p>
               )}
 
-              <div className="flex items-center gap-3 py-4 border-t border-b border-gray-200">
-                <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#CC0000] to-red-700 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm sm:text-base">RS</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5">
-                    <User size={14} className="text-gray-400" />
-                    Rider Complex Team
-                  </p>
-                  <p className="text-xs sm:text-sm text-gray-500">Expert Gear Reviewers</p>
-                </div>
+              <div className="py-4 border-t border-b border-gray-200">
+                <ArticleAuthorBox />
               </div>
                 </header>
 

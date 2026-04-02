@@ -3,10 +3,11 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Calendar, Clock, User, Tag, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
 import { formatDateAbsolute } from '@/lib/utils';
 import { CATEGORY_MAP } from '@/lib/categoryMap';
+import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import ComparisonTable from '@/components/ComparisonTable';
 import TableWrapper from '@/components/TableWrapper';
 
@@ -132,26 +133,11 @@ export default async function BlogPostPage({ params }: Props) {
                 </p>
               )}
 
-              <div className="flex items-center gap-3 py-4 border-t border-b border-gray-200">
-                <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#CC0000] to-red-700 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm sm:text-base">RC</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5">
-                    <User size={14} className="text-gray-400" />
-                    Rider Complex Team
-                    <span className="text-gray-300" aria-hidden="true">•</span>
-                    <time dateTime={new Date(post.publishedAt).toISOString()} className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-gray-500">
-                      <Calendar size={12} className="text-gray-400" />
-                      {formatDateAbsolute(post.publishedAt)}
-                    </time>
-                    <span className="text-gray-300" aria-hidden="true">•</span>
-                    <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-gray-500">
-                      <Clock size={12} className="text-gray-400" />
-                      {estimatedReadTime} min read
-                    </span>
-                  </p>
-                </div>
+              <div className="py-4 border-t border-b border-gray-200">
+                <ArticleAuthorBox
+                  publishedLabel={formatDateAbsolute(post.publishedAt)}
+                  readTimeLabel={`${estimatedReadTime} min read`}
+                />
               </div>
             </header>
 
