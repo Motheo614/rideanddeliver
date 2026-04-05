@@ -10,13 +10,20 @@ import { CATEGORY_MAP } from '@/lib/categoryMap';
 import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import ComparisonTable from '@/components/ComparisonTable';
 import TableWrapper from '@/components/TableWrapper';
+import SeoJsonLd from '@/components/SeoJsonLd';
+import {
+  buildBlogPostingSchema,
+  buildBreadcrumbSchema,
+  buildProductSchema,
+} from '@/lib/seo/schema';
+import { buildArticleMetadata } from '@/lib/seo/metadata';
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { category, slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) return { title: 'Post Not Found' };
 
@@ -24,15 +31,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? post.featuredImage
     : (post.featuredImage as any)?.url;
 
-  return {
+  return buildArticleMetadata({
     title: `${post.title} | Rider Complex`,
     description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      images: featuredImageUrl ? [featuredImageUrl] : [],
-    },
-  };
+    path: `/${category}/${slug}/`,
+    image: featuredImageUrl,
+    type: 'article',
+    publishedTime: post.publishedAt,
+    modifiedTime: (post as any).updatedAt,
+    section: post.category,
+    tags: post.tags,
+  });
 }
 
 export default async function BlogPostPage({ params }: Props) {
@@ -78,13 +87,58 @@ export default async function BlogPostPage({ params }: Props) {
     return Math.max(1, Math.ceil(words / 200));
   };
 
+  const toIsoDate = (value?: string | Date) => {
+    if (!value) return undefined;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+  };
+
   const normalizedContent = renderContent() || '';
   const estimatedReadTime =
     typeof post.readTime === 'number' && post.readTime > 0
       ? post.readTime
       : estimateReadTimeFromHtml(normalizedContent);
+  const publishedIso = toIsoDate(post.publishedAt) || '1970-01-01T00:00:00.000Z';
+  const updatedIso = toIsoDate((post as any).updatedAt || post.publishedAt) || publishedIso;
+
+  const articlePath = `/${category}/${slug}/`;
+  const articleSchemas: Array<Record<string, unknown>> = [
+    buildBlogPostingSchema({
+      url: articlePath,
+      title: post.title,
+      description: post.excerpt,
+      image: featuredImageUrl,
+      datePublished: publishedIso,
+      dateModified: updatedIso,
+      category: post.category,
+      tags: post.tags,
+    }),
+    buildBreadcrumbSchema([
+      { name: 'Home', url: '/' },
+      { name: post.category, url: `/category/${post.categorySlug}/` },
+      { name: post.title, url: articlePath },
+    ]),
+  ];
+
+  const amazonProducts = (post as any).amazonProducts;
+  if (Array.isArray(amazonProducts)) {
+    amazonProducts.forEach((product) => {
+      if (!product?.productTitle || !product?.affiliateLink) return;
+      articleSchemas.push(
+        buildProductSchema({
+          name: product.productTitle,
+          url: product.affiliateLink,
+          image: product.image,
+          description: product.description,
+          price: product.price,
+        })
+      );
+    });
+  }
+
   return (
     <main className="bg-white" id="top">
+      <SeoJsonLd data={articleSchemas} />
       <div className="bg-amber-50 border-b border-amber-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <p className="text-xs sm:text-sm text-amber-900 text-center">

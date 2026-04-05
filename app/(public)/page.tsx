@@ -5,7 +5,21 @@ import ArticleCard from '@/components/ArticleCard';
 import TrendingNow from '@/components/TrendingNow';
 import EditorsPicks from '@/components/EditorsPicks';
 import SectionHeading from '@/components/SectionHeading';
+import SeoJsonLd from '@/components/SeoJsonLd';
 import { getFeaturedPost, getLatestPosts } from '@/lib/posts';
+import {
+  buildCollectionPageSchema,
+  buildItemListSchema,
+} from '@/lib/seo/schema';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Best Delivery Rider Gear Reviews & Buying Guides',
+  description: 'Expert reviews and practical buying guides for US gig riders on Uber Eats, DoorDash, and Grubhub.',
+  path: '/',
+  image: '/Assets/Logo.png',
+  keywords: ['delivery rider gear', 'Uber Eats gear', 'DoorDash rider equipment', 'gig rider safety'],
+});
 
 // Revalidate every 30 seconds
 export const revalidate = 30;
@@ -15,8 +29,23 @@ export default async function HomePage() {
   const latestArticles = await getLatestPosts(10);
   const heroPost = featuredPost ?? latestArticles[0] ?? null;
 
+  const homeSchemas = [
+    buildCollectionPageSchema(
+      '/',
+      'Rider Complex Home',
+      'Gear reviews and buying guides for bike delivery riders.'
+    ),
+    buildItemListSchema(
+      latestArticles.map((post) => ({
+        name: post.title,
+        url: `/${post.dbCategorySlug || post.categorySlug}/${post.slug}/`,
+      }))
+    ),
+  ];
+
   return (
     <main className="min-h-screen bg-white text-[#1a1a1a]">
+      <SeoJsonLd data={homeSchemas} />
       {heroPost && (
         <section className="relative h-[70vh] min-h-[420px] w-full overflow-hidden md:h-[78vh] md:min-h-[560px]">
           <article className="group h-full w-full bg-black">

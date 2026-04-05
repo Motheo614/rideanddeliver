@@ -1,4 +1,12 @@
 import HubPage from '@/components/HubPage';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Bike Security for Delivery Riders',
+  description: 'Find top U-locks, chain locks, and GPS trackers to prevent theft and protect your delivery income.',
+  path: '/bike-security-for-delivery-riders/',
+  keywords: ['bike security for delivery riders', 'best bike locks', 'delivery bike theft prevention'],
+});
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

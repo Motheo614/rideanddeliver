@@ -2,6 +2,14 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getPosts } from '@/lib/posts';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Start Here: New Delivery Rider Guide',
+  description: 'A practical start-here guide for US gig riders with essential gear categories, setup tips, and first-shift recommendations.',
+  path: '/start-here/',
+  keywords: ['new delivery rider guide', 'start delivery riding', 'gig rider setup'],
+});
 
 export default async function StartHerePage() {
   const allPosts = await getPosts({ status: 'published' });

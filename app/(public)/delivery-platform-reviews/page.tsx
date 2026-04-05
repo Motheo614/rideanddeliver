@@ -1,4 +1,12 @@
 import HubPage from '@/components/HubPage';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Delivery Platform Reviews for Gig Riders',
+  description: 'Read rider-focused platform comparisons and earnings breakdowns for Uber Eats, DoorDash, Grubhub, and more.',
+  path: '/delivery-platform-reviews/',
+  keywords: ['delivery platform reviews', 'Uber Eats vs DoorDash', 'gig rider earnings'],
+});
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

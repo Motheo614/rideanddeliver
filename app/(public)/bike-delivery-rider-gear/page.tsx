@@ -1,4 +1,12 @@
 import HubPage from '@/components/HubPage';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Safety Gear for Delivery Riders',
+  description: 'MIPS helmets, protective clothing, and high-visibility gear tested for real delivery shifts in US cities.',
+  path: '/bike-delivery-rider-gear/',
+  keywords: ['delivery rider safety gear', 'best helmets for delivery riders', 'bike safety equipment'],
+});
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

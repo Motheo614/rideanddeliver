@@ -1,4 +1,12 @@
 import React from 'react';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Affiliate Disclaimer',
+  description: 'Read how affiliate links work on Rider Complex and how commissions support independent gear reviews for delivery riders.',
+  path: '/affiliate-disclaimer/',
+  keywords: ['affiliate disclaimer', 'Amazon Associate disclosure', 'Rider Complex transparency'],
+});
 
 export default function AffiliateDisclaimerPage() {
   return (

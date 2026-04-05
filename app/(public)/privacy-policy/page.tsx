@@ -1,4 +1,12 @@
 import React from 'react';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Privacy Policy',
+  description: 'Learn how Rider Complex collects, uses, and protects personal data for readers and newsletter subscribers.',
+  path: '/privacy-policy/',
+  keywords: ['privacy policy', 'data policy', 'Rider Complex privacy'],
+});
 
 export default function PrivacyPolicyPage() {
   return (

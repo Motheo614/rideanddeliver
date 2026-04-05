@@ -1,5 +1,13 @@
 import React from 'react';
 import AuthorHeader from '@/components/AuthorHeader';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'About Rider Complex',
+  description: 'Meet Marcus Webb and learn how Rider Complex helps US delivery riders choose safer, smarter, and more profitable gear.',
+  path: '/about/',
+  keywords: ['about Rider Complex', 'delivery rider blog', 'gig rider gear reviews'],
+});
 
 export default function AboutPage() {
   return (

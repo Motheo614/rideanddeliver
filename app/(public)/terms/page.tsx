@@ -1,4 +1,12 @@
 import React from 'react';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Terms of Service',
+  description: 'Review Rider Complex terms of service, content usage rights, and liability terms for visitors and subscribers.',
+  path: '/terms/',
+  keywords: ['terms of service', 'content usage', 'Rider Complex terms'],
+});
 
 export default function TermsPage() {
   return (

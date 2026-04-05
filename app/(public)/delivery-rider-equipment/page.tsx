@@ -1,4 +1,12 @@
 import HubPage from '@/components/HubPage';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Delivery Rider Equipment Reviews',
+  description: 'Compare delivery bags, backpacks, and rider equipment that improve speed, durability, and customer ratings.',
+  path: '/delivery-rider-equipment/',
+  keywords: ['delivery rider equipment', 'best delivery bags', 'rider backpack reviews'],
+});
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

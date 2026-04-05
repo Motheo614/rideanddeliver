@@ -1,4 +1,12 @@
 import HubPage from '@/components/HubPage';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Bike Delivery Tech and Visibility',
+  description: 'See the best bike lights, dash cams, and phone mounts to improve rider visibility and shift efficiency.',
+  path: '/bike-delivery-tech-and-visibility/',
+  keywords: ['delivery rider lights', 'bike dash cams', 'phone mounts for delivery riders'],
+});
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

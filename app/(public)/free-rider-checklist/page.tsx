@@ -1,4 +1,12 @@
 import React from 'react';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Free Rider Checklist',
+  description: 'Use this free pre-shift checklist to ensure your helmet, lights, lock, and delivery gear are ready before every ride.',
+  path: '/free-rider-checklist/',
+  keywords: ['delivery rider checklist', 'pre-shift checklist', 'gig rider safety checklist'],
+});
 
 export default function FreeRiderChecklistPage() {
   return (

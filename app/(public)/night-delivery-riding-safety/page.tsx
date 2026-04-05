@@ -1,4 +1,12 @@
 import React from 'react';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Night Delivery Riding Safety Tips',
+  description: 'Learn proven night riding safety tactics for delivery shifts, including visibility setups, reflective gear, and defensive riding.',
+  path: '/night-delivery-riding-safety/',
+  keywords: ['night delivery riding', 'bike visibility tips', 'delivery rider safety'],
+});
 
 export default function NightRidingSafetyPage() {
   return (

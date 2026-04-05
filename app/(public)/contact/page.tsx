@@ -1,4 +1,12 @@
 import React from 'react';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+
+export const metadata = buildPageMetadata({
+  title: 'Contact Rider Complex',
+  description: 'Contact Rider Complex with product review requests, rider gear questions, and affiliate content feedback.',
+  path: '/contact/',
+  keywords: ['contact Rider Complex', 'gear review request', 'delivery rider support'],
+});
 
 export default function ContactPage() {
   return (
