@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   if (status === 'loading') {
@@ -21,6 +21,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }
 
   if (status === 'unauthenticated') {
+    router.push('/login');
+    return null;
+  }
+
+  if (status === 'authenticated' && (session?.user as any)?.role !== 'admin') {
     router.push('/login');
     return null;
   }

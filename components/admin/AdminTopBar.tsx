@@ -68,7 +68,7 @@ export default function AdminTopBar() {
   };
 
   const truncateEmail = (email?: string | null) => {
-    if (!email) return 'admin@ridersection.com';
+    if (!email) return 'info@ridercomplex.com';
     if (email.length > 25) {
       return email.substring(0, 22) + '...';
     }

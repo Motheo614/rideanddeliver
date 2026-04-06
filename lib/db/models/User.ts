@@ -7,6 +7,8 @@ export interface IUser extends Document {
   role: 'admin' | 'editor' | 'viewer';
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +43,14 @@ const UserSchema = new Schema<IUser>(
     twoFactorSecret: {
       type: String,
       select: false, // Don't include by default
+    },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
     },
   },
   {

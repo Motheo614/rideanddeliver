@@ -4,6 +4,7 @@ import Link from 'next/link';
 import ArticleCard from '@/components/ArticleCard';
 import TrendingNow from '@/components/TrendingNow';
 import EditorsPicks from '@/components/EditorsPicks';
+import NewsletterSignupForm from '@/components/NewsletterSignupForm';
 import SectionHeading from '@/components/SectionHeading';
 import SeoJsonLd from '@/components/SeoJsonLd';
 import { getFeaturedPost, getLatestPosts } from '@/lib/posts';
@@ -115,26 +116,20 @@ export default async function HomePage() {
           <p className="mx-auto mt-4 max-w-2xl text-gray-600">
             Weekly buyer tips, comparison shortcuts, and practical riding upgrades with zero fluff.
           </p>
-          <form className="mx-auto mt-8 max-w-xl">
+          <div className="mx-auto mt-8 max-w-xl">
             <label htmlFor="bottom-email" className="mb-2 block text-left text-xs font-bold uppercase tracking-[0.14em] text-gray-600">
               Subscribe For New Guides
             </label>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                id="bottom-email"
-                type="email"
-                placeholder="your@email.com"
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-black placeholder:text-gray-400 focus:border-[#CC0000] focus:outline-none"
-                required
-              />
-              <button
-                type="submit"
-                className="rounded-xl bg-black px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-[#CC0000]"
-              >
-                Subscribe
-              </button>
-            </div>
-          </form>
+            <NewsletterSignupForm
+              source="homepage-footer"
+              inputId="bottom-email"
+              inputPlaceholder="your@email.com"
+              buttonText="Subscribe"
+              rowClassName="flex flex-col gap-3 sm:flex-row"
+              inputClassName="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-black placeholder:text-gray-400 focus:border-[#CC0000] focus:outline-none"
+              buttonClassName="rounded-xl bg-black px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-[#CC0000]"
+            />
+          </div>
         </div>
       </section>
     </main>

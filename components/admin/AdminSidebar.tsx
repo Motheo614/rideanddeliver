@@ -13,7 +13,8 @@ import {
   Settings, 
   LogOut,
   Package,
-  BarChart3
+  BarChart3,
+  Mail
 } from 'lucide-react';
 
 const navItems = [
@@ -22,6 +23,7 @@ const navItems = [
   { label: 'Products', href: '/admin/products', icon: Package },
   { label: 'Affiliate Links', href: '/admin/affiliate-links', icon: LinkIcon },
   { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { label: 'Subscribers', href: '/admin/subscribers', icon: Mail },
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
@@ -81,7 +83,7 @@ export default function AdminSidebar() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white truncate">Admin User</p>
-              <p className="text-xs text-gray-400 truncate">admin@ridersection.com</p>
+              <p className="text-xs text-gray-400 truncate">info@ridercomplex.com</p>
             </div>
           </div>
         </div>
