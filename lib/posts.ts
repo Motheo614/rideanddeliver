@@ -1,8 +1,32 @@
 import { Post } from './types';
 import { getCategoryInfoByUrlSlug } from './categoryMap';
 
-// Base API URL - use environment variable or empty string for relative URLs
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.APP_URL || '';
+function getApiBase() {
+  // Browser requests can use relative URLs directly.
+  if (typeof window !== 'undefined') {
+    return '';
+  }
+
+  // Prefer explicit override when provided.
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // On Vercel, VERCEL_URL is the safest runtime host.
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  // In local dev, PORT reflects the actual running Next.js port.
+  if (process.env.PORT) {
+    return `http://localhost:${process.env.PORT}`;
+  }
+
+  // Fallbacks for environments where URL is explicitly configured.
+  return process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
+}
+
+const API_BASE = getApiBase();
 
 /**
  * Fetch options with ISR revalidation (30 seconds)
