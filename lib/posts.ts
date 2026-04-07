@@ -1,15 +1,21 @@
 import { Post } from './types';
 import { getCategoryInfoByUrlSlug } from './categoryMap';
 
+function isLocalhostUrl(url: string) {
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(url);
+}
+
 function getApiBase() {
-  // Browser requests can use relative URLs directly.
+  const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  // Browser can use relative URLs unless explicitly configured.
   if (typeof window !== 'undefined') {
-    return '';
+    return publicApiUrl || '';
   }
 
-  // Prefer explicit override when provided.
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
+  // In production server contexts, ignore localhost-style URLs.
+  if (publicApiUrl && !(process.env.NODE_ENV === 'production' && isLocalhostUrl(publicApiUrl))) {
+    return publicApiUrl;
   }
 
   // On Vercel, VERCEL_URL is the safest runtime host.
@@ -17,13 +23,24 @@ function getApiBase() {
     return `https://${process.env.VERCEL_URL}`;
   }
 
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+
+  if (process.env.APP_URL) {
+    return process.env.APP_URL;
+  }
+
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+
   // In local dev, PORT reflects the actual running Next.js port.
   if (process.env.PORT) {
     return `http://localhost:${process.env.PORT}`;
   }
 
-  // Fallbacks for environments where URL is explicitly configured.
-  return process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
+  return 'http://localhost:3000';
 }
 
 const API_BASE = getApiBase();
