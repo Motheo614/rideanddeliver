@@ -71,15 +71,15 @@ export default function AdminSubscribersPage() {
   return (
     <>
       <AdminTopBar />
-      <main className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <main className="p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
           <div className="flex items-center gap-3">
-            <Mail className="text-[#CC0000]" size={34} />
-            <h1 className="text-4xl font-black text-[#1a1a1a]">Subscribers</h1>
+            <Mail className="text-[#CC0000]" size={28} />
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a]">Subscribers</h1>
           </div>
           <button
             onClick={handleExportCsv}
-            className="inline-flex items-center gap-2 bg-black text-white px-5 py-3 rounded-lg font-bold hover:bg-[#CC0000] transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-lg font-bold hover:bg-[#CC0000] transition-colors"
           >
             <Download size={18} />
             Export CSV
@@ -174,3 +174,4 @@ export default function AdminSubscribersPage() {
     </>
   );
 }
+

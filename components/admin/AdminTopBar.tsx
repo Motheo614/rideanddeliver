@@ -323,7 +323,8 @@ export default function AdminTopBar() {
   }, [showNotifications]);
 
   return (
-    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-40">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-40 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex-1 max-w-2xl relative" ref={searchRef}>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -508,7 +509,7 @@ export default function AdminTopBar() {
         )}
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center justify-between gap-4 md:justify-end md:gap-6">
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
@@ -524,7 +525,7 @@ export default function AdminTopBar() {
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm md:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50">
               {/* Header */}
               <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50">
                 <div>
@@ -601,13 +602,13 @@ export default function AdminTopBar() {
           )}
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center">
             <span className="text-[#CC0000] text-xl font-bold">
               {getUserInitial(session?.user?.name)}
             </span>
           </div>
-          <div className="flex flex-col">
+          <div className="hidden sm:flex flex-col min-w-0">
             <p className="text-[#1a1a1a] font-semibold text-sm leading-tight">
               {session?.user?.name || 'Admin User'}
             </p>
@@ -616,6 +617,7 @@ export default function AdminTopBar() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </header>
   );

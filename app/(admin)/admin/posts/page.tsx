@@ -134,11 +134,11 @@ export default function PostsPage() {
     <>
       <AdminTopBar />
 
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-[#1a1a1a] mb-2">Blog Posts</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a] mb-2">Blog Posts</h1>
             <p className="text-gray-400 font-medium">
               Manage your blog content and articles
             </p>
@@ -390,3 +390,4 @@ export default function PostsPage() {
     </>
   );
 }
+

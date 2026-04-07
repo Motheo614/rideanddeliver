@@ -283,19 +283,19 @@ export default function AdminAffiliatePage() {
     <>
       <AdminTopBar />
       
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-[#1a1a1a] mb-2">Affiliate Links</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a] mb-2">Affiliate Links</h1>
             <p className="text-gray-400 font-medium">Manage your affiliate products and track performance</p>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex w-full sm:w-auto flex-col sm:flex-row gap-3">
             <button
               onClick={exportToCSV}
               disabled={!filteredProducts.length}
-              className="bg-white border border-gray-200 px-4 py-3 rounded-xl flex items-center gap-2 text-sm font-bold text-[#1a1a1a] hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto bg-white border border-gray-200 px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-[#1a1a1a] hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download size={18} />
               Export CSV
@@ -303,7 +303,7 @@ export default function AdminAffiliatePage() {
             
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-[#CC0000] text-white px-6 py-3 rounded-xl flex items-center gap-2 text-sm font-bold hover:bg-[#aa0000] transition-colors shadow-sm"
+              className="w-full sm:w-auto bg-[#CC0000] text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold hover:bg-[#aa0000] transition-colors shadow-sm"
             >
               <Plus size={18} />
               Add Product
@@ -477,7 +477,7 @@ export default function AdminAffiliatePage() {
                           <div>
                             <p className="text-sm font-bold text-[#1a1a1a]">{product.productName}</p>
                             {product.rating && (
-                              <p className="text-xs text-gray-500">⭐ {product.rating.toFixed(1)}</p>
+                              <p className="text-xs text-gray-500">â­ {product.rating.toFixed(1)}</p>
                             )}
                           </div>
                         </div>
@@ -870,3 +870,4 @@ export default function AdminAffiliatePage() {
     </>
   );
 }
+

@@ -68,7 +68,7 @@ export default function EditPostPage() {
     return (
       <>
         <AdminTopBar />
-        <main className="p-8">
+        <main className="p-4 sm:p-6 lg:p-8">
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="inline-block w-8 h-8 border-4 border-[#CC0000] border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -84,7 +84,7 @@ export default function EditPostPage() {
     return (
       <>
         <AdminTopBar />
-        <main className="p-8">
+        <main className="p-4 sm:p-6 lg:p-8">
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">{error || 'Post not found'}</p>
             <Link
@@ -103,7 +103,7 @@ export default function EditPostPage() {
     <>
       <AdminTopBar />
       
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
           <Link 
             href="/admin/posts" 
@@ -112,7 +112,7 @@ export default function EditPostPage() {
             <ArrowLeft size={18} />
             Back to Posts
           </Link>
-          <h1 className="text-4xl font-black text-[#1a1a1a]">Edit Post</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a]">Edit Post</h1>
         </div>
 
         <PostEditor post={post} mode="edit" />

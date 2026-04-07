@@ -311,13 +311,13 @@ export default function ProductsPage() {
     <>
       <AdminTopBar />
 
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-black text-[#1a1a1a]">Affiliate Products</h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a]">Affiliate Products</h1>
           <button
             onClick={openAddModal}
-            className="bg-[#CC0000] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#AA0000] transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto bg-[#CC0000] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#AA0000] transition-colors flex items-center justify-center gap-2"
           >
             <Plus size={20} />
             Add Product
@@ -325,8 +325,8 @@ export default function ProductsPage() {
         </div>
 
         {/* Filter Bar */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex gap-4">
-          <div className="flex-1">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 min-w-0">
             <input
               type="text"
               value={searchQuery}
@@ -338,7 +338,7 @@ export default function ProductsPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] min-w-[200px]"
+            className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] sm:min-w-[200px]"
           >
             <option value="all">All Categories</option>
             {categoryOptions.map(cat => (
@@ -755,3 +755,4 @@ export default function ProductsPage() {
     </>
   );
 }
+

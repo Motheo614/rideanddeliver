@@ -9,7 +9,7 @@ export default function NewPostPage() {
     <>
       <AdminTopBar />
       
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
           <Link 
             href="/admin/posts" 
@@ -18,7 +18,7 @@ export default function NewPostPage() {
             <ArrowLeft size={18} />
             Back to Posts
           </Link>
-          <h1 className="text-4xl font-black text-[#1a1a1a]">Create New Post</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a]">Create New Post</h1>
         </div>
 
         <PostEditor mode="create" />
@@ -26,3 +26,4 @@ export default function NewPostPage() {
     </>
   );
 }
+

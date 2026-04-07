@@ -134,15 +134,15 @@ export default function AdminUsersPage() {
   return (
     <>
       <AdminTopBar />
-      <main className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <main className="p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
           <div className="flex items-center gap-3">
-            <Users className="text-[#CC0000]" size={36} />
-            <h1 className="text-4xl font-black text-[#1a1a1a]">Users</h1>
+            <Users className="text-[#CC0000]" size={30} />
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a]">Users</h1>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-[#CC0000] text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#CC0000] text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700 transition-colors"
           >
             <UserPlus size={20} />
             Add User
@@ -434,7 +434,7 @@ export default function AdminUsersPage() {
               Email: {selectedUser.email}
             </p>
             <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg mb-6">
-              ⚠️ This action cannot be undone. All user data will be permanently deleted.
+              âš ï¸ This action cannot be undone. All user data will be permanently deleted.
             </p>
 
             <div className="flex gap-3">
@@ -461,3 +461,4 @@ export default function AdminUsersPage() {
     </>
   );
 }
+

@@ -152,10 +152,10 @@ export default function AdminDashboard() {
     <>
       <AdminTopBar />
       
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-[#1a1a1a] mb-2">Dashboard</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a] mb-2">Dashboard</h1>
             <p className="text-gray-400 font-medium">Welcome back, Admin. Here&apos;s what&apos;s happening with your site today.</p>
           </div>
 
@@ -441,7 +441,7 @@ export default function AdminDashboard() {
                             {product.productName}
                           </h4>
                           <p className="text-xs text-gray-500 mt-1">
-                            {product.category} • {product.price || 'N/A'}
+                            {product.category} â€¢ {product.price || 'N/A'}
                           </p>
                           <div className="flex items-center gap-3 mt-2">
                             <span className="flex items-center gap-1 text-xs text-gray-600">
@@ -474,3 +474,4 @@ export default function AdminDashboard() {
     </>
   );
 }
+

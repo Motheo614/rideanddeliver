@@ -36,7 +36,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-black border-r border-gray-800 flex flex-col h-screen sticky top-0">
+    <aside className="w-64 bg-black border-r border-gray-800 flex flex-col h-[100svh] sticky top-0">
       {/* Logo */}
       <div className="p-6 border-b border-gray-800">
         <Link href="/" className="flex items-center justify-center">
@@ -51,7 +51,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
