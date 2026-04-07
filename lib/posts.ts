@@ -26,6 +26,15 @@ function getApiBase() {
     return publicApiUrl;
   }
 
+  // Prefer explicit canonical site URLs before Vercel deployment hostnames.
+  if (appUrl && !(isProduction && isLocalhostUrl(appUrl))) {
+    return appUrl;
+  }
+
+  if (nextAuthUrl && !(isProduction && isLocalhostUrl(nextAuthUrl))) {
+    return nextAuthUrl;
+  }
+
   // On Vercel, VERCEL_URL is the safest runtime host.
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
@@ -33,14 +42,6 @@ function getApiBase() {
 
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-
-  if (appUrl && !(isProduction && isLocalhostUrl(appUrl))) {
-    return appUrl;
-  }
-
-  if (nextAuthUrl && !(isProduction && isLocalhostUrl(nextAuthUrl))) {
-    return nextAuthUrl;
   }
 
   return 'http://localhost:3000';
