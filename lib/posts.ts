@@ -7,14 +7,22 @@ function isLocalhostUrl(url: string) {
 
 function getApiBase() {
   const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const appUrl = process.env.APP_URL;
+  const nextAuthUrl = process.env.NEXTAUTH_URL;
+  const isProduction = process.env.NODE_ENV === 'production';
 
   // Browser can use relative URLs unless explicitly configured.
   if (typeof window !== 'undefined') {
     return publicApiUrl || '';
   }
 
+  // In local dev, always prefer the active runtime port when available.
+  if (!isProduction && process.env.PORT) {
+    return `http://localhost:${process.env.PORT}`;
+  }
+
   // In production server contexts, ignore localhost-style URLs.
-  if (publicApiUrl && !(process.env.NODE_ENV === 'production' && isLocalhostUrl(publicApiUrl))) {
+  if (publicApiUrl && !(isProduction && isLocalhostUrl(publicApiUrl))) {
     return publicApiUrl;
   }
 
@@ -27,17 +35,12 @@ function getApiBase() {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   }
 
-  if (process.env.APP_URL) {
-    return process.env.APP_URL;
+  if (appUrl && !(isProduction && isLocalhostUrl(appUrl))) {
+    return appUrl;
   }
 
-  if (process.env.NEXTAUTH_URL) {
-    return process.env.NEXTAUTH_URL;
-  }
-
-  // In local dev, PORT reflects the actual running Next.js port.
-  if (process.env.PORT) {
-    return `http://localhost:${process.env.PORT}`;
+  if (nextAuthUrl && !(isProduction && isLocalhostUrl(nextAuthUrl))) {
+    return nextAuthUrl;
   }
 
   return 'http://localhost:3000';
