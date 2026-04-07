@@ -7,6 +7,7 @@ function isLocalhostUrl(url: string) {
 
 function getApiBase() {
   const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const appUrl = process.env.APP_URL;
   const nextAuthUrl = process.env.NEXTAUTH_URL;
   const isProduction = process.env.NODE_ENV === 'production';
@@ -26,6 +27,10 @@ function getApiBase() {
     return publicApiUrl;
   }
 
+  if (siteUrl && !(isProduction && isLocalhostUrl(siteUrl))) {
+    return siteUrl;
+  }
+
   // Prefer explicit canonical site URLs before Vercel deployment hostnames.
   if (appUrl && !(isProduction && isLocalhostUrl(appUrl))) {
     return appUrl;
@@ -35,13 +40,16 @@ function getApiBase() {
     return nextAuthUrl;
   }
 
-  // On Vercel, VERCEL_URL is the safest runtime host.
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
 
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  if (isProduction) {
+    return 'https://www.ridercomplex.com';
   }
 
   return 'http://localhost:3000';
