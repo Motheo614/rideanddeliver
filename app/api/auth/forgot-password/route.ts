@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     user.passwordResetExpires = expiresAt;
     await user.save();
 
-    const baseUrl = request.nextUrl.origin || process.env.APP_URL || process.env.NEXTAUTH_URL;
+    const baseUrl = request.nextUrl.origin || process.env.APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?token=${rawToken}`;
 
     if (!isSendGridConfigured()) {
