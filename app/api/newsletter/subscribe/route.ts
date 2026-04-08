@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import connectDB from '@/lib/db/mongoose';
 import Subscriber from '@/lib/db/models/Subscriber';
 import {
   isSendGridConfigured,
   sendNewsletterLeadNotification,
+  sendNewsletterVerificationEmail,
   sendNewsletterWelcomeEmail,
 } from '@/lib/email/sendgrid';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+
+function getSiteUrl() {
+  const rawUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  return rawUrl.replace(/\/$/, '');
+}
+
+function createVerificationToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function hashVerificationToken(token: string) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
 
 /**
  * POST /api/newsletter/subscribe
@@ -37,65 +53,93 @@ export async function POST(request: NextRequest) {
     const existing = await Subscriber.findOne({ email: normalizedEmail });
     const canSendEmail = isSendGridConfigured();
     const normalizedSource = typeof source === 'string' && source.trim() ? source.trim() : 'website';
+    const token = createVerificationToken();
+    const tokenHash = hashVerificationToken(token);
+    const tokenExpiresAt = new Date(Date.now() + VERIFY_TOKEN_TTL_MS);
+    const verifyUrl = `${getSiteUrl()}/api/newsletter/verify?email=${encodeURIComponent(normalizedEmail)}&token=${token}`;
+
+    if (!canSendEmail) {
+      return NextResponse.json(
+        { error: 'Email delivery is not configured. Please contact support.' },
+        { status: 503 }
+      );
+    }
 
     if (existing) {
-      if (existing.status === 'active') {
-        if (canSendEmail) {
-          try {
-            await sendNewsletterWelcomeEmail(normalizedEmail);
-          } catch (emailError) {
-            console.error('Newsletter welcome email error:', emailError);
-          }
+      const isLegacyOrVerified = existing.isVerified !== false;
+
+      if (existing.status === 'active' && isLegacyOrVerified) {
+        try {
+          await sendNewsletterWelcomeEmail(normalizedEmail);
+        } catch (emailError) {
+          console.error('Newsletter welcome email error:', emailError);
         }
 
         return NextResponse.json({
           success: true,
-          message: canSendEmail
-            ? 'You are already subscribed. We sent a confirmation email.'
-            : 'You are already subscribed.',
+          message: 'You are already subscribed. We sent a confirmation email.',
         });
       }
 
-      existing.status = 'active';
-      existing.source = normalizedSource;
-      existing.subscribedAt = new Date();
-      existing.unsubscribedAt = undefined;
-      await existing.save();
+      if (existing.status === 'unsubscribed' && isLegacyOrVerified) {
+        existing.status = 'active';
+        existing.isVerified = true;
+        existing.source = normalizedSource;
+        existing.subscribedAt = new Date();
+        existing.unsubscribedAt = undefined;
+        await existing.save();
 
-      if (canSendEmail) {
         try {
           await sendNewsletterLeadNotification(normalizedEmail, normalizedSource, existing.subscribedAt);
           await sendNewsletterWelcomeEmail(normalizedEmail);
         } catch (emailError) {
           console.error('Newsletter welcome email error:', emailError);
         }
+
+        return NextResponse.json({
+          success: true,
+          message: 'Welcome back. You are subscribed again.',
+        });
+      }
+
+      existing.status = 'pending';
+      existing.isVerified = false;
+      existing.source = normalizedSource;
+      existing.verificationTokenHash = tokenHash;
+      existing.verificationTokenExpiresAt = tokenExpiresAt;
+      await existing.save();
+
+      try {
+        await sendNewsletterVerificationEmail(normalizedEmail, verifyUrl);
+      } catch (emailError) {
+        console.error('Newsletter verification email error:', emailError);
       }
 
       return NextResponse.json({
         success: true,
-        message: 'Welcome back. You are subscribed again.',
+        message: 'Please check your email and verify your subscription.',
       });
     }
 
     await Subscriber.create({
       email: normalizedEmail,
       source: normalizedSource,
-      status: 'active',
+      status: 'pending',
+      isVerified: false,
+      verificationTokenHash: tokenHash,
+      verificationTokenExpiresAt: tokenExpiresAt,
       subscribedAt: new Date(),
     });
 
-    if (canSendEmail) {
-      try {
-        await sendNewsletterLeadNotification(normalizedEmail, normalizedSource, new Date());
-        await sendNewsletterWelcomeEmail(normalizedEmail);
-      } catch (emailError) {
-        console.error('Newsletter welcome email error:', emailError);
-      }
+    try {
+      await sendNewsletterVerificationEmail(normalizedEmail, verifyUrl);
+    } catch (emailError) {
+      console.error('Newsletter verification email error:', emailError);
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Thanks for subscribing.',
+      message: 'Check your inbox and click verify to complete your subscription.',
     });
   } catch (error) {
     console.error('Newsletter subscribe error:', error);

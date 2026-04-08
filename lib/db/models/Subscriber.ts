@@ -2,8 +2,12 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ISubscriber extends Document {
   email: string;
-  status: 'active' | 'unsubscribed';
+  status: 'pending' | 'active' | 'unsubscribed';
   source: string;
+  isVerified: boolean;
+  verificationTokenHash?: string;
+  verificationTokenExpiresAt?: Date;
+  verifiedAt?: Date;
   subscribedAt: Date;
   unsubscribedAt?: Date;
   createdAt: Date;
@@ -21,13 +25,27 @@ const SubscriberSchema = new Schema<ISubscriber>(
     },
     status: {
       type: String,
-      enum: ['active', 'unsubscribed'],
-      default: 'active',
+      enum: ['pending', 'active', 'unsubscribed'],
+      default: 'pending',
     },
     source: {
       type: String,
       default: 'website',
       trim: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationTokenHash: {
+      type: String,
+      trim: true,
+    },
+    verificationTokenExpiresAt: {
+      type: Date,
+    },
+    verifiedAt: {
+      type: Date,
     },
     subscribedAt: {
       type: Date,

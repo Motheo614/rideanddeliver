@@ -1,6 +1,33 @@
 import sgMail from '@sendgrid/mail';
 import sendgridClient from '@sendgrid/client';
 
+function getSiteUrl() {
+  const rawUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  return rawUrl.replace(/\/$/, '');
+}
+
+function buildEmailShell(content: string) {
+  const siteUrl = getSiteUrl();
+  const year = new Date().getFullYear();
+
+  return `
+    <div style="margin:0; background:#f4f4f5; padding:24px 12px; font-family:Arial,sans-serif; color:#1a1a1a;">
+      <div style="max-width:680px; margin:0 auto; background:#ffffff; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden;">
+        <div style="padding:24px; text-align:center; border-bottom:1px solid #e5e7eb; background:#ffffff;">
+          <img src="${siteUrl}/Assets/Logo.png" alt="GearJunkie" width="220" style="max-width:100%; height:auto;" />
+        </div>
+        <div style="padding:28px 24px; text-align:center;">
+          ${content}
+        </div>
+        <div style="padding:18px 24px; border-top:1px solid #e5e7eb; background:#fafafa; text-align:center; font-size:13px; color:#6b7280;">
+          <p style="margin:0;">GearJunkie Newsletter</p>
+          <p style="margin:8px 0 0;">&copy;${year} GearJunkie</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export function isSendGridConfigured() {
   return Boolean(process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL);
 }
@@ -54,15 +81,32 @@ export async function sendNewsletterWelcomeEmail(email: string) {
   await sgMail.send({
     to: email,
     from: fromEmail,
-    subject: 'You are subscribed to Rider Complex',
-    text: `Thanks for subscribing to Rider Complex updates. You will receive practical rider guides, gear picks, and updates in your inbox.`,
-    html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1a1a1a;">
-        <h2>Subscription confirmed</h2>
-        <p>Thanks for subscribing to <strong>Rider Complex</strong>.</p>
-        <p>You will receive practical rider guides, gear picks, and updates in your inbox.</p>
-      </div>
-    `,
+    subject: 'Subscription confirmed - GearJunkie',
+    text: `Your GearJunkie subscription is confirmed. You will receive practical rider guides, gear picks, and updates in your inbox.`,
+    html: buildEmailShell(`
+      <h1 style="margin:0; font-size:38px; line-height:1.2; font-family:Georgia,serif; color:#111827;">Subscription confirmed</h1>
+      <p style="margin:18px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">Thanks for subscribing to GearJunkie.</p>
+      <p style="margin:10px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">You will receive practical rider guides, gear picks, and updates in your inbox.</p>
+    `),
+  });
+}
+
+export async function sendNewsletterVerificationEmail(email: string, verifyUrl: string) {
+  const { fromEmail } = configureSendGridClient();
+
+  await sgMail.send({
+    to: email,
+    from: fromEmail,
+    subject: 'Verify your GearJunkie subscription',
+    text: `Please verify your email to complete your GearJunkie subscription: ${verifyUrl}`,
+    html: buildEmailShell(`
+      <h1 style="margin:0; font-size:56px; line-height:1.1; font-family:Georgia,serif; color:#111827;">Confirm your email</h1>
+      <p style="margin:18px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">Verify your email address to finish subscribing and continue reading.</p>
+      <a href="${verifyUrl}" style="display:inline-block; margin-top:24px; background:#1f6f43; color:#ffffff; text-decoration:none; padding:16px 28px; border-radius:8px; font-size:34px; line-height:1; font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif; letter-spacing:1px; text-transform:uppercase;">
+        Verify Email
+      </a>
+      <p style="margin:18px 0 0; font-size:14px; color:#6b7280;">This verification link expires in 24 hours.</p>
+    `),
   });
 }
 

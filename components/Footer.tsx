@@ -1,7 +1,46 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Twitter, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Facebook, Linkedin } from 'lucide-react';
+
+function XIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.26l-4.9-6.4L6.5 22H3.4l7.24-8.28L1 2h6.42l4.43 5.85L18.9 2Zm-1.1 18h1.73L6.48 3.9H4.6L17.8 20Z" />
+    </svg>
+  );
+}
+
+function RedditIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="9" cy="12" r="1" />
+      <circle cx="15" cy="12" r="1" />
+      <path d="M8.5 15c1 .8 2.2 1.2 3.5 1.2 1.3 0 2.5-.4 3.5-1.2" />
+      <path d="M14.8 6.3 16.5 8" />
+      <circle cx="17.5" cy="6.5" r="1" />
+    </svg>
+  );
+}
 
 export default function Footer() {
   return (
@@ -20,9 +59,9 @@ export default function Footer() {
           </Link>
 
           <div className="flex items-center gap-6">
-            <Link href="#" className="hover:text-[#CC0000] transition-colors"><Twitter size={20} /></Link>
+            <Link href="#" className="hover:text-[#CC0000] transition-colors"><XIcon size={20} /></Link>
             <Link href="#" className="hover:text-[#CC0000] transition-colors"><Facebook size={20} /></Link>
-            <Link href="#" className="hover:text-[#CC0000] transition-colors"><Instagram size={20} /></Link>
+            <Link href="#" className="hover:text-[#CC0000] transition-colors"><RedditIcon size={20} /></Link>
             <Link href="#" className="hover:text-[#CC0000] transition-colors"><Linkedin size={20} /></Link>
           </div>
         </div>
