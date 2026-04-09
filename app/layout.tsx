@@ -16,6 +16,11 @@ export const metadata: Metadata = {
     template: '%s | Rider Complex',
   },
   description: 'The ultimate gear review and buying guide site for bike delivery riders. Uber Eats, DoorDash, and more.',
+  icons: {
+    icon: [{ url: '/Assets/Favicon.png', type: 'image/png' }],
+    shortcut: '/Assets/Favicon.png',
+    apple: '/Assets/Favicon.png',
+  },
   metadataBase: new URL(process.env.APP_URL || 'http://localhost:3000'),
   alternates: {
     canonical: '/',
