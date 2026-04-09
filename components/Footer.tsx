@@ -69,7 +69,7 @@ export default function Footer() {
               alt="Rider Complex Logo"
               width={360}
               height={79}
-              className="h-20 w-auto"
+              className="h-28 w-auto"
             />
           </Link>
 

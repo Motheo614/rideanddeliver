@@ -54,12 +54,12 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         {/* Logo & Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
+          <Link href="/" className="inline-block mt-2 mb-6">
             <Image
               src="/Assets/Logo.png"
               alt="Rider Complex Logo"
-              width={400}
-              height={120}
+              width={280}
+              height={84}
               className="object-contain"
             />
           </Link>

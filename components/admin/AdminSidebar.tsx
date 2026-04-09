@@ -44,8 +44,8 @@ export default function AdminSidebar() {
             src="/Assets/LogoBlack.png"
             alt="Rider Complex Logo"
             width={180}
-            height={50}
-            className="object-contain"
+            height={32}
+            className="h-7 w-auto object-contain xl:h-8 2xl:h-9"
           />
         </Link>
       </div>
