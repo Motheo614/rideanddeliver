@@ -5,7 +5,7 @@ import { buildPageMetadata } from '@/lib/seo/metadata';
 export const metadata: Metadata = buildPageMetadata({
   title: 'Admin Dashboard',
   description: 'Internal Rider Complex admin dashboard.',
-  path: '/admin/',
+  path: '/admin',
   noIndex: true,
 });
 

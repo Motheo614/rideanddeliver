@@ -7,6 +7,8 @@ interface AffiliateBoxProps {
 }
 
 export default function AffiliateBox({ name, price, url }: AffiliateBoxProps) {
+  const isExternal = /^https?:\/\//i.test(url);
+
   return (
     <div className="my-12 p-8 bg-gray-50 border border-gray-200 rounded-2xl">
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -17,8 +19,8 @@ export default function AffiliateBox({ name, price, url }: AffiliateBoxProps) {
         
         <a
           href={url}
-          target="_blank"
-          rel="noopener noreferrer nofollow"
+          target={isExternal ? '_blank' : undefined}
+          rel={isExternal ? 'noopener noreferrer nofollow sponsored' : undefined}
           className="bg-[#CC0000] text-white px-8 py-4 rounded-lg font-bold uppercase tracking-wider hover:bg-red-700 transition-all shadow-lg shadow-red-900/20 text-center whitespace-nowrap"
         >
           Check Price on Amazon →

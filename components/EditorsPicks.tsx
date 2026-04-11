@@ -31,7 +31,7 @@ export default async function EditorsPicks() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Main Large Card */}
           {mainPick && (
-            <Link href={`/${mainPick.dbCategorySlug}/${mainPick.slug}/`} className="group relative h-[400px] lg:h-full min-h-[400px] rounded-2xl overflow-hidden">
+            <Link href={`/${mainPick.dbCategorySlug}/${mainPick.slug}`} className="group relative h-[400px] lg:h-full min-h-[400px] rounded-2xl overflow-hidden">
               {mainPick.featuredImage && (typeof mainPick.featuredImage === 'string' ? mainPick.featuredImage : (mainPick.featuredImage as any).url) ? (
                 <Image
                   src={typeof mainPick.featuredImage === 'string' ? mainPick.featuredImage : (mainPick.featuredImage as any).url}
@@ -61,7 +61,7 @@ export default async function EditorsPicks() {
           {/* Grid of Smaller Cards */}
           <div className="grid grid-cols-2 gap-6">
             {otherPicks.map((post) => (
-              <Link key={post.slug} href={`/${post.dbCategorySlug}/${post.slug}/`} className="group flex flex-col">
+              <Link key={post.slug} href={`/${post.dbCategorySlug}/${post.slug}`} className="group flex flex-col">
                 <div className="relative aspect-video rounded-xl overflow-hidden mb-3">
                   {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
                     <Image

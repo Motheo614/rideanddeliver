@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildPageMetadata({
     title: `${categoryName} Guides for Delivery Riders`,
     description: `Explore ${categoryName} recommendations, comparisons, and buyer-focused reviews for US gig riders.`,
-    path: `/category/${category}/`,
+    path: `/category/${category}`,
     image: '/Assets/Logo.png',
     keywords: ['delivery rider guides', `${categoryName} gear`, 'gig rider buying guide'],
   });
@@ -41,7 +41,7 @@ export default async function CategoryPage({ params }: Props) {
   }
 
   const categoryName = categoryPosts[0]?.category || 'Category';
-  const categoryPath = `/category/${categorySlug}/`;
+  const categoryPath = `/category/${categorySlug}`;
 
   const categorySchemas = [
     buildCollectionPageSchema(
@@ -56,7 +56,7 @@ export default async function CategoryPage({ params }: Props) {
     buildItemListSchema(
       categoryPosts.map((post) => ({
         name: post.title,
-        url: `/${post.dbCategorySlug || post.categorySlug}/${post.slug}/`,
+        url: `/${post.dbCategorySlug || post.categorySlug}/${post.slug}`,
       }))
     ),
   ];

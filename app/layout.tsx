@@ -21,10 +21,7 @@ export const metadata: Metadata = {
     shortcut: '/Assets/Favicon.png',
     apple: '/Assets/Favicon.png',
   },
-  metadataBase: new URL(process.env.APP_URL || 'http://localhost:3000'),
-  alternates: {
-    canonical: '/',
-  },
+  metadataBase: new URL('https://www.ridercomplex.com'),
   openGraph: {
     title: 'Rider Complex | Gear Up. Ride Smart. Earn More.',
     description: 'The ultimate gear review and buying guide site for bike delivery riders. Uber Eats, DoorDash, and more.',

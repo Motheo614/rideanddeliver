@@ -23,7 +23,7 @@ export default function NewsletterWidget() {
       />
       
       <p className="mt-4 text-[10px] text-gray-400 text-center">
-        We respect your privacy. <Link href="/privacy-policy/" className="text-[#CC0000] hover:underline">Privacy Policy</Link>
+        We respect your privacy. <Link href="/privacy-policy" className="text-[#CC0000] hover:underline">Privacy Policy</Link>
       </p>
     </div>
   );

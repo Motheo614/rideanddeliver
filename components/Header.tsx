@@ -7,11 +7,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Search, Menu, X } from 'lucide-react';
 
 const navLinks = [
-  { label: 'Safety Gear', href: '/bike-delivery-rider-gear/' },
-  { label: 'Tech & Lighting', href: '/bike-delivery-tech-and-visibility/' },
-  { label: 'Bike Security', href: '/bike-security-for-delivery-riders/' },
-  { label: 'Delivery Gear', href: '/delivery-rider-equipment/' },
-  { label: 'Platform Reviews', href: '/delivery-platform-reviews/' },
+  { label: 'Safety Gear', href: '/bike-delivery-rider-gear' },
+  { label: 'Tech & Lighting', href: '/bike-delivery-tech-and-visibility' },
+  { label: 'Bike Security', href: '/bike-security-for-delivery-riders' },
+  { label: 'Delivery Gear', href: '/delivery-rider-equipment' },
+  { label: 'Platform Reviews', href: '/delivery-platform-reviews' },
 ];
 
 interface SearchResult {
@@ -212,7 +212,7 @@ export default function Header() {
             </div>
 
             <Link
-              href="/start-here/"
+              href="/start-here"
               className="hidden md:block bg-[#CC0000] text-white px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider hover:bg-red-700 transition-colors shadow-lg shadow-red-900/20"
             >
               Start Here
@@ -244,7 +244,7 @@ export default function Header() {
               </Link>
             ))}
             <Link
-              href="/start-here/"
+              href="/start-here"
               className="bg-[#CC0000] text-white px-6 py-4 rounded-lg text-center font-bold uppercase tracking-wider mt-4"
               onClick={() => setIsMenuOpen(false)}
             >

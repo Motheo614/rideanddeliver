@@ -4,7 +4,7 @@ import { buildPageMetadata } from '@/lib/seo/metadata';
 export const metadata: Metadata = buildPageMetadata({
   title: 'Authentication Error',
   description: 'Authentication error page for Rider Complex admin access.',
-  path: '/auth-error/',
+  path: '/auth-error',
   noIndex: true,
 });
 

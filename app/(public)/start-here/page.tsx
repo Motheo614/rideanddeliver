@@ -7,7 +7,7 @@ import { buildPageMetadata } from '@/lib/seo/metadata';
 export const metadata = buildPageMetadata({
   title: 'Start Here: New Delivery Rider Guide',
   description: 'A practical start-here guide for US gig riders with essential gear categories, setup tips, and first-shift recommendations.',
-  path: '/start-here/',
+  path: '/start-here',
   keywords: ['new delivery rider guide', 'start delivery riding', 'gig rider setup'],
 });
 
@@ -15,11 +15,11 @@ export default async function StartHerePage() {
   const allPosts = await getPosts({ status: 'published' });
   const importantPosts = allPosts.slice(0, 8);
   const hubs = [
-    { label: 'Safety Gear', href: '/bike-delivery-rider-gear/', desc: 'Helmets, clothing, and safety tips.' },
-    { label: 'Tech & Lighting', href: '/bike-delivery-tech-and-visibility/', desc: 'Dash cams, lights, and gadgets.' },
-    { label: 'Bike Security', href: '/bike-security-for-delivery-riders/', desc: 'Locks, trackers, and theft prevention.' },
-    { label: 'Delivery Gear', href: '/delivery-rider-equipment/', desc: 'Bags, racks, and equipment.' },
-    { label: 'Platform Reviews', href: '/delivery-platform-reviews/', desc: 'Earnings, apps, and platform guides.' },
+    { label: 'Safety Gear', href: '/bike-delivery-rider-gear', desc: 'Helmets, clothing, and safety tips.' },
+    { label: 'Tech & Lighting', href: '/bike-delivery-tech-and-visibility', desc: 'Dash cams, lights, and gadgets.' },
+    { label: 'Bike Security', href: '/bike-security-for-delivery-riders', desc: 'Locks, trackers, and theft prevention.' },
+    { label: 'Delivery Gear', href: '/delivery-rider-equipment', desc: 'Bags, racks, and equipment.' },
+    { label: 'Platform Reviews', href: '/delivery-platform-reviews', desc: 'Earnings, apps, and platform guides.' },
   ];
 
   return (
@@ -50,7 +50,7 @@ export default async function StartHerePage() {
           <h2 className="text-3xl font-black text-[#1a1a1a] mb-12 text-center">2. Essential Reading</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {importantPosts.map((post) => (
-              <Link key={post.slug} href={`/${post.dbCategorySlug}/${post.slug}/`} className="flex gap-6 group">
+              <Link key={post.slug} href={`/${post.dbCategorySlug}/${post.slug}`} className="flex gap-6 group">
                 <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden relative">
                   {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
                     <Image src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url} alt="" fill className="object-cover group-hover:scale-110 transition-transform" referrerPolicy="no-referrer" />

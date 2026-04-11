@@ -4,7 +4,7 @@ import { buildPageMetadata } from '@/lib/seo/metadata';
 export const metadata: Metadata = buildPageMetadata({
   title: 'Admin Login',
   description: 'Secure admin login for Rider Complex editorial team.',
-  path: '/login/',
+  path: '/login',
   noIndex: true,
 });
 

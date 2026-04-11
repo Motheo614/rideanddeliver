@@ -20,12 +20,12 @@ interface ArticleMetadataInput extends BaseMetadataInput {
   tags?: string[];
 }
 
-const FALLBACK_SITE_URL = 'http://localhost:3000';
+const PRIMARY_SITE_URL = 'https://www.ridercomplex.com';
 const SITE_NAME = 'Rider Complex';
 const DEFAULT_SOCIAL_IMAGE = '/Assets/Logo.png';
 
 function getSiteUrl() {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL || process.env.APP_URL || FALLBACK_SITE_URL;
+  const raw = process.env.NEXT_PUBLIC_SITE_URL || process.env.APP_URL || PRIMARY_SITE_URL;
   return raw.endsWith('/') ? raw.slice(0, -1) : raw;
 }
 
@@ -35,8 +35,16 @@ function toAbsoluteUrl(pathOrUrl: string) {
   return `${getSiteUrl()}${normalized}`;
 }
 
+function normalizePath(path: string) {
+  if (!path) return '/';
+  const withLeadingSlash = path.startsWith('/') ? path : `/${path}`;
+  if (withLeadingSlash === '/') return '/';
+  return withLeadingSlash.replace(/\/+$/, '');
+}
+
 export function buildPageMetadata(input: BaseMetadataInput): Metadata {
-  const absoluteUrl = toAbsoluteUrl(input.path);
+  const normalizedPath = normalizePath(input.path);
+  const absoluteUrl = toAbsoluteUrl(normalizedPath);
   const image = toAbsoluteUrl(input.image || DEFAULT_SOCIAL_IMAGE);
 
   return {
@@ -44,7 +52,7 @@ export function buildPageMetadata(input: BaseMetadataInput): Metadata {
     description: input.description,
     keywords: input.keywords,
     alternates: {
-      canonical: input.path,
+      canonical: absoluteUrl,
     },
     robots: input.noIndex
       ? {

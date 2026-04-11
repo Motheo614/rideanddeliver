@@ -30,7 +30,7 @@ export default function ArticleCard({
     : formatDate(post.publishedAt);
 
   return (
-    <Link href={`/${post.dbCategorySlug}/${post.slug}/`} className="group flex flex-col md:flex-row gap-6 mb-8 pb-8 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+    <Link href={`/${post.dbCategorySlug}/${post.slug}`} className="group flex flex-col md:flex-row gap-6 mb-8 pb-8 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
       <div className="w-full md:w-[60%] flex flex-col justify-center order-2 md:order-1">
         <div className="flex items-center gap-3 mb-3">
           <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 bg-gray-100 px-2 py-1 rounded">

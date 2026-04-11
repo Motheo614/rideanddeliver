@@ -39,7 +39,7 @@ export default async function HomePage() {
     buildItemListSchema(
       latestArticles.map((post) => ({
         name: post.title,
-        url: `/${post.dbCategorySlug || post.categorySlug}/${post.slug}/`,
+        url: `/${post.dbCategorySlug || post.categorySlug}/${post.slug}`,
       }))
     ),
   ];
@@ -50,7 +50,7 @@ export default async function HomePage() {
       {heroPost && (
         <section className="relative h-[70vh] min-h-[420px] w-full overflow-hidden md:h-[78vh] md:min-h-[560px]">
           <article className="group h-full w-full bg-black">
-            <Link href={`/${heroPost.dbCategorySlug}/${heroPost.slug}/`} className="relative block h-full w-full">
+            <Link href={`/${heroPost.dbCategorySlug}/${heroPost.slug}`} className="relative block h-full w-full">
               <div className="absolute inset-0">
                 {heroPost.featuredImage &&
                 (typeof heroPost.featuredImage === 'string'

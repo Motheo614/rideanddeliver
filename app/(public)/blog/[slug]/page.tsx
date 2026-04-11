@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: `${post.title} | Rider Complex`,
     description: post.excerpt,
-    path: `/blog/${slug}/`,
+    path: `/blog/${slug}`,
     image: featuredImageUrl,
     type: 'article',
     publishedTime: post.publishedAt,
@@ -76,7 +76,7 @@ export default async function BlogPostPage({ params }: Props) {
   const publishedIso = toIsoDate(post.publishedAt) || '1970-01-01T00:00:00.000Z';
   const updatedIso = toIsoDate((post as any).updatedAt || post.publishedAt) || publishedIso;
 
-  const articlePath = `/blog/${slug}/`;
+  const articlePath = `/${post.dbCategorySlug}/${slug}`;
   const articleSchemas: Array<Record<string, unknown>> = [
     buildBlogPostingSchema({
       url: articlePath,
@@ -90,7 +90,7 @@ export default async function BlogPostPage({ params }: Props) {
     }),
     buildBreadcrumbSchema([
       { name: 'Home', url: '/' },
-      { name: post.category, url: `/category/${post.categorySlug}/` },
+      { name: post.category, url: `/category/${post.categorySlug}` },
       { name: post.title, url: articlePath },
     ]),
   ];
@@ -136,7 +136,7 @@ export default async function BlogPostPage({ params }: Props) {
             <ChevronRight size={14} className="text-gray-400" />
             <li>
               <Link
-                href={`/category/${post.categorySlug}/`}
+                href={`/category/${post.categorySlug}`}
                 className="text-gray-500 hover:text-[#CC0000] transition-colors"
               >
                 {post.category}
@@ -310,7 +310,7 @@ export default async function BlogPostPage({ params }: Props) {
                 return (
                   <Link
                     key={p.slug}
-                    href={`/blog/${p.slug}/`}
+                    href={`/${p.dbCategorySlug}/${p.slug}`}
                     className="group flex flex-col bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-[#CC0000] hover:shadow-lg transition-all duration-300"
                   >
                     <div className="relative aspect-video overflow-hidden bg-gray-100">

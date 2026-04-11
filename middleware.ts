@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
           const data = await response.json();
           if (data.post && data.post.dbCategorySlug) {
             // Redirect to new category-based URL
-            const newUrl = new URL(`/${data.post.dbCategorySlug}/${slug}/`, request.url);
+            const newUrl = new URL(`/${data.post.dbCategorySlug}/${slug}`, request.url);
             return NextResponse.redirect(newUrl, 301); // Permanent redirect
           }
         }

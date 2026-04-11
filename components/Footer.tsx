@@ -87,11 +87,11 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-400">
           <p>© Copyright Rider Complex 2026 All Rights Reserved</p>
           <div className="flex flex-wrap justify-center gap-4 md:gap-8">
-            <Link href="/terms/" className="hover:text-[#CC0000] transition-colors">Terms of Service</Link>
-            <Link href="/privacy-policy/" className="hover:text-[#CC0000] transition-colors">Privacy Policy</Link>
-            <Link href="/affiliate-disclaimer/" className="hover:text-[#CC0000] transition-colors">Affiliate Disclaimer</Link>
-            <Link href="/about/" className="hover:text-[#CC0000] transition-colors">About</Link>
-            <Link href="/contact/" className="hover:text-[#CC0000] transition-colors">Contact</Link>
+            <Link href="/terms" className="hover:text-[#CC0000] transition-colors">Terms of Service</Link>
+            <Link href="/privacy-policy" className="hover:text-[#CC0000] transition-colors">Privacy Policy</Link>
+            <Link href="/affiliate-disclaimer" className="hover:text-[#CC0000] transition-colors">Affiliate Disclaimer</Link>
+            <Link href="/about" className="hover:text-[#CC0000] transition-colors">About</Link>
+            <Link href="/contact" className="hover:text-[#CC0000] transition-colors">Contact</Link>
           </div>
         </div>
       </div>
