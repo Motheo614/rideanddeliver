@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminTopBar from '@/components/admin/AdminTopBar';
+import Image from 'next/image';
 import { 
   ExternalLink, 
   Copy, 
@@ -468,9 +469,11 @@ export default function AdminAffiliatePage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {product.imageUrl && (
-                            <img 
+                            <Image 
                               src={product.imageUrl} 
                               alt={product.productName}
+                              width={48}
+                              height={48}
                               className="w-12 h-12 object-cover rounded-lg"
                             />
                           )}

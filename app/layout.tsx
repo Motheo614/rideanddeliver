@@ -16,6 +16,9 @@ export const metadata: Metadata = {
     template: '%s | Rider Complex',
   },
   description: 'The ultimate gear review and buying guide site for bike delivery riders. Uber Eats, DoorDash, and more.',
+  alternates: {
+    canonical: 'https://www.ridercomplex.com',
+  },
   icons: {
     icon: [{ url: '/Assets/Favicon.png', type: 'image/png' }],
     shortcut: '/Assets/Favicon.png',

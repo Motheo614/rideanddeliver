@@ -5,6 +5,7 @@ import { Search, Bell, X, Check, FileText, Package, Users, TrendingUp, MessageSq
 import { useSession } from 'next-auth/react';
 import { formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Notification {
   _id: string;
@@ -386,9 +387,11 @@ export default function AdminTopBar() {
                           }`}
                         >
                           {postImage ? (
-                            <img
+                            <Image
                               src={postImage}
                               alt={post.title}
+                              width={48}
+                              height={48}
                               className="w-12 h-12 rounded object-cover flex-shrink-0"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
@@ -436,9 +439,11 @@ export default function AdminTopBar() {
                           }`}
                         >
                           {product.productImage ? (
-                            <img
+                            <Image
                               src={product.productImage}
                               alt={product.productName}
+                              width={48}
+                              height={48}
                               className="w-12 h-12 rounded object-cover flex-shrink-0"
                             />
                           ) : (

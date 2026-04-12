@@ -53,7 +53,7 @@ export default async function StartHerePage() {
               <Link key={post.slug} href={`/${post.dbCategorySlug}/${post.slug}`} className="flex gap-6 group">
                 <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden relative">
                   {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
-                    <Image src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url} alt="" fill className="object-cover group-hover:scale-110 transition-transform" referrerPolicy="no-referrer" />
+                    <Image src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url} alt={post.title} fill className="object-cover group-hover:scale-110 transition-transform" referrerPolicy="no-referrer" />
                   ) : (
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                       <span className="text-gray-400 text-xs">No Image</span>

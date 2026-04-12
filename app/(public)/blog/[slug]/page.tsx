@@ -2,10 +2,10 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { Calendar, Clock, ArrowUp, Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
-import { formatDate } from '@/lib/utils';
+import { formatDate, stripHeadMetadataTags } from '@/lib/utils';
 import ComparisonTable from '@/components/ComparisonTable';
 import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import TableWrapper from '@/components/TableWrapper';
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: `${post.title} | Rider Complex`,
     description: post.excerpt,
-    path: `/blog/${slug}`,
+    path: `/${post.dbCategorySlug || post.categorySlug}/${slug}`,
     image: featuredImageUrl,
     type: 'article',
     publishedTime: post.publishedAt,
@@ -51,6 +51,9 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
+  const canonicalPath = `/${post.dbCategorySlug || post.categorySlug}/${slug}`;
+  permanentRedirect(canonicalPath);
+
   const categoryPosts = await getPostsByCategory(post.categorySlug);
   const relatedPosts = categoryPosts
     .filter(p => p.slug !== post.slug)
@@ -63,8 +66,7 @@ export default async function BlogPostPage({ params }: Props) {
   // Helper to safely render content
   const renderContent = () => {
     if (!post.content) return null;
-    // You can add any necessary content sanitization or transformation here
-    return post.content;
+    return stripHeadMetadataTags(post.content);
   };
 
   const toIsoDate = (value?: string | Date) => {

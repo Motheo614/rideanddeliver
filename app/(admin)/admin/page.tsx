@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AdminTopBar from '@/components/admin/AdminTopBar';
 import StatCard from '@/components/admin/StatCard';
 import AnalyticsChart from '@/components/admin/AnalyticsChart';
+import Image from 'next/image';
 import { 
   Calendar, 
   TrendingUp, 
@@ -364,9 +365,11 @@ export default function AdminDashboard() {
                         className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200"
                       >
                         {imageUrl && (
-                          <img
+                          <Image
                             src={imageUrl}
                             alt={post.title}
+                            width={64}
+                            height={64}
                             className="w-16 h-16 object-cover rounded-lg"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
@@ -430,9 +433,11 @@ export default function AdminDashboard() {
                         className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200"
                       >
                         {product.imageUrl && (
-                          <img
+                          <Image
                             src={product.imageUrl}
                             alt={product.productName}
+                            width={64}
+                            height={64}
                             className="w-16 h-16 object-cover rounded-lg"
                           />
                         )}

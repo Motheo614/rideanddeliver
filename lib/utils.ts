@@ -18,3 +18,13 @@ export function getAbsoluteUrl(path: string) {
   return `${baseUrl}${path}`;
 }
 
+export function stripHeadMetadataTags(html: string) {
+  if (!html) return '';
+
+  return html
+    .replace(/<head\b[^>]*>[\s\S]*?<\/head>/gi, '')
+    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '')
+    .replace(/<meta\b[^>]*>/gi, '')
+    .replace(/<link\b[^>]*\brel\s*=\s*(["'])?canonical\1[^>]*>/gi, '');
+}
+

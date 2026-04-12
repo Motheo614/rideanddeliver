@@ -65,7 +65,10 @@ export default async function CategoryPage({ params }: Props) {
     <main className="min-h-screen bg-white">
       <SeoJsonLd data={categorySchemas} />
       <div className="container mx-auto px-4 py-16">
-        <SectionHeading title={`Category: ${categoryName}`} />
+        <h1 className="text-4xl md:text-5xl font-black text-[#1a1a1a] mb-6 leading-tight">
+          {categoryName} Guides for Delivery Riders
+        </h1>
+        <SectionHeading title={`Latest in ${categoryName}`} />
         <div className="max-w-4xl">
           {categoryPosts.map((post) => (
             <ArticleCard key={post.slug} post={post} useAbsoluteUpperDate swapDateWithReadTime />

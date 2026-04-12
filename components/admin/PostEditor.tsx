@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { Save, Eye, Upload, X, ChevronDown, ChevronUp, Link2, Search, Move } from 'lucide-react';
 import { marked } from 'marked';
 import 'react-quill-new/dist/quill.snow.css';
@@ -1023,10 +1024,12 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
               
               {imageUrl && (
                 <div className="mb-3 relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                  <img
+                  <Image
                     src={imageUrl}
                     alt={imageAlt || 'Featured image preview'}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 480px"
+                    className="object-cover"
                     referrerPolicy="no-referrer"
                   />
                   <button

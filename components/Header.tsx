@@ -84,7 +84,7 @@ export default function Header() {
     setIsSearchOpen(false);
     setSearchQuery('');
     setSearchResults([]);
-    router.push(`/${post.dbCategorySlug}/${post.slug}/`);
+    router.push(`/${post.dbCategorySlug}/${post.slug}`);
   };
 
   return (

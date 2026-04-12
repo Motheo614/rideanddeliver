@@ -42,13 +42,24 @@ const cspReportTo = JSON.stringify({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  async headers() {
+  trailingSlash: false,
+  async redirects() {
     return [
       {
         source: '/:path*',
+        has: [{ type: 'host', value: 'ridercomplex.com' }],
+        destination: 'https://www.ridercomplex.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Content-Security-Policy', value: starterCsp },
           { key: 'Content-Security-Policy-Report-Only', value: cspReportOnly },
@@ -75,6 +86,7 @@ const nextConfig: NextConfig = {
   },
   // Allow access to remote image placeholder.
   images: {
+    formats: ['image/webp'],
     remotePatterns: [
       {
         protocol: 'https',

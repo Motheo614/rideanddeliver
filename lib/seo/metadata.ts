@@ -26,7 +26,18 @@ const DEFAULT_SOCIAL_IMAGE = '/Assets/Logo.png';
 
 function getSiteUrl() {
   const raw = process.env.NEXT_PUBLIC_SITE_URL || process.env.APP_URL || PRIMARY_SITE_URL;
-  return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+  const trimmed = raw.endsWith('/') ? raw.slice(0, -1) : raw;
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.hostname === 'ridercomplex.com' || parsed.hostname === 'www.ridercomplex.com') {
+      return PRIMARY_SITE_URL;
+    }
+  } catch {
+    return PRIMARY_SITE_URL;
+  }
+
+  return trimmed;
 }
 
 function toAbsoluteUrl(pathOrUrl: string) {

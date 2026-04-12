@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Calendar, Clock, Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
-import { formatDateAbsolute } from '@/lib/utils';
+import { formatDateAbsolute, stripHeadMetadataTags } from '@/lib/utils';
 import { CATEGORY_MAP } from '@/lib/categoryMap';
 import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import ComparisonTable from '@/components/ComparisonTable';
@@ -71,11 +71,13 @@ export default async function BlogPostPage({ params }: Props) {
 
   const renderContent = () => {
     if (!post.content) return null;
-    return post.content
+    return stripHeadMetadataTags(
+      post.content
       .replace(/&nbsp;/g, ' ')
       .replace(/\u00A0/g, ' ')
       .replace(/â€“|–/g, '-')
-      .replace(/â€”|—/g, '-');
+      .replace(/â€”|—/g, '-')
+    );
   };
 
   const estimateReadTimeFromHtml = (html: string) => {
