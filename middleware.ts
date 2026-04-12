@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
+function withSecurityHeaders(response: NextResponse) {
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -24,7 +31,7 @@ export async function middleware(request: NextRequest) {
           if (data.post && data.post.dbCategorySlug) {
             // Redirect to new category-based URL
             const newUrl = new URL(`/${data.post.dbCategorySlug}/${slug}`, request.url);
-            return NextResponse.redirect(newUrl, 301); // Permanent redirect
+            return withSecurityHeaders(NextResponse.redirect(newUrl, 301)); // Permanent redirect
           }
         }
       } catch (error) {
@@ -40,11 +47,11 @@ export async function middleware(request: NextRequest) {
     if (!token || token.role !== 'admin') {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(loginUrl);
+      return withSecurityHeaders(NextResponse.redirect(loginUrl));
     }
   }
 
-  return NextResponse.next();
+  return withSecurityHeaders(NextResponse.next());
 }
 
 export const config = {
