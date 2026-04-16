@@ -70,6 +70,15 @@ const normalizeCategoryValue = (value?: string) => {
   return value;
 };
 
+const generateSlugFromTitle = (value: string) => {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+};
+
 export default function PostEditor({ post, mode }: PostEditorProps) {
   const quillRef = useRef<any>(null);
   const quillInstanceRef = useRef<any>(null);
@@ -113,6 +122,14 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [metaTitle, setMetaTitle] = useState(post?.seoMetadata?.metaTitle || '');
   const [metaDescription, setMetaDescription] = useState(post?.seoMetadata?.metaDescription || '');
   const [keywords, setKeywords] = useState(post?.seoMetadata?.keywords?.join(', ') || '');
+
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+
+    if (mode === 'create') {
+      setSlug(generateSlugFromTitle(value));
+    }
+  };
 
   const getQuillInstance = () => {
     let quill = quillInstanceRef.current;
@@ -553,19 +570,6 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     },
   };
 
-  // Auto-generate slug from title
-  useEffect(() => {
-    if (mode === 'create' && title && !slug) {
-      const generatedSlug = title
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-');
-      setSlug(generatedSlug);
-    }
-  }, [title, mode, slug]);
-
   // Calculate read time from content
   const calculateReadTime = (text: string) => {
     const strippedText = text.replace(/<[^>]*>/g, '');
@@ -890,7 +894,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => handleTitleChange(e.target.value)}
             placeholder="Post Title"
             className="w-full text-4xl font-black text-[#1a1a1a] mb-4 border-none outline-none focus:ring-0 p-0"
             autoFocus
