@@ -21,10 +21,18 @@ export function getAbsoluteUrl(path: string) {
 export function stripHeadMetadataTags(html: string) {
   if (!html) return '';
 
-  return html
+  const stripCanonicalLinkTags = (input: string) =>
+    input.replace(/<link\b[^>]*>/gi, (tag) => {
+      const relMatch = tag.match(/\brel\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+      const relValue = (relMatch?.[1] || relMatch?.[2] || relMatch?.[3] || '').toLowerCase();
+      const relTokens = relValue.split(/\s+/).filter(Boolean);
+
+      return relTokens.includes('canonical') ? '' : tag;
+    });
+
+  return stripCanonicalLinkTags(html)
     .replace(/<head\b[^>]*>[\s\S]*?<\/head>/gi, '')
     .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '')
-    .replace(/<meta\b[^>]*>/gi, '')
-    .replace(/<link\b[^>]*\brel\s*=\s*(["'])?canonical\1[^>]*>/gi, '');
+    .replace(/<meta\b[^>]*>/gi, '');
 }
 
