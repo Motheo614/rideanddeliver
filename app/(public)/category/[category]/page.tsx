@@ -11,6 +11,7 @@ import {
   buildItemListSchema,
 } from '@/lib/seo/schema';
 import { buildPageMetadata } from '@/lib/seo/metadata';
+import { getCategoryInfoByUrlSlug } from '@/lib/categoryMap';
 
 interface Props {
   params: Promise<{ category: string }>;
@@ -18,8 +19,8 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category } = await params;
-  const posts = await getPostsByCategory(category);
-  const categoryName = posts[0]?.category || category.replace(/-/g, ' ');
+  const categoryInfo = getCategoryInfoByUrlSlug(category);
+  const categoryName = categoryInfo?.displayName || category.replace(/-/g, ' ');
 
   return buildPageMetadata({
     title: `${categoryName} Guides for Delivery Riders`,
