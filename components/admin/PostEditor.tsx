@@ -8,6 +8,7 @@ import { Save, Eye, Upload, X, ChevronDown, ChevronUp, Link2, Search, Move } fro
 import { marked } from 'marked';
 import 'react-quill-new/dist/quill.snow.css';
 import '@/app/quill-custom.css';
+import { generateSlugFromTitle } from '@/lib/slug';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 const ReactQuillEditor = ReactQuill as any;
@@ -68,15 +69,6 @@ const normalizeCategoryValue = (value?: string) => {
   }
 
   return value;
-};
-
-const generateSlugFromTitle = (value: string) => {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
 };
 
 export default function PostEditor({ post, mode }: PostEditorProps) {

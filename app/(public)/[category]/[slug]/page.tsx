@@ -2,7 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { Calendar, Clock, Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
 import { formatDateAbsolute, stripHeadMetadataTags } from '@/lib/utils';
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: `${post.title} | Rider Complex`,
     description: post.excerpt,
-    path: `/${category}/${slug}`,
+    path: `/${category}/${post.slug}`,
     image: featuredImageUrl,
     type: 'article',
     publishedTime: post.publishedAt,
@@ -58,6 +58,10 @@ export default async function BlogPostPage({ params }: Props) {
 
   if (post.dbCategorySlug !== category) {
     notFound();
+  }
+
+  if (post.slug !== slug) {
+    redirect(`/${post.dbCategorySlug}/${post.slug}`);
   }
 
   const categoryPosts = await getPostsByCategory(post.categorySlug);

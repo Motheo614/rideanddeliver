@@ -4,6 +4,17 @@ import Post from '@/lib/db/models/Post';
 import mongoose from 'mongoose';
 import { requireAdmin } from '@/lib/auth/requireAdmin';
 import { transformPost } from '@/lib/categoryMap';
+import { getSlugLookupCandidates } from '@/lib/slug';
+
+async function findPostByIdOrSlug(id: string) {
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    const byId = await Post.findById(id);
+    if (byId) return byId;
+  }
+
+  const slugCandidates = getSlugLookupCandidates(id);
+  return Post.findOne({ slug: { $in: slugCandidates } });
+}
 
 /**
  * GET /api/posts/[id]
@@ -20,15 +31,8 @@ export async function GET(
 
     const rawMode = request.nextUrl.searchParams.get('raw') === 'true';
 
-    // Try to find by MongoDB _id first, then by slug
-    let post;
-    if (mongoose.Types.ObjectId.isValid(id)) {
-      post = await Post.findById(id);
-    }
-    
-    if (!post) {
-      post = await Post.findOne({ slug: id });
-    }
+    // Try to find by MongoDB _id first, then by slug variants
+    const post = await findPostByIdOrSlug(id);
 
     if (!post) {
       return NextResponse.json(
@@ -83,12 +87,7 @@ export async function PUT(
     const body = await request.json();
 
     // Find post first
-    let post;
-    if (mongoose.Types.ObjectId.isValid(id)) {
-      post = await Post.findById(id);
-    } else {
-      post = await Post.findOne({ slug: id });
-    }
+    const post = await findPostByIdOrSlug(id);
 
     if (!post) {
       return NextResponse.json(
@@ -183,8 +182,10 @@ export async function DELETE(
       // Permanently delete the post
       if (mongoose.Types.ObjectId.isValid(id)) {
         post = await Post.findByIdAndDelete(id);
-      } else {
-        post = await Post.findOneAndDelete({ slug: id });
+      }
+
+      if (!post) {
+        post = await Post.findOneAndDelete({ slug: { $in: getSlugLookupCandidates(id) } });
       }
     } else {
       // Archive the post (soft delete)
@@ -194,9 +195,11 @@ export async function DELETE(
           { status: 'archived' },
           { new: true }
         );
-      } else {
+      }
+
+      if (!post) {
         post = await Post.findOneAndUpdate(
-          { slug: id },
+          { slug: { $in: getSlugLookupCandidates(id) } },
           { status: 'archived' },
           { new: true }
         );

@@ -1,4 +1,5 @@
 import mongoose, { Schema, Model, Document } from 'mongoose';
+import { generateSlugFromTitle, normalizeSlug } from '@/lib/slug';
 
 function estimateReadTimeFromHtml(html: string): number {
   const text = (html || '')
@@ -164,13 +165,12 @@ PostSchema.index({
 
 // Pre-save hook to auto-generate slug from title if slug is empty
 PostSchema.pre('save', function () {
+  if (this.slug && (this.isNew || this.isModified('slug'))) {
+    this.slug = normalizeSlug(this.slug);
+  }
+
   if (!this.slug && this.title) {
-    this.slug = this.title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-      .trim()
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+    this.slug = generateSlugFromTitle(this.title);
   }
 
   // Auto-set publishedAt when status changes to 'published'

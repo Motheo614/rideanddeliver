@@ -104,7 +104,7 @@ export async function getPosts(options?: {
  */
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   try {
-    const url = `${API_BASE}/api/posts/${slug}`;
+    const url = `${API_BASE}/api/posts/${encodeURIComponent(slug)}`;
     const response = await fetch(url, fetchOptions);
 
     if (!response.ok) {

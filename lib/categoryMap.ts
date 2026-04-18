@@ -1,6 +1,7 @@
 /**
  * Category mapping between database enums and frontend display/URLs
  */
+import { normalizeSlug } from './slug';
 
 export interface CategoryInfo {
   slug: string;        // Database enum value
@@ -57,11 +58,13 @@ export function transformPost(dbPost: any): any {
   // Handle both mongoose objects and plain objects
   const plainPost = dbPost.toObject ? dbPost.toObject() : dbPost;
   const categoryValue = plainPost.category || dbPost.category;
+  const normalizedSlug = normalizeSlug(plainPost.slug || '');
   
   const categoryInfo = getCategoryInfo(categoryValue);
   
   return {
     ...plainPost,
+    slug: normalizedSlug || plainPost.slug,
     category: categoryInfo?.displayName || plainPost.categoryLabel || categoryValue || 'Uncategorized',
     categorySlug: categoryInfo?.urlSlug || categoryValue || '',
     // Database category slug for blog post URLs (e.g., 'safety-gear')
