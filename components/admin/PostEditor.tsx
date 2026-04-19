@@ -262,6 +262,23 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     }
   };
 
+  const normalizePathSegment = (value: unknown) => {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  };
+
+  const getCanonicalInternalPostPath = (post: any) => {
+    const categorySlug = normalizePathSegment(post?.dbCategorySlug || post?.categorySlug || post?.category || '');
+    const postSlug = normalizePathSegment(post?.slug || '');
+
+    if (!categorySlug || !postSlug) return '';
+    return `/${categorySlug}/${postSlug}`;
+  };
+
   const insertInternalLink = (selectedPost: any) => {
     console.log('insertInternalLink called', selectedPost);
     console.log('Stored quill instance:', quillInstanceRef.current);
@@ -288,7 +305,12 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       }
 
       const selectedText = range && range.length > 0 ? quill.getText(range.index, range.length) : selectedPost.title;
-      const linkUrl = `/${selectedPost.category}/${selectedPost.slug}`;
+      const linkUrl = getCanonicalInternalPostPath(selectedPost);
+
+      if (!linkUrl) {
+        showToast('Selected post is missing a valid category or slug.', 'error');
+        return;
+      }
       
       console.log('Inserting link:', { selectedText, linkUrl, range });
       
@@ -836,7 +858,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
                       <div className="font-bold text-gray-900 mb-1">{result.title}</div>
                       <div className="text-sm text-gray-500 mb-2">{result.excerpt?.slice(0, 100)}...</div>
                       <div className="text-xs text-[#CC0000] font-medium">
-                        /{result.category}/{result.slug}
+                        {getCanonicalInternalPostPath(result) || '/invalid-post-path'}
                       </div>
                     </button>
                   ))}
