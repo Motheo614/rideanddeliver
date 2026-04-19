@@ -1,8 +1,28 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
 
+function normalizeBaseUrl(siteUrl?: string) {
+  const fallback = 'https://www.ridercomplex.com';
+  const rawValue = siteUrl?.trim() || fallback;
+  const valueWithProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(rawValue)
+    ? rawValue
+    : `https://${rawValue}`;
+
+  try {
+    const parsed = new URL(valueWithProtocol);
+
+    if (parsed.hostname === 'ridercomplex.com') {
+      parsed.hostname = 'www.ridercomplex.com';
+    }
+
+    return parsed.origin.replace(/\/$/, '');
+  } catch {
+    return fallback;
+  }
+}
+
 export async function GET() {
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.APP_URL || 'https://www.ridercomplex.com').replace(/\/$/, '');
+  const baseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_SITE_URL || process.env.APP_URL);
   
   const staticPages = [
     { url: '', priority: '1.0', changefreq: 'daily' },
