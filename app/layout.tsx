@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import AuthProvider from '@/components/AuthProvider';
+import ClarityInit from '@/components/ClarityInit';
 import SeoJsonLd from '@/components/SeoJsonLd';
 import { buildSiteGraphSchema } from '@/lib/seo/schema';
 
@@ -13,7 +14,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Rider Complex | Gear Up. Ride Smart. Earn More.',
+    default: 'Rider Complex | Gear, Reviews & Earnings for Bike Delivery Riders',
     template: '%s | Rider Complex',
   },
   description: 'The ultimate gear review and buying guide site for bike delivery riders. Uber Eats, DoorDash, and more.',
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL('https://www.ridercomplex.com'),
   openGraph: {
-    title: 'Rider Complex | Gear Up. Ride Smart. Earn More.',
+    title: 'Rider Complex | Gear, Reviews & Earnings for Bike Delivery Riders',
     description: 'The ultimate gear review and buying guide site for bike delivery riders. Uber Eats, DoorDash, and more.',
     url: '/',
     siteName: 'Rider Complex',
@@ -69,17 +70,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             gtag('config', 'G-1D1KDRR8SJ');
           `}
         </Script>
-        <Script id="microsoft-clarity" strategy="afterInteractive">
-          {`
-            (function(c,l,a,r,i,t,y){
-              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "weeftq66hy");
-          `}
-        </Script>
       </head>
       <body className="font-sans antialiased text-[#1a1a1a]" suppressHydrationWarning>
+        <ClarityInit />
         <SeoJsonLd data={siteGraphSchema} />
         <AuthProvider>
           {children}

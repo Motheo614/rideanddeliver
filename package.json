@@ -19,6 +19,7 @@
   "dependencies": {
     "@google/genai": "^1.17.0",
     "@hookform/resolvers": "^5.2.1",
+    "@microsoft/clarity": "^1.0.2",
     "@sendgrid/mail": "^8.1.6",
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^3.0.3",
