@@ -29,11 +29,11 @@ export async function GET() {
   
   const staticPages = [
     { url: '', priority: '1.0', changefreq: 'daily' },
-    { url: '/bike-delivery-rider-gear', priority: '0.8', changefreq: 'weekly' },
-    { url: '/bike-delivery-tech-and-visibility', priority: '0.8', changefreq: 'weekly' },
-    { url: '/bike-security-for-delivery-riders', priority: '0.8', changefreq: 'weekly' },
-    { url: '/delivery-rider-equipment', priority: '0.8', changefreq: 'weekly' },
-    { url: '/delivery-platform-reviews', priority: '0.8', changefreq: 'weekly' },
+    { url: '/safety-gear', priority: '0.8', changefreq: 'weekly' },
+    { url: '/tech-lighting', priority: '0.8', changefreq: 'weekly' },
+    { url: '/bike-security', priority: '0.8', changefreq: 'weekly' },
+    { url: '/delivery-gear', priority: '0.8', changefreq: 'weekly' },
+    { url: '/platform-reviews', priority: '0.8', changefreq: 'weekly' },
     { url: '/start-here', priority: '0.9', changefreq: 'monthly' },
     { url: '/contact', priority: '0.6', changefreq: 'monthly' },
     { url: '/affiliate-disclaimer', priority: '0.5', changefreq: 'yearly' },

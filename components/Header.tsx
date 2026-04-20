@@ -7,11 +7,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Search, Menu, X } from 'lucide-react';
 
 const navLinks = [
-  { label: 'Safety Gear', href: '/bike-delivery-rider-gear' },
-  { label: 'Tech & Lighting', href: '/bike-delivery-tech-and-visibility' },
-  { label: 'Bike Security', href: '/bike-security-for-delivery-riders' },
-  { label: 'Delivery Gear', href: '/delivery-rider-equipment' },
-  { label: 'Platform Reviews', href: '/delivery-platform-reviews' },
+  { label: 'Safety Gear', href: '/safety-gear' },
+  { label: 'Tech & Lighting', href: '/tech-lighting' },
+  { label: 'Bike Security', href: '/bike-security' },
+  { label: 'Delivery Gear', href: '/delivery-gear' },
+  { label: 'Platform Reviews', href: '/platform-reviews' },
 ];
 
 interface SearchResult {

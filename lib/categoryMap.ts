@@ -13,27 +13,27 @@ export const CATEGORY_MAP: Record<string, CategoryInfo> = {
   'safety-gear': {
     slug: 'safety-gear',
     displayName: 'Safety Gear',
-    urlSlug: 'bike-delivery-rider-gear',
+    urlSlug: 'safety-gear',
   },
   'tech-lighting': {
     slug: 'tech-lighting',
     displayName: 'Tech & Lighting',
-    urlSlug: 'bike-delivery-tech-and-visibility',
+    urlSlug: 'tech-lighting',
   },
   'bike-security': {
     slug: 'bike-security',
     displayName: 'Bike Security',
-    urlSlug: 'bike-security-for-delivery-riders',
+    urlSlug: 'bike-security',
   },
   'platform-reviews': {
     slug: 'platform-reviews',
     displayName: 'Platform Reviews',
-    urlSlug: 'delivery-platform-reviews',
+    urlSlug: 'platform-reviews',
   },
   'delivery-gear': {
     slug: 'delivery-gear',
     displayName: 'Delivery Gear',
-    urlSlug: 'delivery-rider-equipment',
+    urlSlug: 'delivery-gear',
   },
 };
 

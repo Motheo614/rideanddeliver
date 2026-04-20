@@ -57,11 +57,11 @@ export default async function HubPage({ title, description, categorySlug, intro 
             <h3 className="text-2xl font-black text-[#1a1a1a] mb-8 text-center">Browse More Categories</h3>
             <div className="flex flex-wrap justify-center gap-4">
               {[
-                { label: 'Safety Gear', href: '/bike-delivery-rider-gear/' },
-                { label: 'Tech & Lighting', href: '/bike-delivery-tech-and-visibility/' },
-                { label: 'Bike Security', href: '/bike-security-for-delivery-riders/' },
-                { label: 'Delivery Gear', href: '/delivery-rider-equipment/' },
-                { label: 'Platform Reviews', href: '/delivery-platform-reviews/' },
+                { label: 'Safety Gear', href: '/safety-gear/' },
+                { label: 'Tech & Lighting', href: '/tech-lighting/' },
+                { label: 'Bike Security', href: '/bike-security/' },
+                { label: 'Delivery Gear', href: '/delivery-gear/' },
+                { label: 'Platform Reviews', href: '/platform-reviews/' },
               ].filter(c => c.href !== `/${categorySlug}/`).map((cat) => (
                 <Link
                   key={cat.href}

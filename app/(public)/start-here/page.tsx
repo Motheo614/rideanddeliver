@@ -15,11 +15,11 @@ export default async function StartHerePage() {
   const allPosts = await getPosts({ status: 'published' });
   const importantPosts = allPosts.slice(0, 8);
   const hubs = [
-    { label: 'Safety Gear', href: '/bike-delivery-rider-gear', desc: 'Helmets, clothing, and safety tips.' },
-    { label: 'Tech & Lighting', href: '/bike-delivery-tech-and-visibility', desc: 'Dash cams, lights, and gadgets.' },
-    { label: 'Bike Security', href: '/bike-security-for-delivery-riders', desc: 'Locks, trackers, and theft prevention.' },
-    { label: 'Delivery Gear', href: '/delivery-rider-equipment', desc: 'Bags, racks, and equipment.' },
-    { label: 'Platform Reviews', href: '/delivery-platform-reviews', desc: 'Earnings, apps, and platform guides.' },
+    { label: 'Safety Gear', href: '/safety-gear', desc: 'Helmets, clothing, and safety tips.' },
+    { label: 'Tech & Lighting', href: '/tech-lighting', desc: 'Dash cams, lights, and gadgets.' },
+    { label: 'Bike Security', href: '/bike-security', desc: 'Locks, trackers, and theft prevention.' },
+    { label: 'Delivery Gear', href: '/delivery-gear', desc: 'Bags, racks, and equipment.' },
+    { label: 'Platform Reviews', href: '/platform-reviews', desc: 'Earnings, apps, and platform guides.' },
   ];
 
   return (

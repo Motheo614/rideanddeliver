@@ -46,6 +46,31 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/bike-delivery-rider-gear',
+        destination: '/safety-gear',
+        permanent: true,
+      },
+      {
+        source: '/bike-delivery-tech-and-visibility',
+        destination: '/tech-lighting',
+        permanent: true,
+      },
+      {
+        source: '/bike-security-for-delivery-riders',
+        destination: '/bike-security',
+        permanent: true,
+      },
+      {
+        source: '/delivery-rider-equipment',
+        destination: '/delivery-gear',
+        permanent: true,
+      },
+      {
+        source: '/delivery-platform-reviews',
+        destination: '/platform-reviews',
+        permanent: true,
+      },
+      {
         source: '/:path*',
         has: [{ type: 'host', value: 'ridercomplex.com' }],
         destination: 'https://www.ridercomplex.com/:path*',
