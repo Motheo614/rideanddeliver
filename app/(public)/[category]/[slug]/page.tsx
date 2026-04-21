@@ -3,12 +3,11 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
-import { Calendar, Clock, Tag, ChevronRight } from 'lucide-react';
+import { Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
 import { formatDateAbsolute, stripHeadMetadataTags } from '@/lib/utils';
 import { CATEGORY_MAP } from '@/lib/categoryMap';
 import ArticleAuthorBox from '@/components/ArticleAuthorBox';
-import ComparisonTable from '@/components/ComparisonTable';
 import TableWrapper from '@/components/TableWrapper';
 import SeoJsonLd from '@/components/SeoJsonLd';
 import {
@@ -180,8 +179,8 @@ export default async function BlogPostPage({ params }: Props) {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div className="lg:grid lg:grid-cols-12 lg:gap-8 xl:gap-12">
-          <article className="lg:col-span-8 xl:col-span-8 w-full min-w-0">
+        <div>
+          <article className="w-full min-w-0">
             <header className="mb-8 md:mb-10">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
                 {post.title}
@@ -245,10 +244,6 @@ export default async function BlogPostPage({ params }: Props) {
               </TableWrapper>
             </div>
 
-            <div className="w-full max-w-full" style={{ maxWidth: '100%' }}>
-              <ComparisonTable />
-            </div>
-
             {post.tags && post.tags.length > 0 && (
               <section className="mt-12 md:mt-16 pt-8 border-t border-gray-200">
                 <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -277,26 +272,6 @@ export default async function BlogPostPage({ params }: Props) {
               </a>
             </div>
           </article>
-
-          <aside className="lg:col-span-4 xl:col-span-4 mt-12 lg:mt-0">
-            <div className="lg:sticky lg:top-8 space-y-8">
-              <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
-                <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Advertisement</p>
-                <div className="bg-gray-200 w-full h-[250px] flex items-center justify-center rounded-lg">
-                  <span className="text-gray-400">Google Ad (300x250)</span>
-                </div>
-                <p className="text-xs text-gray-400 mt-2">Ad placeholder</p>
-              </div>
-
-              <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
-                <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Advertisement</p>
-                <div className="bg-gray-200 w-full h-[600px] flex items-center justify-center rounded-lg">
-                  <span className="text-gray-400">Google Ad (300x600)</span>
-                </div>
-                <p className="text-xs text-gray-400 mt-2">Skyscraper ad placeholder</p>
-              </div>
-            </div>
-          </aside>
         </div>
 
         {relatedPosts.length > 0 && (
