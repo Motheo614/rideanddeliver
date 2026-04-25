@@ -74,10 +74,10 @@ export default function Footer() {
           </Link>
 
           <div className="flex items-center gap-6">
-            <Link href="#" className="hover:text-[#CC0000] transition-colors"><XIcon size={20} /></Link>
-            <Link href="#" className="hover:text-[#CC0000] transition-colors"><Facebook size={20} /></Link>
-            <Link href="#" className="hover:text-[#CC0000] transition-colors"><RedditIcon size={20} /></Link>
-            <Link href="#" className="hover:text-[#CC0000] transition-colors"><PinterestIcon size={20} /></Link>
+            <Link href="https://x.com/ridercomplex" target="_blank" rel="noopener noreferrer" className="hover:text-[#CC0000] transition-colors"><XIcon size={20} /></Link>
+            <Link href="https://web.facebook.com/profile.php?id=61564725947294" target="_blank" rel="noopener noreferrer" className="hover:text-[#CC0000] transition-colors"><Facebook size={20} /></Link>
+            <Link href="https://www.reddit.com/user/rider_complex/" target="_blank" rel="noopener noreferrer" className="hover:text-[#CC0000] transition-colors"><RedditIcon size={20} /></Link>
+            <Link href="https://www.pinterest.com/ridercomplexblog/" target="_blank" rel="noopener noreferrer" className="hover:text-[#CC0000] transition-colors"><PinterestIcon size={20} /></Link>
           </div>
         </div>
 
