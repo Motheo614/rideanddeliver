@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminTopBar from '@/components/admin/AdminTopBar';
-import Image from 'next/image';
-import { Plus, Edit2, Trash2, X, Star, StarOff } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Star } from 'lucide-react';
 
 interface Product {
   _id: string;
@@ -39,6 +38,8 @@ export default function ProductsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
+  const [previewImageBroken, setPreviewImageBroken] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -114,6 +115,7 @@ export default function ProductsPage() {
       isActive: true,
     });
     setFormErrors({});
+    setPreviewImageBroken(false);
     setShowModal(true);
   };
 
@@ -133,6 +135,7 @@ export default function ProductsPage() {
       isActive: product.isActive,
     });
     setFormErrors({});
+    setPreviewImageBroken(false);
     setShowModal(true);
   };
 
@@ -163,6 +166,24 @@ export default function ProductsPage() {
     return Object.keys(errors).length === 0;
   };
 
+  const normalizeImageUrl = (url: string) => {
+    const trimmed = (url || '').trim();
+
+    if (!trimmed) {
+      return '';
+    }
+
+    if (trimmed.startsWith('//')) {
+      return `https:${trimmed}`;
+    }
+
+    if (trimmed.startsWith('http://')) {
+      return `https://${trimmed.slice('http://'.length)}`;
+    }
+
+    return trimmed;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -173,6 +194,7 @@ export default function ProductsPage() {
     const productData = {
       ...formData,
       asin: formData.asin.toUpperCase(),
+      imageUrl: normalizeImageUrl(formData.imageUrl),
       pros: formData.pros.filter(p => p.trim()),
       cons: formData.cons.filter(c => c.trim()),
     };
@@ -376,13 +398,15 @@ export default function ProductsPage() {
               >
                 {/* Product Image */}
                 <div className="bg-white h-[120px] flex items-center justify-center p-4 border-b border-gray-100">
-                  {product.imageUrl ? (
-                    <Image
-                      src={product.imageUrl}
+                  {product.imageUrl && !brokenImages[product._id] ? (
+                    <img
+                      src={normalizeImageUrl(product.imageUrl)}
                       alt={product.name}
-                      width={120}
-                      height={120}
-                      className="object-contain max-h-[120px]"
+                      loading="lazy"
+                      className="max-h-[120px] max-w-[120px] object-contain"
+                      onError={() => {
+                        setBrokenImages(prev => ({ ...prev, [product._id]: true }));
+                      }}
                     />
                   ) : (
                     <div className="w-[120px] h-[120px] bg-gray-100 flex items-center justify-center rounded">
@@ -574,18 +598,20 @@ export default function ProductsPage() {
                   <input
                     type="url"
                     value={formData.imageUrl}
-                    onChange={(e) => updateFormField('imageUrl', e.target.value)}
+                    onChange={(e) => {
+                      setPreviewImageBroken(false);
+                      updateFormField('imageUrl', e.target.value);
+                    }}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
                     placeholder="https://..."
                   />
-                  {formData.imageUrl && (
+                  {formData.imageUrl && !previewImageBroken && (
                     <div className="mt-3 p-4 bg-gray-50 rounded-lg flex items-center justify-center">
-                      <Image
-                        src={formData.imageUrl}
+                      <img
+                        src={normalizeImageUrl(formData.imageUrl)}
                         alt="Preview"
-                        width={120}
-                        height={120}
-                        className="object-contain max-h-[120px]"
+                        className="object-contain max-h-[120px] max-w-[120px]"
+                        onError={() => setPreviewImageBroken(true)}
                       />
                     </div>
                   )}
