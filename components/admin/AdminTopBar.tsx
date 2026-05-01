@@ -59,6 +59,7 @@ export default function AdminTopBar() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
+  const [brokenProductImages, setBrokenProductImages] = useState<Record<string, boolean>>({});
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -155,6 +156,31 @@ export default function AdminTopBar() {
     searchResults.users.forEach(user => results.push({ type: 'user', item: user }));
     
     return results;
+  };
+
+  const normalizeImageUrl = (url: unknown): string | null => {
+    if (typeof url !== 'string') {
+      return null;
+    }
+
+    const trimmed = url.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    if (trimmed.startsWith('//')) {
+      return `https:${trimmed}`;
+    }
+
+    if (trimmed.startsWith('http://')) {
+      return `https://${trimmed.slice('http://'.length)}`;
+    }
+
+    return trimmed;
+  };
+
+  const getProductImageUrl = (product: any): string | null => {
+    return normalizeImageUrl(product?.imageUrl) || normalizeImageUrl(product?.productImage);
   };
 
   const handleResultClick = (type: string, item: any) => {
@@ -430,6 +456,7 @@ export default function AdminTopBar() {
                     </div>
                     {searchResults.products.map((product, index) => {
                       const flatIndex = searchResults.posts.length + index;
+                      const productImage = getProductImageUrl(product);
                       return (
                         <button
                           key={product._id}
@@ -438,13 +465,15 @@ export default function AdminTopBar() {
                             selectedResultIndex === flatIndex ? 'bg-blue-50' : ''
                           }`}
                         >
-                          {product.productImage ? (
-                            <Image
-                              src={product.productImage}
+                          {productImage && !brokenProductImages[product._id] ? (
+                            <img
+                              src={productImage}
                               alt={product.productName}
-                              width={48}
-                              height={48}
                               className="w-12 h-12 rounded object-cover flex-shrink-0"
+                              loading="lazy"
+                              onError={() => {
+                                setBrokenProductImages(prev => ({ ...prev, [product._id]: true }));
+                              }}
                             />
                           ) : (
                             <div className="w-12 h-12 rounded bg-purple-100 flex items-center justify-center flex-shrink-0">
