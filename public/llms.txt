@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Content focus
+Topics: gig economy, delivery riders, Uber Eats, DoorDash, rider tips, earnings guides
+
+# Contact
+Contact: https://www.ridercomplex.com/contact
