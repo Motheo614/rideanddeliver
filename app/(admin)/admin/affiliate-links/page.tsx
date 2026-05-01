@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminTopBar from '@/components/admin/AdminTopBar';
-import Image from 'next/image';
 import { 
   ExternalLink, 
   Copy, 
@@ -50,6 +49,7 @@ export default function AdminAffiliatePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<Message>(null);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [showInactive, setShowInactive] = useState(false);
@@ -95,6 +95,24 @@ export default function AdminAffiliatePage() {
     }
   }, [message]);
 
+  const normalizeImageUrl = (url?: string) => {
+    const trimmed = (url || '').trim();
+
+    if (!trimmed) {
+      return '';
+    }
+
+    if (trimmed.startsWith('//')) {
+      return `https:${trimmed}`;
+    }
+
+    if (trimmed.startsWith('http://')) {
+      return `https://${trimmed.slice('http://'.length)}`;
+    }
+
+    return trimmed;
+  };
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -121,10 +139,15 @@ export default function AdminAffiliatePage() {
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        imageUrl: normalizeImageUrl(formData.imageUrl),
+      };
+
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -148,10 +171,15 @@ export default function AdminAffiliatePage() {
     if (!selectedProduct) return;
 
     try {
+      const payload = {
+        ...formData,
+        imageUrl: normalizeImageUrl(formData.imageUrl),
+      };
+
       const response = await fetch(`/api/products/${selectedProduct._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -468,14 +496,18 @@ export default function AdminAffiliatePage() {
                     <tr key={product._id} className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          {product.imageUrl && (
-                            <Image 
-                              src={product.imageUrl} 
+                          {product.imageUrl && !brokenImages[product._id] ? (
+                            <img
+                              src={normalizeImageUrl(product.imageUrl)}
                               alt={product.productName}
-                              width={48}
-                              height={48}
+                              loading="lazy"
                               className="w-12 h-12 object-cover rounded-lg"
+                              onError={() => {
+                                setBrokenImages(prev => ({ ...prev, [product._id]: true }));
+                              }}
                             />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-gray-100" />
                           )}
                           <div>
                             <p className="text-sm font-bold text-[#1a1a1a]">{product.productName}</p>

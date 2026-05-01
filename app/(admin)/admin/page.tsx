@@ -52,6 +52,7 @@ export default function AdminDashboard() {
   const [pageviewsData, setPageviewsData] = useState<any[]>([]);
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  const [brokenRecentProductImages, setBrokenRecentProductImages] = useState<Record<string, boolean>>({});
 
   const getPostImageUrl = (featuredImage: unknown): string | null => {
     if (!featuredImage) return null;
@@ -67,6 +68,27 @@ export default function AdminDashboard() {
     }
 
     return null;
+  };
+
+  const normalizeImageUrl = (url: unknown): string | null => {
+    if (typeof url !== 'string') {
+      return null;
+    }
+
+    const trimmed = url.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    if (trimmed.startsWith('//')) {
+      return `https:${trimmed}`;
+    }
+
+    if (trimmed.startsWith('http://')) {
+      return `https://${trimmed.slice('http://'.length)}`;
+    }
+
+    return trimmed;
   };
 
   useEffect(() => {
@@ -427,19 +449,26 @@ export default function AdminDashboard() {
                 
                 {recentProducts.length > 0 ? (
                   <div className="space-y-4">
-                    {recentProducts.map((product: any) => (
+                    {recentProducts.map((product: any) => {
+                      const productImageUrl = normalizeImageUrl(product.imageUrl);
+
+                      return (
                       <div
                         key={product._id}
                         className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200"
                       >
-                        {product.imageUrl && (
-                          <Image
-                            src={product.imageUrl}
+                        {productImageUrl && !brokenRecentProductImages[product._id] ? (
+                          <img
+                            src={productImageUrl}
                             alt={product.productName}
-                            width={64}
-                            height={64}
+                            loading="lazy"
                             className="w-16 h-16 object-cover rounded-lg"
+                            onError={() => {
+                              setBrokenRecentProductImages(prev => ({ ...prev, [product._id]: true }));
+                            }}
                           />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-gray-100" />
                         )}
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-bold text-[#1a1a1a] truncate">
@@ -463,7 +492,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 ) : (
                   <div className="text-center py-8">
