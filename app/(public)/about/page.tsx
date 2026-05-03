@@ -46,17 +46,17 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <h2 className="mt-12 text-2xl md:text-3xl font-extrabold text-[#1a1a1a]">Dig In</h2>
-        <div className="mt-6 space-y-6 text-base md:text-lg leading-relaxed text-gray-700">
-          <p>
-            Browse the latest guides and reviews to find what works best for your riding style and setup.
-          </p>
-        </div>
-
         <h2 className="mt-12 text-2xl md:text-3xl font-extrabold text-[#1a1a1a]">A Note on Affiliate Links</h2>
         <div className="mt-6 space-y-6 text-base md:text-lg leading-relaxed text-gray-700">
           <p>
             Some links on this site are affiliate links. If you buy something through them, we earn a small commission at no extra cost to you. This is how the site stays free. It does not affect what we recommend. We have turned down partnerships with brands whose gear we would not use on our own shifts. Our recommendations come from riding, not from who pays the most.
+          </p>
+        </div>
+
+        <h2 className="mt-12 text-2xl md:text-3xl font-extrabold text-[#1a1a1a]">Dig In</h2>
+        <div className="mt-6 space-y-6 text-base md:text-lg leading-relaxed text-gray-700">
+          <p>
+            Browse the latest guides and reviews to find what works best for your riding style and setup.
           </p>
         </div>
       </section>
