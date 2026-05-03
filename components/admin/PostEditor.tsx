@@ -342,33 +342,25 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       return;
     }
 
-    const description = (product.description || '').trim();
     const imageUrl = (product.imageUrl || '').trim();
     const price = (product.price || '').trim();
     const asin = (product.asin || '').trim();
-    const pros = Array.isArray(product.pros)
-      ? product.pros.filter(Boolean).map((pro) => String(pro).trim()).filter(Boolean).slice(0, 4)
-      : [];
 
     const safeName = escapeHtml(name);
-    const safeDescription = escapeHtml(description);
     const safePrice = escapeHtml(price);
     const safeAsin = escapeHtml(asin);
     const safeLink = escapeHtml(affiliateLink);
     const safeImageUrl = escapeHtml(imageUrl);
-    const prosHtml = pros.map((pro) => `<li>${escapeHtml(pro)}</li>`).join('');
 
     const productHtml = `
-<div class="affiliate-product-card" style="border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:24px 0;background:#fff;">
-  <h3 style="margin:0 0 8px;font-size:24px;line-height:1.3;font-weight:800;color:#111827;">${safeName}</h3>
-  ${safeAsin ? `<p style="margin:0 0 8px;font-size:12px;color:#6b7280;font-weight:600;">ASIN: ${safeAsin}</p>` : ''}
-  ${safePrice ? `<p style="margin:0 0 12px;font-size:18px;font-weight:800;color:#b91c1c;">${safePrice}</p>` : ''}
-  ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" style="max-width:220px;height:auto;border-radius:8px;margin:0 0 12px;" />` : ''}
-  ${safeDescription ? `<p style="margin:0 0 12px;color:#374151;line-height:1.6;">${safeDescription}</p>` : ''}
-  ${prosHtml ? `<ul style="margin:0 0 16px;padding-left:20px;color:#374151;line-height:1.6;">${prosHtml}</ul>` : ''}
-  <p>
-    <a href="${safeLink}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-block;background:#cc0000;color:#fff;text-decoration:none;font-weight:800;padding:10px 16px;border-radius:8px;">
-      Check Latest Price on Amazon
+<div class="affiliate-product-card" style="max-width:420px;margin:28px auto;padding:16px 18px;border:1px solid #e5e7eb;border-radius:14px;background:#ffffff;text-align:center;">
+  ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" style="display:block;width:100%;max-width:260px;height:auto;object-fit:contain;margin:0 auto 12px;border-radius:8px;" />` : ''}
+  <p style="margin:0 0 4px;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:31px;line-height:1.3;font-weight:800;color:#111827;">${safeName}</p>
+  ${safeAsin ? `<p style="margin:0 0 8px;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:12px;letter-spacing:0.04em;color:#6b7280;font-weight:600;">ASIN: ${safeAsin}</p>` : ''}
+  ${safePrice ? `<p style="margin:0 0 12px;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:25px;font-weight:800;color:#CC0000;">${safePrice}</p>` : ''}
+  <p style="margin:0;">
+    <a href="${safeLink}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-block;background:#CC0000;color:#fff;text-decoration:none;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:13px;font-weight:800;letter-spacing:0.02em;padding:10px 18px;border-radius:8px;">
+      Check Price
     </a>
   </p>
 </div>`;
