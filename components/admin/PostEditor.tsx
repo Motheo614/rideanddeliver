@@ -355,7 +355,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   <h3 style="margin:0 0 4px;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:31px;line-height:1.3;font-weight:800;color:#111827;">${safeName}</h3>
   <div class="affiliate-card-cta" style="margin:0;">
     <a href="${safeLink}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-block;background:#CC0000;color:#fff;text-decoration:none;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:13px;font-weight:800;letter-spacing:0.02em;padding:10px 18px;border-radius:8px;">
-      CHECK PRICE ON AMAZON
+      Check Price
     </a>
   </div>
 </div>`;

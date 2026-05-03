@@ -120,7 +120,7 @@ export default async function BlogPostPage({ params }: Props) {
         '<div class="affiliate-product-card">',
         imageTag,
         `<h3>${trimmedName}</h3>`,
-        `<div class="affiliate-card-cta"><a href="${trimmedHref}" target="_blank" rel="noopener noreferrer sponsored">CHECK PRICE ON AMAZON</a></div>`,
+        `<div class="affiliate-card-cta"><a href="${trimmedHref}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></div>`,
         '</div>',
       ].join('');
 
@@ -169,10 +169,6 @@ export default async function BlogPostPage({ params }: Props) {
       .replace(
         /<p[^>]*>\s*(?:<strong[^>]*>)?\s*\$\s*[0-9][0-9,\.]*(?:<\/strong>)?\s*<\/p>(?=[\s\S]{0,250}<a[^>]*href="[^"]*(?:amzn\.to|amazon\.)[^"]*"[^>]*>)/gi,
         ''
-      )
-      .replace(
-        /(<a[^>]*href="[^"]*(?:amzn\.to|amazon\.)[^"]*"[^>]*>)([\s\S]*?)(<\/a>)/gi,
-        '$1CHECK PRICE ON AMAZON$3'
       );
 
     return upgraded;
