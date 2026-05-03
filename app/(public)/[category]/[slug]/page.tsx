@@ -102,36 +102,59 @@ export default async function BlogPostPage({ params }: Props) {
   const upgradeLegacyAffiliateBlocks = (html: string) => {
     if (!html) return html;
 
+    const buildAffiliateCard = (
+      name: string,
+      asin: string,
+      price: string,
+      imageTag: string,
+      href: string,
+      description?: string
+    ) => {
+      const trimmedName = String(name || '').trim();
+      const trimmedAsin = String(asin || '').trim();
+      const trimmedPrice = String(price || '').trim();
+      const trimmedHref = String(href || '').trim();
+      const trimmedDescription = String(description || '').trim();
+
+      if (!trimmedName || !trimmedHref || !imageTag) {
+        return '';
+      }
+
+      const card = [
+        '<div class="affiliate-product-card">',
+        imageTag,
+        `<h3>${trimmedName}</h3>`,
+        `<p>ASIN: ${trimmedAsin}</p>`,
+        `<p>${trimmedPrice}</p>`,
+        `<p><a href="${trimmedHref}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></p>`,
+        '</div>',
+      ].join('');
+
+      return trimmedDescription ? `${card}<p>${trimmedDescription}</p>` : card;
+    };
+
     // Convert old inline-formatted product chunks (title/asin/price/image/link)
     // into the new affiliate-product-card wrapper so global styling applies.
     const legacyBlockPattern = /<h3[^>]*>\s*(?:<strong[^>]*>)?([^<]+?)(?:<\/strong>)?\s*<\/h3>\s*<p[^>]*>\s*(?:<span[^>]*>)?\s*ASIN:\s*([^<]+?)\s*(?:<\/span>)?\s*<\/p>\s*<p[^>]*>\s*(?:<strong[^>]*>)?\s*([^<]+?)\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>\s*(?:<span[^>]*>)?\s*(<img[^>]+>)\s*(?:<\/span>)?\s*<\/p>\s*(?:<p[^>]*>\s*(?:<span[^>]*>)?([^<]+?)(?:<\/span>)?\s*<\/p>\s*)?<p[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>[\s\S]*?<\/p>/gi;
 
-    return html.replace(
+    let upgraded = html.replace(
       legacyBlockPattern,
       (_match, name, asin, price, imageTag, description, href) => {
-        const trimmedName = String(name || '').trim();
-        const trimmedAsin = String(asin || '').trim();
-        const trimmedPrice = String(price || '').trim();
-        const trimmedHref = String(href || '').trim();
-        const trimmedDescription = String(description || '').trim();
-
-        if (!trimmedName || !trimmedHref || !imageTag) {
-          return _match;
-        }
-
-        const card = [
-          '<div class="affiliate-product-card">',
-          imageTag,
-          `<h3>${trimmedName}</h3>`,
-          `<p>ASIN: ${trimmedAsin}</p>`,
-          `<p>${trimmedPrice}</p>`,
-          `<p><a href="${trimmedHref}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></p>`,
-          '</div>',
-        ].join('');
-
-        return trimmedDescription ? `${card}<p>${trimmedDescription}</p>` : card;
+        return buildAffiliateCard(name, asin, price, imageTag, href, description) || _match;
       }
     );
+
+    // Handle live legacy variant where image and description are mixed in the same paragraph.
+    const mixedParagraphLegacyPattern = /<h3[^>]*>\s*(?:<strong[^>]*>)?([^<]+?)(?:<\/strong>)?\s*<\/h3>\s*<p[^>]*>[\s\S]*?ASIN:\s*([^<]+?)\s*(?:<\/span>)?\s*<\/p>\s*<p[^>]*>[\s\S]*?(?:<strong[^>]*>)?\s*([^<]+?)\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>[\s\S]*?(<img[^>]+>)[\s\S]*?(?:<\/span>)?\s*(?:<span[^>]*>)?([^<]*?)?(?:<\/span>)?\s*<\/p>\s*<p[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>[\s\S]*?<\/p>/gi;
+
+    upgraded = upgraded.replace(
+      mixedParagraphLegacyPattern,
+      (_match, name, asin, price, imageTag, description, href) => {
+        return buildAffiliateCard(name, asin, price, imageTag, href, description) || _match;
+      }
+    );
+
+    return upgraded;
   };
 
   const normalizedContent = upgradeLegacyAffiliateBlocks(renderContent() || '');
