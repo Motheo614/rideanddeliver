@@ -54,13 +54,19 @@ export default function ArticleAuthorBox({
 
       {isOpen && (
         <div id={bioId} className="mt-3 border-t border-gray-200 pt-3 text-sm leading-relaxed text-gray-600">
-          <p className="font-semibold text-gray-800">About Marcus Webb</p>
+          <p className="font-semibold text-gray-800">A Word from Marcus Webb</p>
           <p className="mt-1">
-            Marcus has been delivering on motorcycle in New York City since 2019, logging 4,000+
-            hours across DoorDash, Uber Eats, and Grubhub. He started Rider Complex after spending
-            his first year in the gig buying the wrong gear and getting bad advice from people who
-            had never taken a single delivery shift. He rides a Honda CB500F out of Brooklyn and
-            writes about what actually works - tested on real shifts, not in parking lots.
+            I&apos;ve spent years exploring the gig economy from the rider&apos;s side, testing different
+            setups, vehicles, and tools to figure out what actually works on the road.
+          </p>
+          <p className="mt-2">
+            From motorcycles and e-bikes to rental options and delivery gear, the focus is always
+            the same: what holds up during long shifts and what keeps riders efficient without
+            burning through money they just earned.
+          </p>
+          <p className="mt-2">
+            My writing is centered around that idea. Practical insights, smarter decisions, and
+            setups that support consistent earnings on the road.
           </p>
         </div>
       )}
