@@ -159,3 +159,16 @@
   border-radius: 8px !important;
   font-weight: 800 !important;
 }
+
+/* Legacy layout horizontal alignment only: move name/button to image center line */
+.prose h3:has(+ p a[href*="amzn.to"]),
+.prose h3:has(+ p a[href*="amazon."]) {
+  width: fit-content;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.prose h3:has(+ p a[href*="amzn.to"]) + p,
+.prose h3:has(+ p a[href*="amazon."]) + p {
+  text-align: center !important;
+}
