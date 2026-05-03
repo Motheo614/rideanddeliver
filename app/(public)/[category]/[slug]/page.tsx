@@ -159,6 +159,18 @@ export default async function BlogPostPage({ params }: Props) {
       }
     );
 
+    // Final cleanup for legacy chunks that still pass through:
+    // remove ASIN and standalone price lines when they are attached to affiliate CTA blocks.
+    upgraded = upgraded
+      .replace(
+        /<p[^>]*>\s*(?:<span[^>]*>)?\s*ASIN:\s*[^<]+(?:<\/span>)?\s*<\/p>(?=[\s\S]{0,500}<a[^>]*href="[^"]*(?:amzn\.to|amazon\.)[^"]*"[^>]*>)/gi,
+        ''
+      )
+      .replace(
+        /<p[^>]*>\s*(?:<strong[^>]*>)?\s*\$\s*[0-9][0-9,\.]*(?:<\/strong>)?\s*<\/p>(?=[\s\S]{0,250}<a[^>]*href="[^"]*(?:amzn\.to|amazon\.)[^"]*"[^>]*>)/gi,
+        ''
+      );
+
     return upgraded;
   };
 
