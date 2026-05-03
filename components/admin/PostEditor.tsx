@@ -344,25 +344,20 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
     const imageUrl = (product.imageUrl || '').trim();
     const price = (product.price || '').trim();
-    const asin = (product.asin || '').trim();
 
     const safeName = escapeHtml(name);
-    const safePrice = escapeHtml(price);
-    const safeAsin = escapeHtml(asin);
     const safeLink = escapeHtml(affiliateLink);
     const safeImageUrl = escapeHtml(imageUrl);
 
     const productHtml = `
 <div class="affiliate-product-card" style="max-width:420px;margin:28px auto;padding:16px 18px;border:1px solid #e5e7eb;border-radius:14px;background:#ffffff;text-align:center;">
   ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" style="display:block;width:100%;max-width:260px;height:auto;object-fit:contain;margin:0 auto 12px;border-radius:8px;" />` : ''}
-  <p style="margin:0 0 4px;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:31px;line-height:1.3;font-weight:800;color:#111827;">${safeName}</p>
-  ${safeAsin ? `<p style="margin:0 0 8px;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:12px;letter-spacing:0.04em;color:#6b7280;font-weight:600;">ASIN: ${safeAsin}</p>` : ''}
-  ${safePrice ? `<p style="margin:0 0 12px;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:25px;font-weight:800;color:#CC0000;">${safePrice}</p>` : ''}
-  <p style="margin:0;">
+  <h3 style="margin:0 0 4px;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:31px;line-height:1.3;font-weight:800;color:#111827;">${safeName}</h3>
+  <div class="affiliate-card-cta" style="margin:0;">
     <a href="${safeLink}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-block;background:#CC0000;color:#fff;text-decoration:none;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:13px;font-weight:800;letter-spacing:0.02em;padding:10px 18px;border-radius:8px;">
-      Check Price
+      CHECK PRICE ON AMAZON
     </a>
-  </p>
+  </div>
 </div>`;
 
     const range = getSafeRange(quill);
