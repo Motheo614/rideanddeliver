@@ -160,6 +160,23 @@
   font-weight: 800 !important;
 }
 
+/* Quill legacy centered product blocks (live content) */
+.prose .ql-align-center {
+  text-align: center !important;
+}
+
+.prose .ql-align-center img {
+  display: block !important;
+  margin: 0 auto 12px !important;
+}
+
+.prose .ql-align-center > strong {
+  display: block !important;
+  width: fit-content;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
 /* Legacy layout horizontal alignment only: move name/button to image center line */
 .prose h3:has(+ p a[href*="amzn.to"]),
 .prose h3:has(+ p a[href*="amazon."]) {
