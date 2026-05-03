@@ -55,6 +55,18 @@ interface PostEditorProps {
   mode: 'create' | 'edit';
 }
 
+interface ProductListItem {
+  _id: string;
+  productName?: string;
+  name?: string;
+  asin?: string;
+  affiliateLink?: string;
+  price?: string;
+  imageUrl?: string;
+  description?: string;
+  pros?: string[];
+}
+
 const categoryOptions = [
   { value: 'safety-gear', label: 'Safety Gear' },
   { value: 'tech-lighting', label: 'Tech & Lighting' },
@@ -99,6 +111,9 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [linkSearchQuery, setLinkSearchQuery] = useState('');
   const [linkSearchResults, setLinkSearchResults] = useState<any[]>([]);
   const [linkSearching, setLinkSearching] = useState(false);
+  const [productSearchQuery, setProductSearchQuery] = useState('');
+  const [productSearchResults, setProductSearchResults] = useState<ProductListItem[]>([]);
+  const [productSearching, setProductSearching] = useState(false);
   const [tableSelected, setTableSelected] = useState(false);
   const [tableSelectorUI, setTableSelectorUI] = useState({
     visible: false,
@@ -278,6 +293,93 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     }
   };
 
+  const searchProducts = async (query: string) => {
+    setProductSearching(true);
+    try {
+      const params = new URLSearchParams({ includeInactive: 'true' });
+      if (query.trim()) {
+        params.set('search', query.trim());
+      }
+
+      const response = await fetch(`/api/products?${params.toString()}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+
+      const data = await response.json();
+      setProductSearchResults((data.products || []).slice(0, 12));
+    } catch (error) {
+      console.error('Error searching products:', error);
+      setProductSearchResults([]);
+    } finally {
+      setProductSearching(false);
+    }
+  };
+
+  const escapeHtml = (value: string) =>
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+
+  const insertProductBlock = (product: ProductListItem) => {
+    const quill = getQuillInstance();
+
+    if (!quill) {
+      showToast('Editor not ready. Please try again.', 'error');
+      return;
+    }
+
+    const name = (product.productName || product.name || '').trim();
+    const affiliateLink = (product.affiliateLink || '').trim();
+    if (!name || !affiliateLink) {
+      showToast('Product is missing a name or affiliate link.', 'error');
+      return;
+    }
+
+    const description = (product.description || '').trim();
+    const imageUrl = (product.imageUrl || '').trim();
+    const price = (product.price || '').trim();
+    const asin = (product.asin || '').trim();
+    const pros = Array.isArray(product.pros)
+      ? product.pros.filter(Boolean).map((pro) => String(pro).trim()).filter(Boolean).slice(0, 4)
+      : [];
+
+    const safeName = escapeHtml(name);
+    const safeDescription = escapeHtml(description);
+    const safePrice = escapeHtml(price);
+    const safeAsin = escapeHtml(asin);
+    const safeLink = escapeHtml(affiliateLink);
+    const safeImageUrl = escapeHtml(imageUrl);
+    const prosHtml = pros.map((pro) => `<li>${escapeHtml(pro)}</li>`).join('');
+
+    const productHtml = `
+<div class="affiliate-product-card" style="border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:24px 0;background:#fff;">
+  <h3 style="margin:0 0 8px;font-size:24px;line-height:1.3;font-weight:800;color:#111827;">${safeName}</h3>
+  ${safeAsin ? `<p style="margin:0 0 8px;font-size:12px;color:#6b7280;font-weight:600;">ASIN: ${safeAsin}</p>` : ''}
+  ${safePrice ? `<p style="margin:0 0 12px;font-size:18px;font-weight:800;color:#b91c1c;">${safePrice}</p>` : ''}
+  ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" style="max-width:220px;height:auto;border-radius:8px;margin:0 0 12px;" />` : ''}
+  ${safeDescription ? `<p style="margin:0 0 12px;color:#374151;line-height:1.6;">${safeDescription}</p>` : ''}
+  ${prosHtml ? `<ul style="margin:0 0 16px;padding-left:20px;color:#374151;line-height:1.6;">${prosHtml}</ul>` : ''}
+  <p>
+    <a href="${safeLink}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-block;background:#cc0000;color:#fff;text-decoration:none;font-weight:800;padding:10px 16px;border-radius:8px;">
+      Check Latest Price on Amazon
+    </a>
+  </p>
+</div>`;
+
+    const range = getSafeRange(quill);
+    const insertIndex = range ? range.index : 0;
+    quill.clipboard.dangerouslyPasteHTML(insertIndex, productHtml);
+    quill.setSelection(insertIndex + 1, 0, 'silent');
+    showToast(`Inserted ${name}`, 'success');
+  };
+
   const normalizePathSegment = (value: unknown) => {
     return String(value || '')
       .trim()
@@ -400,6 +502,14 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
     return () => clearTimeout(delayDebounceFn);
   }, [linkSearchQuery]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      searchProducts(productSearchQuery);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [productSearchQuery]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -1162,6 +1272,46 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Product Insert Card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-3">Insert Product Blocks</h3>
+
+              <input
+                type="text"
+                value={productSearchQuery}
+                onChange={(e) => setProductSearchQuery(e.target.value)}
+                placeholder="Search products by name or ASIN"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+              />
+
+              <div className="max-h-72 overflow-y-auto space-y-2">
+                {productSearching ? (
+                  <p className="text-xs text-gray-500">Loading products...</p>
+                ) : productSearchResults.length === 0 ? (
+                  <p className="text-xs text-gray-500">No products found.</p>
+                ) : (
+                  productSearchResults.map((product) => {
+                    const productName = product.productName || product.name || 'Untitled product';
+                    return (
+                      <div key={product._id} className="border border-gray-200 rounded-lg p-2">
+                        <p className="text-xs font-bold text-gray-800 line-clamp-2">{productName}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {product.price || 'No price'}{product.asin ? ` • ${product.asin}` : ''}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => insertProductBlock(product)}
+                          className="mt-2 w-full bg-[#CC0000] text-white text-xs font-bold px-2 py-1.5 rounded-md hover:bg-[#AA0000] transition-colors"
+                        >
+                          Insert Product
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
 
             {/* Post Settings Card */}
