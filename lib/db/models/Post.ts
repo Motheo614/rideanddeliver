@@ -44,6 +44,15 @@ export interface IPost extends Document {
     metaDescription: string;
     keywords: string[];
   };
+  cta?: {
+    enabled: boolean;
+    title?: string;
+    description?: string;
+    primaryHref?: string;
+    primaryLabel?: string;
+    secondaryHref?: string;
+    secondaryLabel?: string;
+  };
   status: 'draft' | 'published' | 'archived';
   publishedAt?: Date;
   views: number;
@@ -121,6 +130,18 @@ const PostSchema = new Schema<IPost, IPostModel>(
       metaTitle: String,
       metaDescription: String,
       keywords: [String],
+    },
+    cta: {
+      enabled: {
+        type: Boolean,
+        default: false,
+      },
+      title: String,
+      description: String,
+      primaryHref: String,
+      primaryLabel: String,
+      secondaryHref: String,
+      secondaryLabel: String,
     },
     status: {
       type: String,

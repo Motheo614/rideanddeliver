@@ -17,5 +17,14 @@ export interface Post {
     url: string;
     price?: string;
   }[];
+  cta?: {
+    enabled: boolean;
+    title?: string;
+    description?: string;
+    primaryHref?: string;
+    primaryLabel?: string;
+    secondaryHref?: string;
+    secondaryLabel?: string;
+  };
   content: string;
 }

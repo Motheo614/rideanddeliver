@@ -32,6 +32,15 @@ interface Post {
     metaDescription: string;
     keywords: string[];
   };
+  cta?: {
+    enabled: boolean;
+    title?: string;
+    description?: string;
+    primaryHref?: string;
+    primaryLabel?: string;
+    secondaryHref?: string;
+    secondaryLabel?: string;
+  };
 }
 
 export default function EditPostPage() {

@@ -22,14 +22,23 @@ interface Product {
 }
 
 const categoryOptions = [
-  { value: 'helmets', label: 'Helmets' },
-  { value: 'lights', label: 'Lights' },
-  { value: 'locks', label: 'Locks' },
-  { value: 'bags', label: 'Bags' },
-  { value: 'tools', label: 'Tools' },
-  { value: 'clothing', label: 'Clothing' },
-  { value: 'accessories', label: 'Accessories' },
+  { value: 'helmets', label: 'Safety Gear' },
+  { value: 'lights', label: 'Tech & Lighting' },
+  { value: 'locks', label: 'Bike Security' },
+  { value: 'bags', label: 'Delivery Gear' },
 ];
+
+const normalizeUiCategory = (category: string) => {
+  if (['bags', 'tools', 'clothing', 'accessories'].includes(category)) {
+    return 'bags';
+  }
+
+  return category;
+};
+
+const getCategoryLabel = (category: string) => {
+  return categoryOptions.find(c => c.value === normalizeUiCategory(category))?.label || category;
+};
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -88,7 +97,7 @@ export default function ProductsPage() {
     let filtered = [...products];
 
     if (categoryFilter !== 'all') {
-      filtered = filtered.filter(p => p.category === categoryFilter);
+      filtered = filtered.filter(p => normalizeUiCategory(p.category) === categoryFilter);
     }
 
     if (searchQuery) {
@@ -127,7 +136,7 @@ export default function ProductsPage() {
       productName: product.productName,
       asin: product.asin,
       affiliateLink: product.affiliateLink,
-      category: product.category,
+      category: normalizeUiCategory(product.category),
       price: product.price,
       imageUrl: product.imageUrl,
       rating: product.rating,
@@ -423,7 +432,7 @@ export default function ProductsPage() {
                   
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                      {categoryOptions.find(c => c.value === product.category)?.label || product.category}
+                      {getCategoryLabel(product.category)}
                     </span>
                   </div>
 

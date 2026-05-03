@@ -39,6 +39,15 @@ interface Post {
     metaDescription: string;
     keywords: string[];
   };
+  cta?: {
+    enabled: boolean;
+    title?: string;
+    description?: string;
+    primaryHref?: string;
+    primaryLabel?: string;
+    secondaryHref?: string;
+    secondaryLabel?: string;
+  };
 }
 
 interface PostEditorProps {
@@ -114,6 +123,13 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [metaTitle, setMetaTitle] = useState(post?.seoMetadata?.metaTitle || '');
   const [metaDescription, setMetaDescription] = useState(post?.seoMetadata?.metaDescription || '');
   const [keywords, setKeywords] = useState(post?.seoMetadata?.keywords?.join(', ') || '');
+  const [ctaEnabled, setCtaEnabled] = useState(Boolean(post?.cta?.enabled));
+  const [ctaTitle, setCtaTitle] = useState(post?.cta?.title || 'Ready To Upgrade Your Riding Gear?');
+  const [ctaDescription, setCtaDescription] = useState(post?.cta?.description || 'Check the latest prices and deals before your next shift.');
+  const [ctaPrimaryHref, setCtaPrimaryHref] = useState(post?.cta?.primaryHref || '');
+  const [ctaPrimaryLabel, setCtaPrimaryLabel] = useState(post?.cta?.primaryLabel || 'Compare All Options on Amazon');
+  const [ctaSecondaryHref, setCtaSecondaryHref] = useState(post?.cta?.secondaryHref || '');
+  const [ctaSecondaryLabel, setCtaSecondaryLabel] = useState(post?.cta?.secondaryLabel || 'View More Gloves on RevZilla');
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -649,6 +665,15 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
         metaTitle: metaTitle || title,
         metaDescription: metaDescription || excerpt,
         keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
+      },
+      cta: {
+        enabled: ctaEnabled,
+        title: ctaTitle.trim(),
+        description: ctaDescription.trim(),
+        primaryHref: ctaPrimaryHref.trim(),
+        primaryLabel: ctaPrimaryLabel.trim(),
+        secondaryHref: ctaSecondaryHref.trim(),
+        secondaryLabel: ctaSecondaryLabel.trim(),
       },
     };
 
@@ -1229,6 +1254,66 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* CTA Card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-3">Article CTA</h3>
+
+              <label className="flex items-center justify-between mb-3 cursor-pointer">
+                <span className="text-sm text-gray-600">Enable CTA</span>
+                <input
+                  type="checkbox"
+                  checked={ctaEnabled}
+                  onChange={(e) => setCtaEnabled(e.target.checked)}
+                  className="w-4 h-4 text-[#CC0000] border-gray-300 rounded focus:ring-[#CC0000]"
+                />
+              </label>
+
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={ctaTitle}
+                  onChange={(e) => setCtaTitle(e.target.value)}
+                  placeholder="CTA heading"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                />
+                <textarea
+                  value={ctaDescription}
+                  onChange={(e) => setCtaDescription(e.target.value)}
+                  placeholder="CTA description"
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000] resize-none"
+                />
+                <input
+                  type="url"
+                  value={ctaPrimaryHref}
+                  onChange={(e) => setCtaPrimaryHref(e.target.value)}
+                  placeholder="Primary button URL"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                />
+                <input
+                  type="text"
+                  value={ctaPrimaryLabel}
+                  onChange={(e) => setCtaPrimaryLabel(e.target.value)}
+                  placeholder="Primary button label"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                />
+                <input
+                  type="url"
+                  value={ctaSecondaryHref}
+                  onChange={(e) => setCtaSecondaryHref(e.target.value)}
+                  placeholder="Secondary button URL (optional)"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                />
+                <input
+                  type="text"
+                  value={ctaSecondaryLabel}
+                  onChange={(e) => setCtaSecondaryLabel(e.target.value)}
+                  placeholder="Secondary button label (optional)"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -10,6 +10,7 @@ import { CATEGORY_MAP } from '@/lib/categoryMap';
 import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import TableWrapper from '@/components/TableWrapper';
 import SeoJsonLd from '@/components/SeoJsonLd';
+import ArticleBottomCta from '@/components/ArticleBottomCta';
 import {
   buildBlogPostingSchema,
   buildBreadcrumbSchema,
@@ -99,6 +100,17 @@ export default async function BlogPostPage({ params }: Props) {
   };
 
   const normalizedContent = renderContent() || '';
+  const cmsCta = (post as any).cta;
+  const articleCta = cmsCta?.enabled
+    ? {
+        title: cmsCta.title || 'Ready To Upgrade Your Riding Gear?',
+        description: cmsCta.description || 'Check the latest prices and deals before your next shift.',
+        primaryHref: cmsCta.primaryHref || '',
+        primaryLabel: cmsCta.primaryLabel || 'Compare All Options',
+        secondaryHref: cmsCta.secondaryHref || undefined,
+        secondaryLabel: cmsCta.secondaryLabel || undefined,
+      }
+    : null;
   const estimatedReadTime =
     typeof post.readTime === 'number' && post.readTime > 0
       ? post.readTime
@@ -243,6 +255,17 @@ export default async function BlogPostPage({ params }: Props) {
                 />
               </TableWrapper>
             </div>
+
+            {articleCta && articleCta.primaryHref && (
+              <ArticleBottomCta
+                title={articleCta.title}
+                description={articleCta.description}
+                primaryHref={articleCta.primaryHref}
+                primaryLabel={articleCta.primaryLabel}
+                secondaryHref={articleCta.secondaryHref}
+                secondaryLabel={articleCta.secondaryLabel}
+              />
+            )}
 
             {post.tags && post.tags.length > 0 && (
               <section className="mt-12 md:mt-16 pt-8 border-t border-gray-200">

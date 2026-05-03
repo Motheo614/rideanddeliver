@@ -101,7 +101,7 @@ export async function PUT(
       'title', 'slug', 'excerpt', 'content', 'featuredImage',
       'category', 'categoryLabel', 'tags', 'author', 'amazonProducts',
       'seoMetadata', 'status', 'publishedAt', 'readTime',
-      'featured', 'trending', 'editorsPick'
+      'featured', 'trending', 'editorsPick', 'cta'
     ];
 
     allowedFields.forEach(field => {
