@@ -12,15 +12,6 @@ import {
   buildCollectionPageSchema,
   buildItemListSchema,
 } from '@/lib/seo/schema';
-import { buildPageMetadata } from '@/lib/seo/metadata';
-
-export const metadata = buildPageMetadata({
-  title: 'Best Delivery Rider Gear Reviews & Buying Guides',
-  description: 'Expert reviews and practical buying guides for US gig riders on Uber Eats, DoorDash, and Grubhub.',
-  path: '/',
-  image: '/Assets/Logo.png',
-  keywords: ['delivery rider gear', 'Uber Eats gear', 'DoorDash rider equipment', 'gig rider safety'],
-});
 
 // Revalidate every 30 seconds
 export const revalidate = 30;

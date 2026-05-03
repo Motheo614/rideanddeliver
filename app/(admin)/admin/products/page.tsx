@@ -6,7 +6,7 @@ import { Plus, Edit2, Trash2, X, Star } from 'lucide-react';
 
 interface Product {
   _id: string;
-  name: string;
+  productName: string;
   asin: string;
   affiliateLink: string;
   category: string;
@@ -22,10 +22,12 @@ interface Product {
 }
 
 const categoryOptions = [
-  { value: 'safety-gear', label: 'Safety Gear' },
-  { value: 'tech-lighting', label: 'Tech & Lighting' },
-  { value: 'bike-security', label: 'Bike Security' },
-  { value: 'delivery-gear', label: 'Delivery Gear' },
+  { value: 'helmets', label: 'Helmets' },
+  { value: 'lights', label: 'Lights' },
+  { value: 'locks', label: 'Locks' },
+  { value: 'bags', label: 'Bags' },
+  { value: 'tools', label: 'Tools' },
+  { value: 'clothing', label: 'Clothing' },
   { value: 'accessories', label: 'Accessories' },
 ];
 
@@ -43,7 +45,7 @@ export default function ProductsPage() {
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
+    productName: '',
     asin: '',
     affiliateLink: '',
     category: '',
@@ -91,7 +93,7 @@ export default function ProductsPage() {
 
     if (searchQuery) {
       filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.asin.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
@@ -102,7 +104,7 @@ export default function ProductsPage() {
   const openAddModal = () => {
     setEditingProduct(null);
     setFormData({
-      name: '',
+      productName: '',
       asin: '',
       affiliateLink: '',
       category: '',
@@ -122,7 +124,7 @@ export default function ProductsPage() {
   const openEditModal = (product: Product) => {
     setEditingProduct(product);
     setFormData({
-      name: product.name,
+      productName: product.productName,
       asin: product.asin,
       affiliateLink: product.affiliateLink,
       category: product.category,
@@ -142,8 +144,8 @@ export default function ProductsPage() {
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
 
-    if (!formData.name.trim()) {
-      errors.name = 'Product name is required';
+    if (!formData.productName.trim()) {
+      errors.productName = 'Product name is required';
     }
 
     if (!formData.asin.trim()) {
@@ -401,7 +403,7 @@ export default function ProductsPage() {
                   {product.imageUrl && !brokenImages[product._id] ? (
                     <img
                       src={normalizeImageUrl(product.imageUrl)}
-                      alt={product.name}
+                      alt={product.productName}
                       loading="lazy"
                       className="max-h-[120px] max-w-[120px] object-contain"
                       onError={() => {
@@ -417,7 +419,7 @@ export default function ProductsPage() {
 
                 {/* Product Info */}
                 <div className="p-4">
-                  <h3 className="font-bold text-[#1a1a1a] mb-2 line-clamp-2">{product.name}</h3>
+                  <h3 className="font-bold text-[#1a1a1a] mb-2 line-clamp-2">{product.productName}</h3>
                   
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
@@ -499,15 +501,15 @@ export default function ProductsPage() {
                   </label>
                   <input
                     type="text"
-                    value={formData.name}
-                    onChange={(e) => updateFormField('name', e.target.value)}
+                    value={formData.productName}
+                    onChange={(e) => updateFormField('productName', e.target.value)}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] ${
-                      formErrors.name ? 'border-red-500' : 'border-gray-200'
+                      formErrors.productName ? 'border-red-500' : 'border-gray-200'
                     }`}
                     placeholder="Enter product name"
                   />
-                  {formErrors.name && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>
+                  {formErrors.productName && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.productName}</p>
                   )}
                 </div>
 
