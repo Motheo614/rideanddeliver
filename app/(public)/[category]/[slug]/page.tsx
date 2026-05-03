@@ -104,15 +104,11 @@ export default async function BlogPostPage({ params }: Props) {
 
     const buildAffiliateCard = (
       name: string,
-      asin: string,
-      price: string,
       imageTag: string,
       href: string,
       description?: string
     ) => {
       const trimmedName = String(name || '').trim();
-      const trimmedAsin = String(asin || '').trim();
-      const trimmedPrice = String(price || '').trim();
       const trimmedHref = String(href || '').trim();
       const trimmedDescription = String(description || '').trim();
 
@@ -124,9 +120,7 @@ export default async function BlogPostPage({ params }: Props) {
         '<div class="affiliate-product-card">',
         imageTag,
         `<h3>${trimmedName}</h3>`,
-        `<p>ASIN: ${trimmedAsin}</p>`,
-        `<p>${trimmedPrice}</p>`,
-        `<p><a href="${trimmedHref}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></p>`,
+        `<div class="affiliate-card-cta"><a href="${trimmedHref}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></div>`,
         '</div>',
       ].join('');
 
@@ -135,22 +129,33 @@ export default async function BlogPostPage({ params }: Props) {
 
     // Convert old inline-formatted product chunks (title/asin/price/image/link)
     // into the new affiliate-product-card wrapper so global styling applies.
-    const legacyBlockPattern = /<h3[^>]*>\s*(?:<strong[^>]*>)?([^<]+?)(?:<\/strong>)?\s*<\/h3>\s*<p[^>]*>\s*(?:<span[^>]*>)?\s*ASIN:\s*([^<]+?)\s*(?:<\/span>)?\s*<\/p>\s*<p[^>]*>\s*(?:<strong[^>]*>)?\s*([^<]+?)\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>\s*(?:<span[^>]*>)?\s*(<img[^>]+>)\s*(?:<\/span>)?\s*<\/p>\s*(?:<p[^>]*>\s*(?:<span[^>]*>)?([^<]+?)(?:<\/span>)?\s*<\/p>\s*)?<p[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>[\s\S]*?<\/p>/gi;
+    const legacyBlockPattern = /<h3[^>]*>\s*<strong[^>]*>([^<]+?)<\/strong>\s*<\/h3>\s*<p[^>]*>\s*(?:<span[^>]*>)?\s*ASIN:\s*([^<]+?)\s*(?:<\/span>)?\s*<\/p>\s*<p[^>]*>\s*(?:<strong[^>]*>)?\s*([^<]+?)\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>\s*(?:<span[^>]*>)?\s*(<img[^>]+>)\s*(?:<\/span>)?\s*<\/p>\s*(?:<p[^>]*>\s*(?:<span[^>]*>)?([^<]+?)(?:<\/span>)?\s*<\/p>\s*)?<p[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>[\s\S]*?<\/p>/gi;
 
     let upgraded = html.replace(
       legacyBlockPattern,
-      (_match, name, asin, price, imageTag, description, href) => {
-        return buildAffiliateCard(name, asin, price, imageTag, href, description) || _match;
+      (_match, name, _asin, _price, imageTag, description, href) => {
+        return buildAffiliateCard(name, imageTag, href, description) || _match;
       }
     );
 
     // Handle live legacy variant where image and description are mixed in the same paragraph.
-    const mixedParagraphLegacyPattern = /<h3[^>]*>\s*(?:<strong[^>]*>)?([^<]+?)(?:<\/strong>)?\s*<\/h3>\s*<p[^>]*>[\s\S]*?ASIN:\s*([^<]+?)\s*(?:<\/span>)?\s*<\/p>\s*<p[^>]*>[\s\S]*?(?:<strong[^>]*>)?\s*([^<]+?)\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>[\s\S]*?(<img[^>]+>)[\s\S]*?(?:<\/span>)?\s*(?:<span[^>]*>)?([^<]*?)?(?:<\/span>)?\s*<\/p>\s*<p[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>[\s\S]*?<\/p>/gi;
+    const mixedParagraphLegacyPattern = /<h3[^>]*>\s*<strong[^>]*>([^<]+?)<\/strong>\s*<\/h3>\s*<p[^>]*>[\s\S]*?ASIN:\s*([^<]+?)\s*(?:<\/span>)?\s*<\/p>\s*<p[^>]*>[\s\S]*?(?:<strong[^>]*>)?\s*([^<]+?)\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>[\s\S]*?(<img[^>]+>)[\s\S]*?(?:<\/span>)?\s*(?:<span[^>]*>)?([^<]*?)?(?:<\/span>)?\s*<\/p>\s*<p[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>[\s\S]*?<\/p>/gi;
 
     upgraded = upgraded.replace(
       mixedParagraphLegacyPattern,
-      (_match, name, asin, price, imageTag, description, href) => {
-        return buildAffiliateCard(name, asin, price, imageTag, href, description) || _match;
+      (_match, name, _asin, _price, imageTag, description, href) => {
+        return buildAffiliateCard(name, imageTag, href, description) || _match;
+      }
+    );
+
+    // Fallback: broad matcher for legacy chunks where CTA is wrapped in <strong><a>
+    // and image/description may share one paragraph.
+    const broadLegacyPattern = /<h3[^>]*>\s*<strong[^>]*>([^<]+?)<\/strong>\s*<\/h3>\s*<p[^>]*>[\s\S]*?ASIN:\s*([^<]+?)[\s\S]*?<\/p>\s*<p[^>]*>[\s\S]*?(\$[^<]+?)[\s\S]*?<\/p>\s*<p[^>]*>[\s\S]*?(<img[^>]+>)[\s\S]*?(?:<span[^>]*>)?([^<]*?)?(?:<\/span>)?[\s\S]*?<\/p>\s*<p[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>[\s\S]*?<\/p>/gi;
+
+    upgraded = upgraded.replace(
+      broadLegacyPattern,
+      (_match, name, _asin, _price, imageTag, description, href) => {
+        return buildAffiliateCard(name, imageTag, href, description) || _match;
       }
     );
 
