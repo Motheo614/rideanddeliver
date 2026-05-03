@@ -168,6 +168,11 @@
 .prose .ql-align-center img {
   display: block !important;
   margin: 0 auto 12px !important;
+  box-shadow: none !important;
+}
+
+.affiliate-product-card img {
+  box-shadow: none !important;
 }
 
 .prose .ql-align-center > strong {
