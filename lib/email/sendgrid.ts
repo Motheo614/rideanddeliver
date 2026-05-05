@@ -133,3 +133,32 @@ export async function sendNewsletterLeadNotification(
     `,
   });
 }
+
+interface ContactNotificationPayload {
+  name: string;
+  email: string;
+  message: string;
+  submittedAt: Date;
+}
+
+export async function sendContactFormNotification(payload: ContactNotificationPayload) {
+  const { fromEmail } = configureSendGridClient();
+  const contactInbox = process.env.NEWSLETTER_LIST_EMAIL || 'info@ridercomplex.com';
+
+  await sgMail.send({
+    to: contactInbox,
+    from: fromEmail,
+    subject: `New contact form message from ${payload.name}`,
+    text: `New contact form submission\n\nName: ${payload.name}\nEmail: ${payload.email}\nSubmitted At (UTC): ${payload.submittedAt.toISOString()}\n\nMessage:\n${payload.message}\n`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1a1a1a;">
+        <h2>New contact form submission</h2>
+        <p><strong>Name:</strong> ${payload.name}</p>
+        <p><strong>Email:</strong> ${payload.email}</p>
+        <p><strong>Submitted At (UTC):</strong> ${payload.submittedAt.toISOString()}</p>
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-wrap;">${payload.message}</p>
+      </div>
+    `,
+  });
+}
