@@ -8,20 +8,19 @@ function getSiteUrl() {
 
 function buildEmailShell(content: string) {
   const siteUrl = getSiteUrl();
-  const year = new Date().getFullYear();
 
   return `
     <div style="margin:0; background:#f4f4f5; padding:24px 12px; font-family:Arial,sans-serif; color:#1a1a1a;">
       <div style="max-width:680px; margin:0 auto; background:#ffffff; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden;">
         <div style="padding:24px; text-align:center; border-bottom:1px solid #e5e7eb; background:#ffffff;">
-          <img src="${siteUrl}/Assets/Logo.png" alt="GearJunkie" width="220" style="max-width:100%; height:auto;" />
+          <img src="${siteUrl}/Assets/Logo.png" alt="Rider Complex" width="220" style="max-width:100%; height:auto;" />
         </div>
         <div style="padding:28px 24px; text-align:center;">
           ${content}
         </div>
         <div style="padding:18px 24px; border-top:1px solid #e5e7eb; background:#fafafa; text-align:center; font-size:13px; color:#6b7280;">
-          <p style="margin:0;">GearJunkie Newsletter</p>
-          <p style="margin:8px 0 0;">&copy;${year} GearJunkie</p>
+          <p style="margin:0;">Rider Complex Newsletter</p>
+          <p style="margin:8px 0 0;">&copy; 2026 Rider Complex. All rights reserved.</p>
         </div>
       </div>
     </div>
@@ -48,15 +47,20 @@ function configureSendGridClient() {
   }
   sgMail.setClient(client);
 
-  return { fromEmail };
+  return {
+    from: {
+      email: fromEmail,
+      name: 'Rider Complex',
+    },
+  };
 }
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string) {
-  const { fromEmail } = configureSendGridClient();
+  const { from } = configureSendGridClient();
 
   await sgMail.send({
     to: email,
-    from: fromEmail,
+    from,
     subject: 'Reset your Rider Complex admin password',
     text: `You requested a password reset for your Rider Complex admin account.\n\nReset link:\n${resetUrl}\n\nThis link expires in 30 minutes.\nIf you did not request this, you can ignore this email.`,
     html: `
@@ -76,28 +80,28 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
 }
 
 export async function sendNewsletterWelcomeEmail(email: string) {
-  const { fromEmail } = configureSendGridClient();
+  const { from } = configureSendGridClient();
 
   await sgMail.send({
     to: email,
-    from: fromEmail,
-    subject: 'Subscription confirmed - GearJunkie',
-    text: `Your GearJunkie subscription is confirmed. You will receive practical rider guides, gear picks, and updates in your inbox.`,
+    from,
+    subject: 'Subscription confirmed – Rider Complex',
+    text: `Your Rider Complex subscription is confirmed. You will receive practical rider guides, gear picks, and updates in your inbox.`,
     html: buildEmailShell(`
       <h1 style="margin:0; font-size:38px; line-height:1.2; font-family:Georgia,serif; color:#111827;">Subscription confirmed</h1>
-      <p style="margin:18px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">Thanks for subscribing to GearJunkie.</p>
+      <p style="margin:18px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">Thanks for subscribing to Rider Complex.</p>
       <p style="margin:10px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">You will receive practical rider guides, gear picks, and updates in your inbox.</p>
     `),
   });
 }
 
 export async function sendNewsletterVerificationEmail(email: string, verifyUrl: string) {
-  const { fromEmail } = configureSendGridClient();
+  const { from } = configureSendGridClient();
   const siteUrl = getSiteUrl();
 
   await sgMail.send({
     to: email,
-    from: fromEmail,
+    from,
     subject: 'Confirm your Rider Complex subscription',
     text: `Thanks for subscribing to Rider Complex. Verify your email address to complete your subscription: ${verifyUrl}\n\nThis link expires in 24 hours. If you didn't subscribe, you can safely ignore this email.`,
     html: `
@@ -118,7 +122,7 @@ export async function sendNewsletterVerificationEmail(email: string, verifyUrl: 
         <div style="max-width:600px; margin:0 auto;">
           <div style="background:#FFFFFF; border:1px solid #E5E5E5; border-radius:8px; box-shadow:0 6px 18px rgba(17,17,17,0.06); overflow:hidden;">
             <div style="padding:24px; text-align:center; border-bottom:1px solid #E5E5E5; background:#FFFFFF;">
-              <img src="${siteUrl}/Assets/Logo.png" alt="GearJunkie" width="220" style="max-width:100%; height:auto;" />
+              <img src="${siteUrl}/Assets/Logo.png" alt="Rider Complex" width="220" style="max-width:100%; height:auto;" />
             </div>
             <div class="rc-card" style="padding:40px; text-align:center; background:#FFFFFF;">
               <h1 style="margin:0; font-size:28px; line-height:1.2; font-weight:700; font-family:system-ui,-apple-system,sans-serif; color:#111111;">
@@ -155,12 +159,12 @@ export async function sendNewsletterLeadNotification(
   source: string,
   subscribedAt: Date
 ) {
-  const { fromEmail } = configureSendGridClient();
+  const { from } = configureSendGridClient();
   const listInbox = process.env.NEWSLETTER_LIST_EMAIL || 'info@ridercomplex.com';
 
   await sgMail.send({
     to: listInbox,
-    from: fromEmail,
+    from,
     subject: `New newsletter subscriber: ${subscriberEmail}`,
     text: `New newsletter subscriber\n\nEmail: ${subscriberEmail}\nSource: ${source}\nSubscribed At (UTC): ${subscribedAt.toISOString()}\n`,
     html: `
@@ -182,12 +186,12 @@ interface ContactNotificationPayload {
 }
 
 export async function sendContactFormNotification(payload: ContactNotificationPayload) {
-  const { fromEmail } = configureSendGridClient();
+  const { from } = configureSendGridClient();
   const contactInbox = process.env.NEWSLETTER_LIST_EMAIL || 'info@ridercomplex.com';
 
   await sgMail.send({
     to: contactInbox,
-    from: fromEmail,
+    from,
     subject: `New contact form message from ${payload.name}`,
     text: `New contact form submission\n\nName: ${payload.name}\nEmail: ${payload.email}\nSubmitted At (UTC): ${payload.submittedAt.toISOString()}\n\nMessage:\n${payload.message}\n`,
     html: `

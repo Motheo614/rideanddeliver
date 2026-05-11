@@ -22,7 +22,7 @@ function htmlPage(title: string, message: string, success: boolean) {
         <main style="max-width:720px;margin:28px auto;padding:0 12px;">
           <section style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;">
             <header style="padding:24px;text-align:center;border-bottom:1px solid #e5e7eb;">
-              <img src="/Assets/Logo.png" alt="GearJunkie" width="220" style="max-width:100%;height:auto;" />
+              <img src="/Assets/Logo.png" alt="Rider Complex" width="220" style="max-width:100%;height:auto;" />
             </header>
             <div style="padding:28px 24px;text-align:center;">
               <h1 style="margin:0;font-size:42px;line-height:1.15;font-family:Georgia,serif;">${title}</h1>
