@@ -67,6 +67,8 @@ interface ProductListItem {
   pros?: string[];
 }
 
+type ProductBlockType = 'accent' | 'hero';
+
 const categoryOptions = [
   { value: 'safety-gear', label: 'Safety Gear' },
   { value: 'tech-lighting', label: 'Tech & Lighting' },
@@ -327,7 +329,12 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
 
-  const insertProductBlock = (product: ProductListItem) => {
+  const hasExistingHeroBlock = (quill: any) => {
+    const html = String(quill?.root?.innerHTML || content || '');
+    return /data-block-type=["']hero["']/i.test(html);
+  };
+
+  const insertProductBlock = (product: ProductListItem, blockType: ProductBlockType) => {
     const quill = getQuillInstance();
 
     if (!quill) {
@@ -336,35 +343,48 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     }
 
     const name = (product.productName || product.name || '').trim();
-    const affiliateLink = (product.affiliateLink || '').trim();
-    if (!name || !affiliateLink) {
-      showToast('Product is missing a name or affiliate link.', 'error');
+    if (!name || !product._id) {
+      showToast('Product is missing required metadata.', 'error');
       return;
     }
 
-    const imageUrl = (product.imageUrl || '').trim();
-    const price = (product.price || '').trim();
+    if (blockType === 'hero' && hasExistingHeroBlock(quill)) {
+      showToast('Only one Hero Card is allowed per post.', 'error');
+      return;
+    }
 
     const safeName = escapeHtml(name);
-    const safeLink = escapeHtml(affiliateLink);
-    const safeImageUrl = escapeHtml(imageUrl);
+    const safeProductId = escapeHtml(product._id);
+    const isHero = blockType === 'hero';
+    const labelText = isHero ? '★ Hero Card' : 'Accent Card';
+    const labelColor = isHero ? '#CC0000' : '#6b7280';
+    const borderColor = isHero ? '#CC0000' : '#9ca3af';
+    const helperText = isHero
+      ? 'Featured #1 pick block for this post.'
+      : 'Standard mid-article product mention block.';
 
     const productHtml = `
-<div class="affiliate-product-card" style="max-width:420px;margin:28px auto;padding:16px 18px;border:1px solid #e5e7eb;border-radius:14px;background:#ffffff;text-align:center;">
-  ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" style="display:block;width:100%;max-width:260px;height:auto;object-fit:contain;margin:0 auto 12px;border-radius:8px;" />` : ''}
-  <h3 style="margin:0 0 4px;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:31px;line-height:1.3;font-weight:800;color:#111827;">${safeName}</h3>
-  <div class="affiliate-card-cta" style="margin:0;">
-    <a href="${safeLink}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-block;background:#CC0000;color:#fff;text-decoration:none;font-family:Montserrat, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;font-size:13px;font-weight:800;letter-spacing:0.02em;padding:10px 18px;border-radius:8px;">
-      Check Price
-    </a>
+<div
+  class="product-card-placeholder"
+  data-product-block="true"
+  data-product-id="${safeProductId}"
+  data-block-type="${blockType}"
+  contenteditable="false"
+  style="margin:18px 0;padding:14px 16px;border:1px dashed #d1d5db;border-left:4px solid ${borderColor};border-radius:8px;background:#ffffff;"
+>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <strong style="font-size:14px;color:#111827;">${safeName}</strong>
+    <span style="font-size:11px;font-weight:700;color:${labelColor};text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap;">${labelText}</span>
   </div>
+  <p style="margin:6px 0 0;font-size:12px;color:#6b7280;">${helperText}</p>
+  <p style="margin:4px 0 0;font-size:11px;color:#9ca3af;">blockType: ${blockType} · productId: ${safeProductId}</p>
 </div>`;
 
     const range = getSafeRange(quill);
     const insertIndex = range ? range.index : 0;
     quill.clipboard.dangerouslyPasteHTML(insertIndex, productHtml);
     quill.setSelection(insertIndex + 1, 0, 'silent');
-    showToast(`Inserted ${name}`, 'success');
+    showToast(`Inserted ${name} as ${isHero ? 'Hero Card' : 'Accent Card'}`, 'success');
   };
 
   const normalizePathSegment = (value: unknown) => {
@@ -1242,13 +1262,22 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
                         <p className="text-xs text-gray-500 mt-1">
                           {product.price || 'No price'}{product.asin ? ` • ${product.asin}` : ''}
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => insertProductBlock(product)}
-                          className="mt-2 w-full bg-[#CC0000] text-white text-xs font-bold px-2 py-1.5 rounded-md hover:bg-[#AA0000] transition-colors"
-                        >
-                          Insert Product
-                        </button>
+                        <div className="mt-2 grid grid-cols-1 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => insertProductBlock(product, 'accent')}
+                            className="w-full border border-gray-400 text-gray-700 text-xs font-bold px-2 py-1.5 rounded-md hover:bg-gray-50 transition-colors"
+                          >
+                            Insert as Accent Card
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => insertProductBlock(product, 'hero')}
+                            className="w-full bg-[#CC0000] text-white text-xs font-bold px-2 py-1.5 rounded-md hover:bg-[#AA0000] transition-colors"
+                          >
+                            Insert as Hero Card ★
+                          </button>
+                        </div>
                       </div>
                     );
                   })

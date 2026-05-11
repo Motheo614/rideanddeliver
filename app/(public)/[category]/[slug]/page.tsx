@@ -11,7 +11,6 @@ import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import TableWrapper from '@/components/TableWrapper';
 import SeoJsonLd from '@/components/SeoJsonLd';
 import ArticleBottomCta from '@/components/ArticleBottomCta';
-import HeroProductCard from '@/components/HeroProductCard';
 import NewsletterSignupForm from '@/components/NewsletterSignupForm';
 import {
   buildBlogPostingSchema,
@@ -104,60 +103,202 @@ export default async function BlogPostPage({ params }: Props) {
   const amazonProducts = Array.isArray((post as any).amazonProducts)
     ? (post as any).amazonProducts
     : [];
+  const productBlocks = Array.isArray((post as any).productBlocks)
+    ? (post as any).productBlocks
+    : [];
+  const isEditorsPick = Boolean((post as any).isEditorsPick ?? (post as any).editorsPick);
 
   const toFiniteNumber = (value: unknown, fallback: number) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
   };
 
-  const topPick = amazonProducts[0] as any | undefined;
-  const isBestOfArticle = /\bbest\b/i.test(post.title || '') || (post.tags || []).some((tag) => /\bbest\b/i.test(tag));
-
-  const fallbackScore = toFiniteNumber(topPick?.overallScore ?? topPick?.score ?? topPick?.rating, 9.0);
-  const rawMetrics = Array.isArray(topPick?.metrics) ? topPick.metrics : [];
-  const heroMetrics = rawMetrics.length > 0
-    ? rawMetrics
-        .map((metric: any) => ({
-          label: String(metric?.label || '').trim(),
-          score: toFiniteNumber(metric?.score, fallbackScore),
-        }))
-        .filter((metric: { label: string }) => metric.label)
-        .slice(0, 3)
-    : [
-        { label: 'Value', score: toFiniteNumber(topPick?.valueScore, fallbackScore) },
-        { label: 'Durability', score: toFiniteNumber(topPick?.durabilityScore, fallbackScore) },
-        { label: 'Comfort', score: toFiniteNumber(topPick?.comfortScore, fallbackScore) },
-      ];
-
-  const heroSpecs = Array.isArray(topPick?.specs)
-    ? topPick.specs.filter((item: unknown) => typeof item === 'string' && item.trim()).slice(0, 8)
-    : [];
-
-  const heroPros = Array.isArray(topPick?.pros)
-    ? topPick.pros.filter((item: unknown) => typeof item === 'string' && item.trim()).slice(0, 6)
-    : [];
-
-  const heroCons = Array.isArray(topPick?.cons)
-    ? topPick.cons.filter((item: unknown) => typeof item === 'string' && item.trim()).slice(0, 6)
-    : [];
-
-  const heroOtherRetailers = Array.isArray(topPick?.otherRetailers)
-    ? topPick.otherRetailers
-        .map((retailer: any) => ({
-          name: String(retailer?.name || '').trim(),
-          url: String(retailer?.url || '').trim(),
-        }))
-        .filter((retailer: { name: string; url: string }) => retailer.name && retailer.url)
-    : [];
-
-  const shouldRenderHeroTopPick = Boolean(
-    isBestOfArticle
-    && topPick?.productTitle
-    && topPick?.affiliateLink
+  const productBlockById = new Map(
+    productBlocks.map((block: any) => [String(block.productId || ''), block])
   );
 
   const upgradeLegacyAffiliateBlocks = (html: string) => {
     if (!html) return html;
+    let heroRenderedFromBlock = false;
+
+    const renderAccentCardHtml = (params: {
+      productName: string;
+      affiliateUrl: string;
+      imageUrl?: string;
+      awardLabel?: string;
+      score?: number;
+      reviewCount?: number;
+      stars?: number;
+      jumpTargetId?: string;
+    }) => {
+      const safe = (value: string) =>
+        String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+      const safeName = safe(params.productName);
+      const safeUrl = safe(params.affiliateUrl);
+      const safeImageUrl = params.imageUrl ? safe(params.imageUrl) : '';
+      const safeAwardLabel = params.awardLabel ? safe(params.awardLabel) : '';
+      const scoreValue = Number.isFinite(Number(params.score)) ? Number(params.score) : undefined;
+      const starsValue = Number.isFinite(Number(params.stars)) ? Number(params.stars) : undefined;
+      const reviewsValue = Number.isFinite(Number(params.reviewCount)) ? Math.max(0, Math.round(Number(params.reviewCount))) : undefined;
+      const hasMeta = Boolean(safeAwardLabel && scoreValue !== undefined && starsValue !== undefined && reviewsValue !== undefined);
+
+      if (!hasMeta) {
+        return [
+          '<div class="affiliate-product-card">',
+          safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" />` : '',
+          `<h3>${safeName}</h3>`,
+          `<div class="affiliate-card-cta"><a href="${safeUrl}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></div>`,
+          '</div>',
+        ].join('');
+      }
+
+      const normalizedStars = Math.max(1, Math.min(5, Math.round(Number(starsValue))));
+      const starsHtml = Array.from({ length: 5 }, (_unused, index) => {
+        const color = index < normalizedStars ? '#CC0000' : '#ddd';
+        return `<span style="color:${color};">★</span>`;
+      }).join('');
+
+      const jumpHref = params.jumpTargetId ? `#${safe(String(params.jumpTargetId))}` : '#top';
+      const scoreColor = Number(scoreValue) >= 8.5 ? '#CC0000' : '#6b7280';
+
+      return `
+<div style="margin:40px 0;background:#fff;border:1px solid #e2e2e2;border-left:5px solid #CC0000;border-radius:0 8px 8px 0;overflow:hidden;">
+  <div style="padding:24px;">
+    <div style="display:inline-block;background:#CC0000;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:4px;">${safeAwardLabel}</div>
+    <div style="margin-top:16px;background:#f4f4f4;border-radius:6px;height:160px;display:flex;align-items:center;justify-content:center;padding:12px;">
+      ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" style="max-height:160px;width:auto;object-fit:contain;" />` : '<span style="font-size:14px;color:#9ca3af;">No image available</span>'}
+    </div>
+    <h3 style="margin:16px 0 0;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;line-height:1.2;color:#111;text-decoration:underline;">${safeName}</h3>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:18px;line-height:1;">${starsHtml}</span>
+      <span style="font-size:14px;color:#6b7280;">(${reviewsValue} reviews)</span>
+    </div>
+    <p style="margin:8px 0 0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${scoreColor};">${Number(scoreValue).toFixed(1)} / 10 Rating</p>
+    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>
+    <a href="${jumpHref}" style="display:block;margin-top:8px;text-align:center;font-size:12px;color:#6b7280;text-decoration:none;">Jump to review ↓</a>
+  </div>
+</div>`;
+    };
+
+    const renderHeroCardHtml = (product: any) => {
+      const safe = (value: string) =>
+        String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+      const productName = safe(String(product?.productName || 'Top Pick'));
+      const productDescription = safe(String(product?.description || post.excerpt || ''));
+      const authorName = safe(String((post as any).author?.name || 'Rider Complex Team'));
+      const score = toFiniteNumber(product?.score ?? product?.rating, 9.0);
+      const reviewCount = Math.max(0, Math.round(toFiniteNumber(product?.reviewCount, 0)));
+      const stars = Math.max(1, Math.min(5, Math.round(toFiniteNumber(product?.stars, 5))));
+      const imageUrl = safe(String(product?.imageUrl || ''));
+      const amazonUrl = safe(String(product?.affiliateLink || '#'));
+      const reviewUrl = safe(String(product?.jumpTargetId ? `#${product.jumpTargetId}` : articlePath));
+      const editorNote = safe(String(product?.editorNote || 'Top pick selected by the Rider Complex editorial team.'));
+      const awardLabel = safe(String(product?.awardLabel || 'Best Overall'));
+      const specs = Array.isArray(product?.specs) ? product.specs.slice(0, 8) : [];
+      const pros = Array.isArray(product?.pros) ? product.pros.slice(0, 6) : [];
+      const cons = Array.isArray(product?.cons) ? product.cons.slice(0, 6) : [];
+      const starsHtml = Array.from({ length: 5 }, (_unused, index) => (index < stars ? '<span style="color:#CC0000;">★</span>' : '<span style="color:#ddd;">★</span>')).join('');
+
+      return `
+<section style="width:100%;border:2px solid #CC0000;border-radius:10px;background:#fff;overflow:hidden;margin:40px 0;">
+  <div style="background:#111;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+    <span style="display:inline-block;background:#CC0000;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:4px;">#1 Pick ${new Date(post.publishedAt || Date.now()).getFullYear()}</span>
+    <span style="font-size:12px;color:#9ca3af;">Reviewed by ${authorName}</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr;">
+    <div style="padding:24px;border-bottom:1px solid #e5e7eb;">
+      <h2 style="margin:0;color:#111;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:32px;line-height:1.1;font-weight:900;">${productName}</h2>
+      <p style="margin:12px 0 0;color:#6b7280;font-size:14px;line-height:1.6;">${productDescription}</p>
+      <div style="margin-top:16px;background:#f4f4f4;border-radius:6px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;">
+        <div style="color:#CC0000;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:40px;font-weight:900;line-height:1;">${score.toFixed(1)}</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#6b7280;">${starsHtml}<span>(${reviewCount} reviews)</span></div>
+          <div style="margin-top:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${score >= 8.5 ? '#CC0000' : '#6b7280'};">${score.toFixed(1)} / 10 Rating</div>
+        </div>
+      </div>
+      ${specs.length > 0 ? `<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;">${specs.map((spec: any) => `<span style=\"display:inline-flex;align-items:center;padding:4px 10px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;\">${safe(`${spec.label}: ${spec.value}`)}</span>`).join('')}</div>` : ''}
+      <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-flex;align-items:center;justify-content:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:12px 10px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:18px;font-weight:900;text-transform:uppercase;">BUY ON AMAZON</a>
+        <a href="${reviewUrl}" style="display:inline-flex;align-items:center;justify-content:center;border:1px solid #111;color:#111;text-decoration:none;border-radius:6px;padding:12px 10px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:18px;font-weight:900;text-transform:uppercase;">READ FULL REVIEW</a>
+      </div>
+    </div>
+    <div style="padding:24px;">
+      <div style="background:#f4f4f4;border-radius:6px;min-height:220px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        ${imageUrl ? `<img src="${imageUrl}" alt="${productName}" style="max-height:260px;width:auto;object-fit:contain;" />` : '<span style="font-size:14px;color:#9ca3af;">No image available</span>'}
+      </div>
+      <div style="margin-top:16px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+        <div style="background:#111;color:#fff;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;">Quick Verdict</div>
+        <div style="padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px;">Pros</div>
+            ${(pros.length > 0 ? pros : ['Strong all-around performance']).map((pro: string) => `<div style=\"font-size:12px;color:#374151;line-height:1.5;margin-bottom:4px;\"><span style=\"color:#CC0000;font-weight:700;\">✓</span> ${safe(pro)}</div>`).join('')}
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px;">Cons</div>
+            ${(cons.length > 0 ? cons : ['Premium pricing']).map((con: string) => `<div style=\"font-size:12px;color:#374151;line-height:1.5;margin-bottom:4px;\"><span style=\"color:#6b7280;font-weight:700;\">✗</span> ${safe(con)}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px;background:#fff8f8;border:1px solid #f5c0c0;border-radius:6px;padding:12px;">
+        <p style="margin:0;font-size:12px;line-height:1.6;color:#7f1d1d;font-style:italic;">🏆 ${editorNote}</p>
+      </div>
+      <div style="margin-top:8px;font-size:10px;font-weight:700;text-transform:uppercase;color:#CC0000;letter-spacing:.05em;">${awardLabel}</div>
+    </div>
+  </div>
+</section>`;
+    };
+
+    const replaceProductPlaceholders = (input: string) => {
+      return input.replace(
+        /<div[^>]*data-product-block=["']true["'][^>]*>[\s\S]*?blockType:\s*(?:accent|hero)\s*·\s*productId:[\s\S]*?<\/div>/gi,
+        (placeholderHtml) => {
+          const productIdMatch = placeholderHtml.match(/data-product-id=["']([^"']+)["']/i);
+          const blockTypeMatch = placeholderHtml.match(/data-block-type=["'](accent|hero)["']/i);
+          const productNameMatch = placeholderHtml.match(/<strong[^>]*>([\s\S]*?)<\/strong>/i);
+
+          const productId = String(productIdMatch?.[1] || '').trim();
+          const placeholderName = String(productNameMatch?.[1] || 'Product').replace(/<[^>]*>/g, '').trim();
+          const requestedType = (blockTypeMatch?.[1]?.toLowerCase() === 'hero' ? 'hero' : 'accent') as 'accent' | 'hero';
+          const effectiveType = !isEditorsPick
+            ? 'accent'
+            : (requestedType === 'hero' && !heroRenderedFromBlock ? 'hero' : 'accent');
+
+          if (effectiveType === 'hero') {
+            heroRenderedFromBlock = true;
+          }
+
+          const block = productBlockById.get(productId) as any;
+          const product = block?.product || null;
+
+          if (effectiveType === 'hero') {
+            return renderHeroCardHtml(product || { productName: placeholderName, affiliateLink: '#', score: 9.0, stars: 5, reviewCount: 0 });
+          }
+
+          return renderAccentCardHtml({
+            productName: String(product?.productName || placeholderName || 'Product'),
+            affiliateUrl: String(product?.affiliateLink || '#'),
+            imageUrl: String(product?.imageUrl || ''),
+            awardLabel: product?.awardLabel,
+            score: toFiniteNumber(product?.score ?? product?.rating, NaN),
+            reviewCount: toFiniteNumber(product?.reviewCount, NaN),
+            stars: toFiniteNumber(product?.stars, NaN),
+            jumpTargetId: String(product?.jumpTargetId || ''),
+          });
+        }
+      );
+    };
 
     const buildAffiliateCard = (
       name: string,
@@ -254,7 +395,9 @@ export default async function BlogPostPage({ params }: Props) {
     // into the new affiliate-product-card wrapper so global styling applies.
     const legacyBlockPattern = /<h3[^>]*>\s*<strong[^>]*>([^<]+?)<\/strong>\s*<\/h3>\s*<p[^>]*>\s*(?:<span[^>]*>)?\s*ASIN:\s*([^<]+?)\s*(?:<\/span>)?\s*<\/p>\s*<p[^>]*>\s*(?:<strong[^>]*>)?\s*([^<]+?)\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>\s*(?:<span[^>]*>)?\s*(<img[^>]+>)\s*(?:<\/span>)?\s*<\/p>\s*(?:<p[^>]*>\s*(?:<span[^>]*>)?([^<]+?)(?:<\/span>)?\s*<\/p>\s*)?<p[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>[\s\S]*?<\/p>/gi;
 
-    let upgraded = html.replace(
+    let upgraded = replaceProductPlaceholders(html);
+
+    upgraded = upgraded.replace(
       legacyBlockPattern,
       (_match, name, _asin, _price, imageTag, description, href) => {
         return buildAffiliateCard(name, imageTag, href, description) || _match;
@@ -424,27 +567,6 @@ export default async function BlogPostPage({ params }: Props) {
                   />
                 </div>
               </figure>
-            )}
-
-            {shouldRenderHeroTopPick && (
-              <div className="mb-10 md:mb-12">
-                <HeroProductCard
-                  productName={String(topPick.productTitle)}
-                  description={String(topPick.description || post.excerpt || '')}
-                  year={new Date(post.publishedAt || Date.now()).getFullYear()}
-                  author={String((post as any).author?.name || 'Rider Complex Team')}
-                  overallScore={fallbackScore}
-                  metrics={heroMetrics}
-                  specs={heroSpecs}
-                  pros={heroPros}
-                  cons={heroCons}
-                  editorNote={String(topPick?.editorNote || 'Top pick selected by the Rider Complex editorial team.')}
-                  amazonUrl={String(topPick.affiliateLink)}
-                  reviewUrl={String(topPick.reviewUrl || articlePath)}
-                  otherRetailers={heroOtherRetailers}
-                  imageUrl={String(topPick.image || '') || undefined}
-                />
-              </div>
             )}
 
             <div className="w-full max-w-full" style={{ maxWidth: '100%' }}>

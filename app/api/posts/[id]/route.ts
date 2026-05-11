@@ -1,10 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongoose';
 import Post from '@/lib/db/models/Post';
+import Product from '@/lib/db/models/Product';
 import mongoose from 'mongoose';
 import { requireAdmin } from '@/lib/auth/requireAdmin';
 import { transformPost } from '@/lib/categoryMap';
 import { getSlugLookupCandidates } from '@/lib/slug';
+
+function extractProductBlocksFromContent(content: string) {
+  const html = String(content || '');
+  const blocks: Array<{ blockType: 'accent' | 'hero'; productId: string }> = [];
+  const blockRegex = /<div[^>]*data-product-block=["']true["'][^>]*>/gi;
+
+  let match: RegExpExecArray | null;
+  while ((match = blockRegex.exec(html)) !== null) {
+    const blockHtml = match[0];
+    const typeMatch = blockHtml.match(/data-block-type=["'](accent|hero)["']/i);
+    const idMatch = blockHtml.match(/data-product-id=["']([^"']+)["']/i);
+
+    const blockType = (typeMatch?.[1]?.toLowerCase() === 'hero' ? 'hero' : 'accent') as 'accent' | 'hero';
+    const productId = String(idMatch?.[1] || '').trim();
+
+    if (!productId) continue;
+    blocks.push({ blockType, productId });
+  }
+
+  return blocks;
+}
 
 async function findPostByIdOrSlug(id: string) {
   if (mongoose.Types.ObjectId.isValid(id)) {
@@ -51,9 +73,37 @@ export async function GET(
     await post.save();
 
     // Transform post to include proper category display names and slugs
-    const transformedPost = transformPost(post);
+    const transformedPost = transformPost(post) as any;
 
-    return NextResponse.json({ post: transformedPost });
+    const productBlocks = extractProductBlocksFromContent(String((transformedPost as any).content || ''));
+    let hydratedProductsById: Record<string, any> = {};
+
+    const objectIds = productBlocks
+      .map((block) => block.productId)
+      .filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+    if (objectIds.length > 0) {
+      const products = await Product.find({ _id: { $in: objectIds } })
+        .select('productName affiliateLink imageUrl awardLabel score reviewCount stars pros cons specs editorNote jumpTargetId description')
+        .lean();
+
+      hydratedProductsById = Object.fromEntries(
+        products.map((product: any) => [String(product._id), product])
+      );
+    }
+
+    const productBlocksWithData = productBlocks.map((block) => ({
+      ...block,
+      product: hydratedProductsById[block.productId] || null,
+    }));
+
+    return NextResponse.json({
+      post: {
+        ...transformedPost,
+        isEditorsPick: Boolean((transformedPost as any).editorsPick),
+        productBlocks: productBlocksWithData,
+      },
+    });
   } catch (error) {
     console.error('Error fetching post:', error);
     return NextResponse.json(

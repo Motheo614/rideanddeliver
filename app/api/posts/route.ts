@@ -72,7 +72,13 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil(total / limit);
 
     // Transform posts to include proper category display names and slugs
-    const transformedPosts = posts.map(transformPost);
+    const transformedPosts = posts.map((post) => {
+      const transformed = transformPost(post as any) as any;
+      return {
+        ...transformed,
+        isEditorsPick: Boolean(transformed.editorsPick),
+      };
+    });
 
     return NextResponse.json({
       posts: transformedPosts,

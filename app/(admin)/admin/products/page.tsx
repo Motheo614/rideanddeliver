@@ -13,9 +13,16 @@ interface Product {
   price: string;
   imageUrl: string;
   rating: number;
+  awardLabel?: string;
+  score?: number;
+  reviewCount?: number;
+  stars?: number;
   description: string;
   pros: string[];
   cons: string[];
+  specs?: Array<{ label: string; value: string }>;
+  editorNote?: string;
+  jumpTargetId?: string;
   clickCount: number;
   isActive: boolean;
   createdAt: string;
@@ -52,6 +59,15 @@ export default function ProductsPage() {
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
   const [previewImageBroken, setPreviewImageBroken] = useState(false);
 
+  const buildJumpTargetId = (value: string) => {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  };
+
   // Form state
   const [formData, setFormData] = useState({
     productName: '',
@@ -61,9 +77,13 @@ export default function ProductsPage() {
     price: '',
     imageUrl: '',
     rating: 5,
+    awardLabel: '',
+    score: '',
+    reviewCount: '',
     description: '',
     pros: [''],
     cons: [''],
+    jumpTargetId: '',
     isActive: true,
   });
 
@@ -120,9 +140,13 @@ export default function ProductsPage() {
       price: '',
       imageUrl: '',
       rating: 5,
+      awardLabel: '',
+      score: '',
+      reviewCount: '',
       description: '',
       pros: [''],
       cons: [''],
+      jumpTargetId: '',
       isActive: true,
     });
     setFormErrors({});
@@ -140,9 +164,13 @@ export default function ProductsPage() {
       price: product.price,
       imageUrl: product.imageUrl,
       rating: product.rating,
+      awardLabel: product.awardLabel || '',
+      score: typeof product.score === 'number' ? String(product.score) : '',
+      reviewCount: typeof product.reviewCount === 'number' ? String(product.reviewCount) : '',
       description: product.description,
       pros: product.pros.length > 0 ? product.pros : [''],
       cons: product.cons.length > 0 ? product.cons : [''],
+      jumpTargetId: product.jumpTargetId || buildJumpTargetId(product.productName),
       isActive: product.isActive,
     });
     setFormErrors({});
@@ -171,6 +199,20 @@ export default function ProductsPage() {
 
     if (!formData.category) {
       errors.category = 'Category is required';
+    }
+
+    if (formData.score !== '') {
+      const scoreValue = Number(formData.score);
+      if (!Number.isFinite(scoreValue) || scoreValue < 0 || scoreValue > 10) {
+        errors.score = 'Score must be between 0 and 10';
+      }
+    }
+
+    if (formData.reviewCount !== '') {
+      const reviewCountValue = Number(formData.reviewCount);
+      if (!Number.isFinite(reviewCountValue) || reviewCountValue < 0 || !Number.isInteger(reviewCountValue)) {
+        errors.reviewCount = 'Review count must be a whole number >= 0';
+      }
     }
 
     setFormErrors(errors);
@@ -206,8 +248,12 @@ export default function ProductsPage() {
       ...formData,
       asin: formData.asin.toUpperCase(),
       imageUrl: normalizeImageUrl(formData.imageUrl),
+      awardLabel: formData.awardLabel.trim(),
+      score: formData.score === '' ? undefined : Number(formData.score),
+      reviewCount: formData.reviewCount === '' ? undefined : Number(formData.reviewCount),
       pros: formData.pros.filter(p => p.trim()),
       cons: formData.cons.filter(c => c.trim()),
+      jumpTargetId: (formData.jumpTargetId || buildJumpTargetId(formData.productName)).trim(),
     };
 
     try {
@@ -270,8 +316,15 @@ export default function ProductsPage() {
 
   const updateFormField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+
     if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handleProductNameBlur = () => {
+    if (!String(formData.jumpTargetId || '').trim()) {
+      updateFormField('jumpTargetId', buildJumpTargetId(formData.productName));
     }
   };
 
@@ -512,6 +565,7 @@ export default function ProductsPage() {
                     type="text"
                     value={formData.productName}
                     onChange={(e) => updateFormField('productName', e.target.value)}
+                    onBlur={handleProductNameBlur}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] ${
                       formErrors.productName ? 'border-red-500' : 'border-gray-200'
                     }`}
@@ -636,6 +690,81 @@ export default function ProductsPage() {
                   {renderStarSelector(formData.rating, (rating) => updateFormField('rating', rating))}
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Award Label
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.awardLabel}
+                      onChange={(e) => updateFormField('awardLabel', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                      placeholder="e.g. Best Overall, Best Budget, Most Versatile"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Shows as the badge on the product card</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Score
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      step="0.1"
+                      value={formData.score}
+                      onChange={(e) => updateFormField('score', e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] ${
+                        formErrors.score ? 'border-red-500' : 'border-gray-200'
+                      }`}
+                      placeholder="e.g. 9.2"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Your editorial score out of 10</p>
+                    {formErrors.score && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.score}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Review Count
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      step="1"
+                      value={formData.reviewCount}
+                      onChange={(e) => updateFormField('reviewCount', e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] ${
+                        formErrors.reviewCount ? 'border-red-500' : 'border-gray-200'
+                      }`}
+                      placeholder="e.g. 214"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Number of customer reviews to display</p>
+                    {formErrors.reviewCount && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.reviewCount}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Jump Target ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.jumpTargetId}
+                      onChange={(e) => updateFormField('jumpTargetId', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                      placeholder="e.g. joe-rocket-eclipse-gloves"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Used for anchor links from comparison cards to this product's review section
+                    </p>
+                  </div>
+                </div>
+
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -731,7 +860,7 @@ export default function ProductsPage() {
                     type="button"
                     onClick={() => updateFormField('isActive', !formData.isActive)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.isActive ? 'bg-green-600' : 'bg-gray-300'
+                      formData.isActive ? 'bg-[#CC0000]' : 'bg-gray-300'
                     }`}
                   >
                     <span
