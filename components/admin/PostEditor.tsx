@@ -369,10 +369,6 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     const range = getSafeRange(quill);
     const insertIndex = range ? range.index : 0;
     quill.clipboard.dangerouslyPasteHTML(insertIndex, productHtml);
-    const updatedHtml = quill.root.innerHTML;
-    React.startTransition(() => {
-      setContent(updatedHtml);
-    });
     quill.setSelection(insertIndex + 1, 0, 'silent');
     showToast(`Inserted ${name} as ${isHero ? 'Hero Card' : 'Accent Card'}`, 'success');
   };
@@ -484,7 +480,6 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
     const updatedHtml = quill.root.innerHTML;
     quill.clipboard.dangerouslyPasteHTML(updatedHtml, 'user');
-    setContent(updatedHtml);
     clearTableSelection();
 
     showToast('Table removed successfully!', 'success');
@@ -933,7 +928,14 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       });
       const sanitizedHtml = sanitizeImportedHtml(html);
 
-      setContent(sanitizedHtml);
+      const quill = getQuillInstance();
+      if (!quill) {
+        showToast('Editor not ready. Please try again.', 'error');
+        return;
+      }
+
+      quill.setText('');
+      quill.clipboard.dangerouslyPasteHTML(0, sanitizedHtml, 'user');
       clearTableSelection();
       showToast('Markdown imported into editor', 'success');
     } catch (error) {
@@ -1098,7 +1100,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden" id="quill-container">
               <ReactQuillEditor
                 ref={quillRef}
-                value={content}
+                defaultValue={content}
                 onChange={setContent}
                 modules={quillModules}
                 placeholder="Write your post content here..."
