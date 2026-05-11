@@ -1,4 +1,5 @@
 import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,6 +12,7 @@ import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import TableWrapper from '@/components/TableWrapper';
 import SeoJsonLd from '@/components/SeoJsonLd';
 import ArticleBottomCta from '@/components/ArticleBottomCta';
+import AffiliateBox from '@/components/AffiliateBox';
 import NewsletterSignupForm from '@/components/NewsletterSignupForm';
 import {
   buildBlogPostingSchema,
@@ -100,6 +102,10 @@ export default async function BlogPostPage({ params }: Props) {
     return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
   };
 
+  const amazonProducts = Array.isArray((post as any).amazonProducts)
+    ? (post as any).amazonProducts
+    : [];
+
   const upgradeLegacyAffiliateBlocks = (html: string) => {
     if (!html) return html;
 
@@ -115,6 +121,46 @@ export default async function BlogPostPage({ params }: Props) {
 
       if (!trimmedName || !trimmedHref || !imageTag) {
         return '';
+      }
+
+      const extractImageSrc = (rawImageTag: string) => {
+        const match = rawImageTag.match(/src=["']([^"']+)["']/i);
+        return match?.[1]?.trim();
+      };
+
+      const toNumberOrUndefined = (value: unknown) => {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : undefined;
+      };
+
+      const matchedProduct = amazonProducts.find((product: any) => {
+        const productLink = String(product?.affiliateLink || '').trim();
+        const productTitle = String(product?.productTitle || '').trim().toLowerCase();
+
+        return productLink === trimmedHref || productTitle === trimmedName.toLowerCase();
+      });
+
+      const score = toNumberOrUndefined(matchedProduct?.score ?? matchedProduct?.ratingScore ?? matchedProduct?.rating);
+      const reviewCount = toNumberOrUndefined(matchedProduct?.reviewCount ?? matchedProduct?.reviews);
+      const stars = toNumberOrUndefined(matchedProduct?.stars ?? matchedProduct?.starRating);
+      const awardLabel = String(matchedProduct?.awardLabel || matchedProduct?.award || '').trim() || undefined;
+      const imageSrc = String(matchedProduct?.image || '').trim() || extractImageSrc(imageTag) || undefined;
+
+      // Opt into upgraded card only when all metadata exists; otherwise keep legacy card markup.
+      if (awardLabel && typeof score === 'number' && typeof reviewCount === 'number' && typeof stars === 'number') {
+        const upgradedCard = renderToStaticMarkup(
+          <AffiliateBox
+            productName={trimmedName}
+            affiliateUrl={trimmedHref}
+            image={imageSrc}
+            awardLabel={awardLabel}
+            score={score}
+            reviewCount={reviewCount}
+            stars={stars}
+          />
+        );
+
+        return trimmedDescription ? `${upgradedCard}<p>${trimmedDescription}</p>` : upgradedCard;
       }
 
       const card = [
@@ -213,8 +259,7 @@ export default async function BlogPostPage({ params }: Props) {
     ]),
   ];
 
-  const amazonProducts = (post as any).amazonProducts;
-  if (Array.isArray(amazonProducts)) {
+  if (amazonProducts.length > 0) {
     amazonProducts.forEach((product) => {
       if (!product?.productTitle || !product?.affiliateLink) return;
       articleSchemas.push(
