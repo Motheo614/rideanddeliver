@@ -93,20 +93,60 @@ export async function sendNewsletterWelcomeEmail(email: string) {
 
 export async function sendNewsletterVerificationEmail(email: string, verifyUrl: string) {
   const { fromEmail } = configureSendGridClient();
+  const siteUrl = getSiteUrl();
 
   await sgMail.send({
     to: email,
     from: fromEmail,
-    subject: 'Verify your GearJunkie subscription',
-    text: `Please verify your email to complete your GearJunkie subscription: ${verifyUrl}`,
-    html: buildEmailShell(`
-      <h1 style="margin:0; font-size:56px; line-height:1.1; font-family:Georgia,serif; color:#111827;">Confirm your email</h1>
-      <p style="margin:18px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">Verify your email address to finish subscribing and continue reading.</p>
-      <a href="${verifyUrl}" style="display:inline-block; margin-top:24px; background:#1f6f43; color:#ffffff; text-decoration:none; padding:16px 28px; border-radius:8px; font-size:34px; line-height:1; font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif; letter-spacing:1px; text-transform:uppercase;">
-        Verify Email
-      </a>
-      <p style="margin:18px 0 0; font-size:14px; color:#6b7280;">This verification link expires in 24 hours.</p>
-    `),
+    subject: 'Confirm your Rider Complex subscription',
+    text: `Thanks for subscribing to Rider Complex. Verify your email address to complete your subscription: ${verifyUrl}\n\nThis link expires in 24 hours. If you didn't subscribe, you can safely ignore this email.`,
+    html: `
+      <div style="margin:0; background:#F9F9F9; padding:24px 12px; font-family:system-ui,-apple-system,sans-serif; color:#444444;">
+        <style>
+          @media only screen and (max-width: 640px) {
+            .rc-card {
+              padding: 40px 24px !important;
+            }
+            .rc-button {
+              display: block !important;
+              width: 100% !important;
+              min-width: 0 !important;
+              box-sizing: border-box !important;
+            }
+          }
+        </style>
+        <div style="max-width:600px; margin:0 auto;">
+          <div style="background:#FFFFFF; border:1px solid #E5E5E5; border-radius:8px; box-shadow:0 6px 18px rgba(17,17,17,0.06); overflow:hidden;">
+            <div style="padding:24px; text-align:center; border-bottom:1px solid #E5E5E5; background:#FFFFFF;">
+              <img src="${siteUrl}/Assets/Logo.png" alt="GearJunkie" width="220" style="max-width:100%; height:auto;" />
+            </div>
+            <div class="rc-card" style="padding:40px; text-align:center; background:#FFFFFF;">
+              <h1 style="margin:0; font-size:28px; line-height:1.2; font-weight:700; font-family:system-ui,-apple-system,sans-serif; color:#111111;">
+                Confirm Your Email Address
+              </h1>
+              <p style="margin:16px 0 0; font-size:16px; line-height:1.6; color:#444444; font-family:system-ui,-apple-system,sans-serif;">
+                Thanks for subscribing to Rider Complex. Click the button below to verify your email and start getting the best rider guides, gear picks, and platform tips.
+              </p>
+              <div style="margin-top:28px; text-align:center;">
+                <a
+                  href="${verifyUrl}"
+                  class="rc-button"
+                  style="display:inline-block; min-width:200px; background:#CC0000; color:#FFFFFF; text-decoration:none; padding:14px 22px; border-radius:8px; font-size:16px; line-height:1; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; font-family:system-ui,-apple-system,sans-serif; box-sizing:border-box;"
+                >
+                  VERIFY MY EMAIL
+                </a>
+              </div>
+              <p style="margin:24px 0 0; font-size:14px; line-height:1.6; color:#444444; font-family:system-ui,-apple-system,sans-serif;">
+                This link expires in 24 hours. If you didn't subscribe, you can safely ignore this email.
+              </p>
+            </div>
+            <div style="padding:18px 24px; border-top:1px solid #E5E5E5; background:#FFFFFF; text-align:center; font-size:13px; color:#444444; font-family:system-ui,-apple-system,sans-serif;">
+              <p style="margin:0;">&copy; 2026 Rider Complex. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
   });
 }
 
