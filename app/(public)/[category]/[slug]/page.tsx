@@ -144,7 +144,7 @@ export default async function BlogPostPage({ params }: Props) {
   const productMap = Object.fromEntries(
     productBlocks
       .map((block: any) => [
-        String(block?.productId || block?.product?._id || '').trim(),
+        String(block?.productId || block?.product?._id || '').trim().toLowerCase(),
         block,
       ])
       .filter(([productId]: [string, any]) => Boolean(productId))
@@ -519,16 +519,28 @@ export default async function BlogPostPage({ params }: Props) {
   };
 
   const renderMixedContentFromHtml = (html: string) => {
+    const normalizedHtml = String(html || '')
+      .replace(/\[\[PRODUCT_BLOCK\|(accent|hero)\|([a-f0-9]{24})(?:\|[^\]]*)?\]\]/gi, (_match, blockType: string, productId: string) => {
+        const normalizedType = String(blockType).toLowerCase() === 'hero' ? 'hero' : 'accent';
+        const normalizedId = String(productId || '').toLowerCase();
+        return `<div data-product-block="true" data-block-type="${normalizedType}" data-product-id="${normalizedId}"></div>`;
+      })
+      .replace(/blockType:\s*(accent|hero)\s*(?:\u00B7|\u00C2\u00B7)\s*productId:\s*([a-f0-9]{24})/gi, (_match, blockType: string, productId: string) => {
+        const normalizedType = String(blockType).toLowerCase() === 'hero' ? 'hero' : 'accent';
+        const normalizedId = String(productId || '').toLowerCase();
+        return `<div data-product-block="true" data-block-type="${normalizedType}" data-product-id="${normalizedId}"></div>`;
+      });
+
     const elements: React.ReactNode[] = [];
-    const placeholderRegex = /<div\b[^>]*\bdata-product-block(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?[^>]*\bdata-block-type=["'](accent|hero)["'][^>]*\bdata-product-id=["']([a-f0-9]{24})["'][^>]*>\s*<\/div>/gi;
+    const placeholderRegex = /<div\b[^>]*\bdata-product-block(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?[^>]*\bdata-block-type=["'](accent|hero)["'][^>]*\bdata-product-id=["']([a-f0-9]{24})["'][^>]*>[\s\S]*?<\/div>/gi;
 
     let lastIndex = 0;
     let match: RegExpExecArray | null;
     let segmentIndex = 0;
 
-    while ((match = placeholderRegex.exec(html)) !== null) {
+    while ((match = placeholderRegex.exec(normalizedHtml)) !== null) {
       const [rawPlaceholder, blockTypeFromHtml, productId] = match;
-      const htmlBefore = html.slice(lastIndex, match.index);
+      const htmlBefore = normalizedHtml.slice(lastIndex, match.index);
 
       const upgradedBefore = upgradeLegacyAffiliateBlocks(htmlBefore);
       const htmlSegment = renderHtmlSegment(upgradedBefore, `html-segment-${segmentIndex}`);
@@ -536,7 +548,7 @@ export default async function BlogPostPage({ params }: Props) {
         elements.push(htmlSegment);
       }
 
-      const block = productMap[String(productId || '').trim()];
+      const block = productMap[String(productId || '').trim().toLowerCase()];
       const product = block?.product;
 
       if (product) {
@@ -555,10 +567,10 @@ export default async function BlogPostPage({ params }: Props) {
             <div key={`hero-block-${segmentIndex}`} id={jumpTargetId} className="my-8 md:my-10 scroll-mt-24">
               <HeroProductCard
                 productName={String(product.productName || 'Top Pick')}
-                description={String(product.description || post.excerpt || '')}
                 year={new Date(post.publishedAt || Date.now()).getFullYear()}
-                author={String((post as any).author?.name || 'Rider Complex Team')}
+                awardLabel={String(product.awardLabel || 'Best Overall')}
                 overallScore={score}
+                stars={Number.isFinite(Number(product.stars)) ? Number(product.stars) : 5}
                 metrics={[
                   { label: 'Value', score },
                   { label: 'Durability', score },
@@ -567,10 +579,8 @@ export default async function BlogPostPage({ params }: Props) {
                 specs={specs}
                 pros={Array.isArray(product.pros) && product.pros.length > 0 ? product.pros : ['Strong all-around performance']}
                 cons={Array.isArray(product.cons) && product.cons.length > 0 ? product.cons : ['Premium pricing']}
-                editorNote={String(product.editorNote || 'Top pick selected by the Rider Complex editorial team.')}
-                amazonUrl={String(product.affiliateLink || '#')}
-                reviewUrl={jumpTargetId ? `#${jumpTargetId}` : articlePath}
-                otherRetailers={[]}
+                affiliateUrl={String(product.affiliateLink || '#')}
+                jumpTargetId={jumpTargetId}
                 imageUrl={String(product.imageUrl || '') || undefined}
               />
             </div>
@@ -579,29 +589,31 @@ export default async function BlogPostPage({ params }: Props) {
           elements.push(
             <AccentCard
               key={`accent-block-${segmentIndex}`}
-              id={jumpTargetId}
+              jumpTargetId={jumpTargetId}
               productName={String(product.productName || 'Product')}
               affiliateUrl={String(product.affiliateLink || '#')}
               imageUrl={String(product.imageUrl || '')}
               awardLabel={product.awardLabel}
               score={Number.isFinite(Number(product.score)) ? Number(product.score) : undefined}
-              reviewCount={Number.isFinite(Number(product.reviewCount)) ? Number(product.reviewCount) : undefined}
               stars={Number.isFinite(Number(product.stars)) ? Number(product.stars) : undefined}
+              specs={Array.isArray(product.specs)
+                ? product.specs
+                    .map((spec) => `${String(spec?.label || '').trim()}: ${String(spec?.value || '').trim()}`)
+                    .map((value) => value.replace(/^:\s*/, '').trim())
+                    .filter(Boolean)
+                : []}
             />
           );
         }
       } else {
-        const fallbackSegment = renderHtmlSegment(rawPlaceholder, `placeholder-fallback-${segmentIndex}`);
-        if (fallbackSegment) {
-          elements.push(fallbackSegment);
-        }
+        // Intentionally omit unresolved placeholders to avoid rendering raw editor labels publicly.
       }
 
       lastIndex = match.index + rawPlaceholder.length;
       segmentIndex += 1;
     }
 
-    const htmlAfter = html.slice(lastIndex);
+    const htmlAfter = normalizedHtml.slice(lastIndex);
     const upgradedAfter = upgradeLegacyAffiliateBlocks(htmlAfter);
     const trailingSegment = renderHtmlSegment(upgradedAfter, `html-tail-${segmentIndex}`);
     if (trailingSegment) {

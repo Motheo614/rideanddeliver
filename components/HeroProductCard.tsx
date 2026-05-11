@@ -1,30 +1,23 @@
 import React from 'react';
-import { Award } from 'lucide-react';
+import { Check, ImageIcon, Minus } from 'lucide-react';
 
 interface HeroProductMetric {
   label: string;
   score: number;
 }
 
-interface HeroProductRetailer {
-  name: string;
-  url: string;
-}
-
 interface HeroProductCardProps {
   productName: string;
-  description: string;
   year: number | string;
-  author: string;
+  awardLabel?: string;
   overallScore: number;
+  stars: number;
   metrics: HeroProductMetric[];
   specs: string[];
   pros: string[];
   cons: string[];
-  editorNote: string;
-  amazonUrl: string;
-  reviewUrl: string;
-  otherRetailers: HeroProductRetailer[];
+  affiliateUrl: string;
+  jumpTargetId?: string;
   imageUrl?: string;
 }
 
@@ -44,80 +37,102 @@ const isExternalUrl = (url: string) => /^https?:\/\//i.test(url);
 
 export default function HeroProductCard({
   productName,
-  description,
   year,
-  author,
+  awardLabel,
   overallScore,
+  stars,
   metrics,
   specs,
   pros,
   cons,
-  editorNote,
-  amazonUrl,
-  reviewUrl,
-  otherRetailers,
+  affiliateUrl,
+  jumpTargetId,
   imageUrl,
 }: HeroProductCardProps) {
-  const displayedMetrics = metrics.slice(0, 3);
+  const displayedMetrics = metrics.slice(0, 6);
+  const displayedSpecs = specs.slice(0, 10);
+  const displayedPros = pros.slice(0, 5);
+  const displayedCons = cons.slice(0, 5);
+  const normalizedStars = Math.max(0, Math.min(5, Math.round(Number.isFinite(Number(stars)) ? Number(stars) : 5)));
+  const safeAffiliateUrl = String(affiliateUrl || '#').trim() || '#';
+  const safeAwardLabel = String(awardLabel || 'Best Overall').trim().toUpperCase();
 
   return (
-    <section className="w-full border-2 border-[#CC0000] rounded-[10px] bg-white overflow-hidden">
-      <div className="bg-[#111111] px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <span className="inline-block bg-[#CC0000] text-white text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded">
-          #1 Pick {year}
-        </span>
-        <span className="text-xs text-gray-400">Reviewed by {author}</span>
+    <section
+      id={jumpTargetId}
+      className="w-full overflow-hidden rounded-[10px] border-2 border-[#CC0000] bg-white"
+    >
+      <div className="flex items-center justify-between bg-[#111111] px-[18px] py-[9px]">
+        <div className="flex items-center gap-2">
+          <span
+            className="inline-flex items-center rounded-[3px] bg-[#CC0000] px-[10px] py-[3px] text-[11px] font-black uppercase text-white"
+            style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}
+          >
+            #1 Pick {year}
+          </span>
+          <span className="text-[11px] uppercase text-[#666666]">{safeAwardLabel}</span>
+        </div>
+
+        <span className="text-[11px] text-[#555555]">Reviewed by Rider Complex Team</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2">
-        <div className="p-6">
+      <div className="grid" style={{ gridTemplateColumns: '1fr 200px' }}>
+        <div className="p-5">
           <h2
-            className="text-[#111111] text-[32px] leading-[1.1]"
+            className="mb-2 text-[26px] leading-[1.1] text-[#111111]"
             style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif', fontWeight: 900 }}
           >
             {productName}
           </h2>
 
-          <p className="mt-3 text-[14px] leading-6 text-gray-600">{description}</p>
-
-          <div className="mt-5 bg-[#f4f4f4] rounded-md p-4">
-            <div className="grid grid-cols-[auto_1fr] gap-4 items-start">
-              <div
-                className="text-[#CC0000] text-[40px] leading-none"
-                style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif', fontWeight: 900 }}
-              >
-                {formatOverallScore(overallScore)}
-              </div>
-
-              <div className="space-y-3 pt-1">
-                {displayedMetrics.map((metric) => (
-                  <div key={metric.label}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-semibold text-gray-600 uppercase tracking-wide">
-                        {metric.label}
-                      </span>
-                      <span className="text-[11px] font-semibold text-gray-500">
-                        {Math.max(0, Math.min(10, metric.score))}/10
-                      </span>
-                    </div>
-                    <div className="w-full h-1 bg-[#e8e8e8] rounded-full overflow-hidden">
-                      <div
-                        className="h-1 bg-[#CC0000]"
-                        style={{ width: `${toBarPercent(metric.score)}%` }}
-                      />
-                    </div>
-                  </div>
+          <div className="mb-[14px] flex items-center gap-[10px]">
+            <span
+              className="text-[30px] leading-none text-[#CC0000]"
+              style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif', fontWeight: 900 }}
+            >
+              {formatOverallScore(overallScore)}
+            </span>
+            <div className="flex flex-col">
+              <span className="text-[13px] leading-none text-[#CC0000]" aria-label={`${normalizedStars} star rating`}>
+                {Array.from({ length: 5 }, (_unused, index) => (
+                  <span key={`hero-star-${index}`} className={index < normalizedStars ? 'text-[#CC0000]' : 'text-[#d2d2d2]'}>
+                    ★
+                  </span>
                 ))}
-              </div>
+              </span>
+              <span className="mt-1 text-[11px] text-[#888888]">Out of 10</span>
             </div>
           </div>
 
-          {specs.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {specs.map((spec) => (
+          <div className="mb-[14px] space-y-2 text-[12px]">
+            {displayedMetrics.map((metric) => {
+              const scoreValue = Math.max(0, Math.min(10, Number(metric.score) || 0));
+
+              return (
+                <div key={metric.label}>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-[11px] uppercase tracking-[0.04em] text-[#888888]">
+                      {metric.label}
+                    </span>
+                    <span className="font-bold text-[#111111]">{scoreValue.toFixed(1)}</span>
+                  </div>
+                  <div className="h-1 overflow-hidden rounded-[2px] bg-[#eeeeee]">
+                    <div
+                      className="h-1 rounded-[2px] bg-[#CC0000]"
+                      style={{ width: `${toBarPercent(scoreValue)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {displayedSpecs.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-[6px]">
+              {displayedSpecs.map((spec) => (
                 <span
                   key={spec}
-                  className="inline-flex items-center px-2.5 py-1 text-[11px] font-semibold text-gray-700 bg-gray-100 border border-gray-200 rounded"
+                  className="rounded-[4px] border border-[#e2e2e2] bg-[#f5f5f5] px-[9px] py-[3px] text-[11px] font-semibold text-[#555555]"
                 >
                   {spec}
                 </span>
@@ -125,94 +140,68 @@ export default function HeroProductCard({
             </div>
           )}
 
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <a
-              href={amazonUrl}
-              target={isExternalUrl(amazonUrl) ? '_blank' : undefined}
-              rel={isExternalUrl(amazonUrl) ? 'noopener noreferrer sponsored' : undefined}
-              className="inline-flex items-center justify-center bg-[#CC0000] text-white text-xs font-bold uppercase tracking-wide px-3 py-3 rounded hover:bg-red-700 transition-colors"
-            >
-              BUY ON AMAZON
-            </a>
-            <a
-              href={reviewUrl}
-              target={isExternalUrl(reviewUrl) ? '_blank' : undefined}
-              rel={isExternalUrl(reviewUrl) ? 'noopener noreferrer' : undefined}
-              className="inline-flex items-center justify-center border border-[#111111] text-[#111111] text-xs font-bold uppercase tracking-wide px-3 py-3 rounded hover:bg-gray-50 transition-colors"
-            >
-              READ FULL REVIEW
-            </a>
-          </div>
+          <a
+            href={safeAffiliateUrl}
+            target={isExternalUrl(safeAffiliateUrl) ? '_blank' : undefined}
+            rel={isExternalUrl(safeAffiliateUrl) ? 'noopener noreferrer sponsored' : undefined}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-[4px] bg-[#CC0000] px-6 py-3 text-[13px] font-extrabold uppercase text-white transition-colors hover:bg-red-700"
+            style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}
+          >
+            <span aria-hidden="true" className="inline-flex h-[14px] w-[14px] items-center justify-center">
+              <svg viewBox="0 0 24 24" width="14" height="14" role="img" aria-label="Amazon">
+                <text x="8.5" y="12.5" fill="currentColor" fontSize="12" fontWeight="700" fontFamily="Arial, sans-serif">a</text>
+                <path d="M4.5 16.8c3.3 2 7.1 2.1 10.8.2" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span>Buy on Amazon</span>
+          </a>
 
-          {otherRetailers.length > 0 && (
-            <p className="mt-3 text-xs text-gray-500">
-              Also available at{' '}
-              {otherRetailers.map((retailer, index) => (
-                <React.Fragment key={`${retailer.name}-${retailer.url}`}>
-                  <a
-                    href={retailer.url}
-                    target={isExternalUrl(retailer.url) ? '_blank' : undefined}
-                    rel={isExternalUrl(retailer.url) ? 'noopener noreferrer sponsored' : undefined}
-                    className="hover:text-gray-700 underline"
-                  >
-                    {retailer.name}
-                  </a>
-                  {index < otherRetailers.length - 1 ? ' · ' : ''}
-                </React.Fragment>
-              ))}
-            </p>
-          )}
+          <p className="mt-2 text-center text-[10px] text-[#888888]">
+            As an Amazon Associate I earn from qualifying purchases.
+          </p>
         </div>
 
-        <div className="p-6 border-t md:border-t-0 md:border-l border-gray-200">
-          <div className="bg-[#f4f4f4] rounded-md min-h-[220px] flex items-center justify-center overflow-hidden">
+        <div className="self-stretch border-l border-[#e2e2e2] bg-white">
+          <div className="relative h-full w-full overflow-hidden">
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={productName}
-                className="max-h-[260px] w-auto object-contain"
+                className="absolute inset-0 block h-full w-full box-border object-contain object-center p-4"
               />
             ) : (
-              <div className="text-sm text-gray-400">No image available</div>
+              <div className="flex h-full w-full items-center justify-center">
+                <ImageIcon size={80} className="text-[#b8b8b8]" aria-hidden="true" />
+              </div>
             )}
           </div>
+        </div>
+      </div>
 
-          <div className="mt-5 border border-gray-200 rounded-md overflow-hidden">
-            <div className="bg-[#111111] text-white text-xs font-bold uppercase tracking-wide px-3 py-2">
-              Quick Verdict
-            </div>
-            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <div className="text-[11px] font-bold uppercase text-gray-600 mb-2">Pros</div>
-                <ul className="space-y-1.5">
-                  {pros.map((item) => (
-                    <li key={item} className="text-[12px] text-gray-700 leading-5">
-                      <span className="text-[#CC0000] font-bold mr-1">✓</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <div className="text-[11px] font-bold uppercase text-gray-600 mb-2">Cons</div>
-                <ul className="space-y-1.5">
-                  {cons.map((item) => (
-                    <li key={item} className="text-[12px] text-gray-700 leading-5">
-                      <span className="text-gray-500 font-bold mr-1">✗</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+      <div className="border-t border-[#e2e2e2] px-5 py-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="mb-2 text-[10px] font-extrabold uppercase text-[#CC0000]">Pros</div>
+            <ul className="flex flex-col gap-[5px]">
+              {displayedPros.map((item) => (
+                <li key={`pro-${item}`} className="flex items-start gap-[5px] text-[12px] text-[#444444]">
+                  <Check size={12} className="mt-[2px] shrink-0 text-[#CC0000]" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="mt-4 bg-[#fff8f8] border border-[#f5c0c0] rounded-md p-3">
-            <div className="flex items-start gap-2">
-              <Award size={16} className="text-[#CC0000] mt-0.5" />
-              <p className="text-[12px] italic leading-5 text-[#7f1d1d]">{editorNote}</p>
-            </div>
+          <div>
+            <div className="mb-2 text-[10px] font-extrabold uppercase text-[#888888]">Cons</div>
+            <ul className="flex flex-col gap-[5px]">
+              {displayedCons.map((item) => (
+                <li key={`con-${item}`} className="flex items-start gap-[5px] text-[12px] text-[#888888]">
+                  <Minus size={12} className="mt-[2px] shrink-0 text-[#888888]" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

@@ -13,6 +13,7 @@ import { generateSlugFromTitle } from '@/lib/slug';
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 const ReactQuillEditor = ReactQuill as any;
 const SELECTED_TABLE_CLASS = 'rs-selected-table';
+const PRODUCT_BLOCK_KEY = 'product-block';
 
 interface Post {
   _id?: string;
@@ -68,6 +69,57 @@ interface ProductListItem {
 }
 
 type ProductBlockType = 'accent' | 'hero';
+
+const PRODUCT_BLOCK_STYLE = 'margin:18px 0; padding: 12px 16px; border-left: 4px solid #CC0000; background: #fff8f8; border-radius: 0 6px 6px 0; font-size: 13px; font-weight: 700; color: #CC0000; text-transform: uppercase; letter-spacing: 0.05em; cursor: default; user-select: none;';
+
+const ensureProductBlockBlotRegistered = (QuillCtor: any) => {
+  if (!QuillCtor || QuillCtor.__productBlockBlotRegistered) return;
+
+  const BlockEmbed = QuillCtor.import('blots/block/embed');
+
+  class ProductBlockBlot extends BlockEmbed {
+    static blotName = PRODUCT_BLOCK_KEY;
+    static tagName = 'div';
+    static className = 'product-block-blot';
+
+    static create(value: any) {
+      const node = super.create() as HTMLElement;
+      const blockType = String(value?.blockType || 'accent').toLowerCase() === 'hero' ? 'hero' : 'accent';
+      const productId = String(value?.productId || '').trim().toLowerCase();
+      const productName = String(value?.productName || 'Product').trim();
+      const borderColor = blockType === 'hero' ? '#CC0000' : '#9ca3af';
+
+      node.setAttribute('data-product-block', 'true');
+      node.setAttribute('data-block-type', blockType);
+      if (productId) {
+        node.setAttribute('data-product-id', productId);
+      }
+      node.setAttribute('contenteditable', 'false');
+      node.setAttribute('style', PRODUCT_BLOCK_STYLE.replace('border-left: 4px solid #CC0000;', `border-left: 4px solid ${borderColor};`));
+      node.textContent = `${blockType === 'hero' ? '★ Hero Card' : 'Accent Card'} — ${productName}`;
+      return node;
+    }
+
+    static value(node: HTMLElement) {
+      const blockType = String(node.getAttribute('data-block-type') || 'accent').toLowerCase() === 'hero' ? 'hero' : 'accent';
+      const productId = String(node.getAttribute('data-product-id') || '').trim().toLowerCase();
+      const text = String(node.textContent || '').trim();
+      const productName = text
+        .replace(/^★\s*Hero Card\s*—\s*/i, '')
+        .replace(/^Accent Card\s*—\s*/i, '')
+        .trim();
+
+      return {
+        blockType,
+        productId,
+        productName,
+      };
+    }
+  }
+
+  QuillCtor.register(ProductBlockBlot, true);
+  QuillCtor.__productBlockBlotRegistered = true;
+};
 
 const categoryOptions = [
   { value: 'safety-gear', label: 'Safety Gear' },
@@ -127,7 +179,9 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [title, setTitle] = useState(post?.title || '');
   const [slug, setSlug] = useState(post?.slug || '');
   const [excerpt, setExcerpt] = useState(post?.excerpt || '');
-  const [content, setContent] = useState(post?.content || '');
+  const initialContent = post?.content || '';
+  const [content] = useState(initialContent);
+  const contentRef = useRef<string>(initialContent);
   const [imageUrl, setImageUrl] = useState(post?.featuredImage?.url || '');
   const [imageAlt, setImageAlt] = useState(post?.featuredImage?.alt || '');
   const [category, setCategory] = useState(normalizeCategoryValue(post?.category));
@@ -158,6 +212,12 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
   const getQuillInstance = () => {
     let quill = quillInstanceRef.current;
+
+    // Hot reloads/remounts can leave a stale detached Quill instance cached.
+    if (quill && quill.root && !quill.root.isConnected) {
+      quill = null;
+      quillInstanceRef.current = null;
+    }
 
     if (!quill && quillRef.current?.getEditor) {
       try {
@@ -321,19 +381,6 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     }
   };
 
-  const escapeHtml = (value: string) =>
-    value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-
-  const hasExistingHeroBlock = (quill: any) => {
-    const html = String(quill?.root?.innerHTML || content || '');
-    return /data-block-type=["']hero["']/i.test(html);
-  };
-
   const insertProductBlock = (product: ProductListItem, blockType: ProductBlockType) => {
     const quill = getQuillInstance();
 
@@ -348,29 +395,74 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       return;
     }
 
-    if (blockType === 'hero' && hasExistingHeroBlock(quill)) {
-      showToast('Only one Hero Card is allowed per post.', 'error');
-      return;
+    const QuillCtor = quill.constructor as any;
+    ensureProductBlockBlotRegistered(QuillCtor);
+
+    if (!(quill as any).__productBlockMatcherRegistered) {
+      const DeltaCtor = QuillCtor.import('delta');
+      quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node: Node, delta: any) => {
+        if ((quill as any).__skipProductBlockMatcher) {
+          return delta;
+        }
+
+        if (!(node instanceof HTMLElement)) {
+          return delta;
+        }
+
+        const isProductBlockNode = node.matches('div[data-product-block], div.product-block-blot[data-product-id]');
+        if (!isProductBlockNode) {
+          return delta;
+        }
+
+        const matchedBlockType = String(node.getAttribute('data-block-type') || 'accent').toLowerCase() === 'hero' ? 'hero' : 'accent';
+        const matchedProductId = String(node.getAttribute('data-product-id') || '').trim().toLowerCase();
+
+        if (!matchedProductId) {
+          return delta;
+        }
+
+        const text = String(node.textContent || '').trim();
+        const productName = text
+          .replace(/^★\s*Hero Card\s*—\s*/i, '')
+          .replace(/^Accent Card\s*—\s*/i, '')
+          .trim();
+
+        return new DeltaCtor()
+          .insert({ [PRODUCT_BLOCK_KEY]: { blockType: matchedBlockType, productId: matchedProductId, productName } })
+          .insert('\n');
+      });
+      (quill as any).__productBlockMatcherRegistered = true;
     }
 
-    const safeProductId = escapeHtml(product._id);
+    const normalizedProductId = String(product._id || '').trim().toLowerCase();
     const isHero = blockType === 'hero';
     const borderColor = isHero ? '#CC0000' : '#9ca3af';
-
-    const productHtml = `
-<div
-  data-product-block
-  data-product-id="${safeProductId}"
-  data-block-type="${blockType}"
-  contenteditable="false"
-  style="margin:18px 0;min-height:24px;border:1px dashed #d1d5db;border-left:4px solid ${borderColor};border-radius:8px;background:#ffffff;"
-></div><p><br></p>`;
+    const safeProductName = name
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    const productHtml = `<div class="product-block-blot" data-product-block="true" data-block-type="${blockType}" data-product-id="${normalizedProductId}" contenteditable="false" style="${PRODUCT_BLOCK_STYLE.replace('border-left: 4px solid #CC0000;', `border-left: 4px solid ${borderColor};`)}">${blockType === 'hero' ? '★ Hero Card' : 'Accent Card'} — ${safeProductName}</div><p><br></p>`;
 
     const range = getSafeRange(quill);
-    const insertIndex = range ? range.index : 0;
-    quill.clipboard.dangerouslyPasteHTML(insertIndex, productHtml);
+    const insertIndex = range ? range.index : Math.max(0, quill.getLength() - 1);
+
+    // Guard against late editor hydration replacing newly inserted blocks.
+    (quill as any).__loadedPostContentId = post?._id || 'create';
+
+    (quill as any).__skipProductBlockMatcher = true;
+    quill.clipboard.dangerouslyPasteHTML(insertIndex, productHtml, 'user');
+    (quill as any).__skipProductBlockMatcher = false;
+    contentRef.current = String(quill.root?.innerHTML || '');
+    console.log('POST-PASTE HTML:', quill.root.innerHTML);
+    quill.focus();
     quill.setSelection(insertIndex + 1, 0, 'silent');
     showToast(`Inserted ${name} as ${isHero ? 'Hero Card' : 'Accent Card'}`, 'success');
+  };
+
+  const handleEditorChange = (value: string) => {
+    contentRef.current = value;
   };
 
   const normalizePathSegment = (value: unknown) => {
@@ -504,19 +596,79 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   }, [productSearchQuery]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const container = document.getElementById('quill-container');
-      const reactQuillElement = container?.querySelector('.ql-container') as any;
-      const quill = reactQuillElement?.__quill;
-      if (!quill) return;
+    // Reset and preload products on post switch so insert controls are immediately usable.
+    setProductSearchQuery('');
+    searchProducts('');
+  }, [post?._id]);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let attempts = 0;
+
+    const setupEditor = () => {
+      const quill = getQuillInstance();
+      if (!quill) {
+        if (attempts < 120) {
+          attempts += 1;
+          timer = setTimeout(setupEditor, 50);
+        }
+        return;
+      }
+
+      const QuillCtor = quill.constructor as any;
+      ensureProductBlockBlotRegistered(QuillCtor);
+
+      if (!(quill as any).__productBlockMatcherRegistered) {
+        const DeltaCtor = QuillCtor.import('delta');
+        quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node: Node, delta: any) => {
+          if (!(node instanceof HTMLElement)) {
+            return delta;
+          }
+
+          const isProductBlockNode = node.matches('div[data-product-block], div.product-block-blot[data-product-id]');
+          if (!isProductBlockNode) {
+            return delta;
+          }
+
+          const blockType = String(node.getAttribute('data-block-type') || 'accent').toLowerCase() === 'hero' ? 'hero' : 'accent';
+          const productId = String(node.getAttribute('data-product-id') || '').trim().toLowerCase();
+
+          if (!productId) {
+            return delta;
+          }
+
+          const text = String(node.textContent || '').trim();
+          const productName = text
+            .replace(/^★\s*Hero Card\s*—\s*/i, '')
+            .replace(/^Accent Card\s*—\s*/i, '')
+            .trim();
+
+          return new DeltaCtor()
+            .insert({ [PRODUCT_BLOCK_KEY]: { blockType, productId, productName } })
+            .insert('\n');
+        });
+        (quill as any).__productBlockMatcherRegistered = true;
+      }
+
+      const incomingHtml = String(post?.content || '');
+      if (incomingHtml && (quill as any).__loadedPostContentId !== post?._id) {
+        quill.setText('');
+        quill.clipboard.dangerouslyPasteHTML(0, incomingHtml, 'silent');
+        contentRef.current = String(quill.root?.innerHTML || incomingHtml);
+        (quill as any).__loadedPostContentId = post?._id || 'create';
+      }
 
       // Prevent Ctrl+Z from jumping back to an empty/initial snapshot.
       quill.history?.clear();
       quill.history?.cutoff();
       quillInstanceRef.current = quill;
-    }, 0);
+    };
 
-    return () => clearTimeout(timer);
+    timer = setTimeout(setupEditor, 0);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [mode, post?._id]);
 
   useEffect(() => {
@@ -719,7 +871,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       .replace(/<(td|th)[^>]*>/g, '<$1>');
   };
 
-  const readTime = calculateReadTime(content);
+  const readTime = calculateReadTime(contentRef.current || content);
 
   // Handle tag input
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -739,14 +891,15 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
   // Save post
   const handleSave = async (publishPost: boolean = false) => {
-    if (!title || !excerpt || !content || !category) {
+    const liveContent = String(contentRef.current || '').trim();
+    if (!title || !excerpt || !liveContent || !category) {
       showToast('Please fill in all required fields', 'error');
       return;
     }
 
     setSaving(true);
 
-    const normalizedContent = normalizeEditorContent(content);
+    const normalizedContent = normalizeEditorContent(liveContent);
 
     const postData = {
       title,
@@ -936,6 +1089,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
 
       quill.setText('');
       quill.clipboard.dangerouslyPasteHTML(0, sanitizedHtml, 'user');
+      contentRef.current = String(quill.root?.innerHTML || sanitizedHtml);
       clearTableSelection();
       showToast('Markdown imported into editor', 'success');
     } catch (error) {
@@ -1101,7 +1255,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
               <ReactQuillEditor
                 ref={quillRef}
                 defaultValue={content}
-                onChange={setContent}
+                onChange={handleEditorChange}
                 modules={quillModules}
                 placeholder="Write your post content here..."
                 className="h-[500px]"

@@ -8,7 +8,17 @@ import { transformPost } from '@/lib/categoryMap';
 import { getSlugLookupCandidates } from '@/lib/slug';
 
 function extractProductBlocksFromContent(content: string) {
-  const html = String(content || '');
+  const html = String(content || '')
+    .replace(/\[\[PRODUCT_BLOCK\|(accent|hero)\|([a-f0-9]{24})(?:\|[^\]]*)?\]\]/gi, (_match, blockType: string, productId: string) => {
+      const normalizedType = String(blockType).toLowerCase() === 'hero' ? 'hero' : 'accent';
+      const normalizedId = String(productId || '').toLowerCase();
+      return `<div data-product-block="true" data-block-type="${normalizedType}" data-product-id="${normalizedId}"></div>`;
+    })
+    .replace(/blockType:\s*(accent|hero)\s*(?:\u00B7|\u00C2\u00B7)\s*productId:\s*([a-f0-9]{24})/gi, (_match, blockType: string, productId: string) => {
+      const normalizedType = String(blockType).toLowerCase() === 'hero' ? 'hero' : 'accent';
+      const normalizedId = String(productId || '').toLowerCase();
+      return `<div data-product-block="true" data-block-type="${normalizedType}" data-product-id="${normalizedId}"></div>`;
+    });
   const blocks: Array<{ blockType: 'accent' | 'hero'; productId: mongoose.Types.ObjectId }> = [];
   const blockRegex = /<div\b[^>]*\bdata-product-block(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?[^>]*>/gi;
 
@@ -89,13 +99,16 @@ export async function GET(
         .select('productName affiliateLink imageUrl awardLabel score reviewCount stars pros cons specs editorNote jumpTargetId description')
         .lean();
 
-      hydratedProductsById = Object.fromEntries(products.map((product: any) => [String(product._id), product]));
+      hydratedProductsById = Object.fromEntries(
+        products.map((product: any) => [String(product._id).trim().toLowerCase(), product])
+      );
     }
 
     const productBlocksWithData = storedProductBlocks.map((block: any) => {
-      const productId = String(block?.productId || '').trim();
+      const productId = String(block?.productId || '').trim().toLowerCase();
       return {
         blockType: block?.blockType === 'hero' ? 'hero' : 'accent',
+        productId,
         product: hydratedProductsById[productId] || null,
       };
     });

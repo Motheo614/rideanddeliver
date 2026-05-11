@@ -6,7 +6,17 @@ import { requireAdmin } from '@/lib/auth/requireAdmin';
 import { transformPost } from '@/lib/categoryMap';
 
 function extractProductBlocksFromContent(content: string) {
-  const html = String(content || '');
+  const html = String(content || '')
+    .replace(/\[\[PRODUCT_BLOCK\|(accent|hero)\|([a-f0-9]{24})(?:\|[^\]]*)?\]\]/gi, (_match, blockType: string, productId: string) => {
+      const normalizedType = String(blockType).toLowerCase() === 'hero' ? 'hero' : 'accent';
+      const normalizedId = String(productId || '').toLowerCase();
+      return `<div data-product-block="true" data-block-type="${normalizedType}" data-product-id="${normalizedId}"></div>`;
+    })
+    .replace(/blockType:\s*(accent|hero)\s*(?:\u00B7|\u00C2\u00B7)\s*productId:\s*([a-f0-9]{24})/gi, (_match, blockType: string, productId: string) => {
+      const normalizedType = String(blockType).toLowerCase() === 'hero' ? 'hero' : 'accent';
+      const normalizedId = String(productId || '').toLowerCase();
+      return `<div data-product-block="true" data-block-type="${normalizedType}" data-product-id="${normalizedId}"></div>`;
+    });
   const blocks: Array<{ blockType: 'accent' | 'hero'; productId: mongoose.Types.ObjectId }> = [];
   const blockRegex = /<div\b[^>]*\bdata-product-block(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?[^>]*>/gi;
 
