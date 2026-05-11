@@ -11,6 +11,7 @@ import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import TableWrapper from '@/components/TableWrapper';
 import SeoJsonLd from '@/components/SeoJsonLd';
 import ArticleBottomCta from '@/components/ArticleBottomCta';
+import HeroProductCard from '@/components/HeroProductCard';
 import NewsletterSignupForm from '@/components/NewsletterSignupForm';
 import {
   buildBlogPostingSchema,
@@ -103,6 +104,57 @@ export default async function BlogPostPage({ params }: Props) {
   const amazonProducts = Array.isArray((post as any).amazonProducts)
     ? (post as any).amazonProducts
     : [];
+
+  const toFiniteNumber = (value: unknown, fallback: number) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
+  const topPick = amazonProducts[0] as any | undefined;
+  const isBestOfArticle = /\bbest\b/i.test(post.title || '') || (post.tags || []).some((tag) => /\bbest\b/i.test(tag));
+
+  const fallbackScore = toFiniteNumber(topPick?.overallScore ?? topPick?.score ?? topPick?.rating, 9.0);
+  const rawMetrics = Array.isArray(topPick?.metrics) ? topPick.metrics : [];
+  const heroMetrics = rawMetrics.length > 0
+    ? rawMetrics
+        .map((metric: any) => ({
+          label: String(metric?.label || '').trim(),
+          score: toFiniteNumber(metric?.score, fallbackScore),
+        }))
+        .filter((metric: { label: string }) => metric.label)
+        .slice(0, 3)
+    : [
+        { label: 'Value', score: toFiniteNumber(topPick?.valueScore, fallbackScore) },
+        { label: 'Durability', score: toFiniteNumber(topPick?.durabilityScore, fallbackScore) },
+        { label: 'Comfort', score: toFiniteNumber(topPick?.comfortScore, fallbackScore) },
+      ];
+
+  const heroSpecs = Array.isArray(topPick?.specs)
+    ? topPick.specs.filter((item: unknown) => typeof item === 'string' && item.trim()).slice(0, 8)
+    : [];
+
+  const heroPros = Array.isArray(topPick?.pros)
+    ? topPick.pros.filter((item: unknown) => typeof item === 'string' && item.trim()).slice(0, 6)
+    : [];
+
+  const heroCons = Array.isArray(topPick?.cons)
+    ? topPick.cons.filter((item: unknown) => typeof item === 'string' && item.trim()).slice(0, 6)
+    : [];
+
+  const heroOtherRetailers = Array.isArray(topPick?.otherRetailers)
+    ? topPick.otherRetailers
+        .map((retailer: any) => ({
+          name: String(retailer?.name || '').trim(),
+          url: String(retailer?.url || '').trim(),
+        }))
+        .filter((retailer: { name: string; url: string }) => retailer.name && retailer.url)
+    : [];
+
+  const shouldRenderHeroTopPick = Boolean(
+    isBestOfArticle
+    && topPick?.productTitle
+    && topPick?.affiliateLink
+  );
 
   const upgradeLegacyAffiliateBlocks = (html: string) => {
     if (!html) return html;
@@ -372,6 +424,27 @@ export default async function BlogPostPage({ params }: Props) {
                   />
                 </div>
               </figure>
+            )}
+
+            {shouldRenderHeroTopPick && (
+              <div className="mb-10 md:mb-12">
+                <HeroProductCard
+                  productName={String(topPick.productTitle)}
+                  description={String(topPick.description || post.excerpt || '')}
+                  year={new Date(post.publishedAt || Date.now()).getFullYear()}
+                  author={String((post as any).author?.name || 'Rider Complex Team')}
+                  overallScore={fallbackScore}
+                  metrics={heroMetrics}
+                  specs={heroSpecs}
+                  pros={heroPros}
+                  cons={heroCons}
+                  editorNote={String(topPick?.editorNote || 'Top pick selected by the Rider Complex editorial team.')}
+                  amazonUrl={String(topPick.affiliateLink)}
+                  reviewUrl={String(topPick.reviewUrl || articlePath)}
+                  otherRetailers={heroOtherRetailers}
+                  imageUrl={String(topPick.image || '') || undefined}
+                />
+              </div>
             )}
 
             <div className="w-full max-w-full" style={{ maxWidth: '100%' }}>
