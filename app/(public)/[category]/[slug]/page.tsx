@@ -11,6 +11,7 @@ import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import TableWrapper from '@/components/TableWrapper';
 import SeoJsonLd from '@/components/SeoJsonLd';
 import ArticleBottomCta from '@/components/ArticleBottomCta';
+import NewsletterSignupForm from '@/components/NewsletterSignupForm';
 import {
   buildBlogPostingSchema,
   buildBreadcrumbSchema,
@@ -266,8 +267,9 @@ export default async function BlogPostPage({ params }: Props) {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div>
-          <article className="w-full min-w-0">
+        <div className="w-full max-w-7xl mx-auto box-border grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,300px)] gap-10 lg:gap-12 items-start">
+          <div className="min-w-0 box-border">
+            <article className="w-full min-w-0">
             <header className="mb-8 md:mb-10">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
                 {post.title}
@@ -370,6 +372,49 @@ export default async function BlogPostPage({ params }: Props) {
               </a>
             </div>
           </article>
+        </div>
+
+        <aside
+          aria-label="Article sidebar"
+          className="hidden box-border lg:block lg:self-start lg:sticky lg:top-20 lg:pt-1 lg:pr-1"
+        >
+          <div className="space-y-6">
+            <section className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900">Get the Best Stories First</h2>
+              <div className="w-10 h-1 bg-[#CC0000] mt-3 mb-4" />
+              <p className="text-sm text-gray-600 leading-relaxed mb-5">
+                Subscribe for the latest rider guides, gear picks, and platform updates.
+              </p>
+              <NewsletterSignupForm
+                source="article-sidebar"
+                inputId="article-sidebar-newsletter-email"
+                inputPlaceholder="your@email.com"
+                buttonText="SUBSCRIBE"
+                rowClassName="flex flex-col gap-3"
+                inputClassName="w-full px-4 py-3 border border-gray-200 rounded focus:outline-none focus:border-[#CC0000] transition-colors"
+                buttonClassName="w-full bg-[#CC0000] text-white py-3 font-bold uppercase tracking-widest hover:bg-red-700 transition-colors rounded"
+                messageClassName="mt-3 text-sm"
+              />
+            </section>
+
+            <section className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900">Related</h2>
+              <div className="w-10 h-1 bg-[#CC0000] mt-3 mb-4" />
+              <ul className="space-y-3">
+                {relatedPosts.map((p) => (
+                  <li key={`sidebar-${p.slug}`}>
+                    <Link
+                      href={`/${p.dbCategorySlug}/${p.slug}`}
+                      className="block text-sm font-medium text-gray-700 hover:text-[#CC0000] transition-colors"
+                    >
+                      {p.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+        </aside>
         </div>
 
         {relatedPosts.length > 0 && (
