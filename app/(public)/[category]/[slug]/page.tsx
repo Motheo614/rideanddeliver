@@ -1,5 +1,4 @@
 import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,7 +11,6 @@ import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import TableWrapper from '@/components/TableWrapper';
 import SeoJsonLd from '@/components/SeoJsonLd';
 import ArticleBottomCta from '@/components/ArticleBottomCta';
-import AffiliateBox from '@/components/AffiliateBox';
 import NewsletterSignupForm from '@/components/NewsletterSignupForm';
 import {
   buildBlogPostingSchema,
@@ -128,6 +126,15 @@ export default async function BlogPostPage({ params }: Props) {
         return match?.[1]?.trim();
       };
 
+      const escapeHtml = (value: string) => {
+        return value
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      };
+
       const toNumberOrUndefined = (value: unknown) => {
         const parsed = Number(value);
         return Number.isFinite(parsed) ? parsed : undefined;
@@ -148,17 +155,34 @@ export default async function BlogPostPage({ params }: Props) {
 
       // Opt into upgraded card only when all metadata exists; otherwise keep legacy card markup.
       if (awardLabel && typeof score === 'number' && typeof reviewCount === 'number' && typeof stars === 'number') {
-        const upgradedCard = renderToStaticMarkup(
-          <AffiliateBox
-            productName={trimmedName}
-            affiliateUrl={trimmedHref}
-            image={imageSrc}
-            awardLabel={awardLabel}
-            score={score}
-            reviewCount={reviewCount}
-            stars={stars}
-          />
-        );
+        const normalizedStars = Math.max(1, Math.min(5, Math.round(stars)));
+        const starsHtml = Array.from({ length: 5 }, (_unused, index) => {
+          const color = index < normalizedStars ? '#CC0000' : '#ddd';
+          return `<span style="color:${color};">★</span>`;
+        }).join('');
+        const safeName = escapeHtml(trimmedName);
+        const safeHref = escapeHtml(trimmedHref);
+        const safeAwardLabel = escapeHtml(awardLabel);
+        const safeImageSrc = imageSrc ? escapeHtml(imageSrc) : '';
+        const scoreColor = score >= 8.5 ? '#CC0000' : '#6b7280';
+
+        const upgradedCard = `
+<div style="margin:40px 0;background:#fff;border:1px solid #e2e2e2;border-left:5px solid #CC0000;border-radius:0 8px 8px 0;overflow:hidden;">
+  <div style="padding:24px;">
+    <div style="display:inline-block;background:#CC0000;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:4px;">${safeAwardLabel}</div>
+    <div style="margin-top:16px;background:#f4f4f4;border-radius:6px;height:160px;display:flex;align-items:center;justify-content:center;padding:12px;">
+      ${safeImageSrc ? `<img src="${safeImageSrc}" alt="${safeName}" style="max-height:160px;width:auto;object-fit:contain;" />` : '<span style="font-size:14px;color:#9ca3af;">No image available</span>'}
+    </div>
+    <h3 style="margin:16px 0 0;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;line-height:1.2;color:#111;text-decoration:underline;">${safeName}</h3>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:18px;line-height:1;">${starsHtml}</span>
+      <span style="font-size:14px;color:#6b7280;">(${Math.max(0, Math.round(reviewCount))} reviews)</span>
+    </div>
+    <p style="margin:8px 0 0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${scoreColor};">${score.toFixed(1)} / 10 Rating</p>
+    <a href="${safeHref}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>
+    <a href="#top" style="display:block;margin-top:8px;text-align:center;font-size:12px;color:#6b7280;text-decoration:none;">Jump to review ↓</a>
+  </div>
+</div>`;
 
         return trimmedDescription ? `${upgradedCard}<p>${trimmedDescription}</p>` : upgradedCard;
       }
@@ -260,7 +284,7 @@ export default async function BlogPostPage({ params }: Props) {
   ];
 
   if (amazonProducts.length > 0) {
-    amazonProducts.forEach((product) => {
+    amazonProducts.forEach((product: any) => {
       if (!product?.productTitle || !product?.affiliateLink) return;
       articleSchemas.push(
         buildProductSchema({
