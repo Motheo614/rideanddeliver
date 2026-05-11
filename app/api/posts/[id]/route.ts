@@ -9,8 +9,8 @@ import { getSlugLookupCandidates } from '@/lib/slug';
 
 function extractProductBlocksFromContent(content: string) {
   const html = String(content || '');
-  const blocks: Array<{ blockType: 'accent' | 'hero'; productId: string }> = [];
-  const blockRegex = /<div[^>]*data-product-block=["']true["'][^>]*>/gi;
+  const blocks: Array<{ blockType: 'accent' | 'hero'; productId: mongoose.Types.ObjectId }> = [];
+  const blockRegex = /<div\b[^>]*\bdata-product-block(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?[^>]*>/gi;
 
   let match: RegExpExecArray | null;
   while ((match = blockRegex.exec(html)) !== null) {
@@ -21,8 +21,8 @@ function extractProductBlocksFromContent(content: string) {
     const blockType = (typeMatch?.[1]?.toLowerCase() === 'hero' ? 'hero' : 'accent') as 'accent' | 'hero';
     const productId = String(idMatch?.[1] || '').trim();
 
-    if (!productId) continue;
-    blocks.push({ blockType, productId });
+    if (!productId || !mongoose.Types.ObjectId.isValid(productId)) continue;
+    blocks.push({ blockType, productId: new mongoose.Types.ObjectId(productId) });
   }
 
   return blocks;
@@ -75,27 +75,30 @@ export async function GET(
     // Transform post to include proper category display names and slugs
     const transformedPost = transformPost(post) as any;
 
-    const productBlocks = extractProductBlocksFromContent(String((transformedPost as any).content || ''));
+    const storedProductBlocks = Array.isArray((post as any).productBlocks)
+      ? (post as any).productBlocks
+      : extractProductBlocksFromContent(String((transformedPost as any).content || ''));
     let hydratedProductsById: Record<string, any> = {};
 
-    const objectIds = productBlocks
-      .map((block) => block.productId)
-      .filter((id) => mongoose.Types.ObjectId.isValid(id));
+    const objectIds = storedProductBlocks
+      .map((block: any) => String(block?.productId || '').trim())
+      .filter((id: string) => mongoose.Types.ObjectId.isValid(id));
 
     if (objectIds.length > 0) {
       const products = await Product.find({ _id: { $in: objectIds } })
         .select('productName affiliateLink imageUrl awardLabel score reviewCount stars pros cons specs editorNote jumpTargetId description')
         .lean();
 
-      hydratedProductsById = Object.fromEntries(
-        products.map((product: any) => [String(product._id), product])
-      );
+      hydratedProductsById = Object.fromEntries(products.map((product: any) => [String(product._id), product]));
     }
 
-    const productBlocksWithData = productBlocks.map((block) => ({
-      ...block,
-      product: hydratedProductsById[block.productId] || null,
-    }));
+    const productBlocksWithData = storedProductBlocks.map((block: any) => {
+      const productId = String(block?.productId || '').trim();
+      return {
+        blockType: block?.blockType === 'hero' ? 'hero' : 'accent',
+        product: hydratedProductsById[productId] || null,
+      };
+    });
 
     return NextResponse.json({
       post: {
@@ -159,6 +162,10 @@ export async function PUT(
         (post as any)[field] = body[field];
       }
     });
+
+    const normalizedContent = String((post as any).content || '');
+    (post as any).content = normalizedContent;
+    (post as any).productBlocks = extractProductBlocksFromContent(normalizedContent);
 
     await post.save();
 

@@ -12,6 +12,8 @@ import TableWrapper from '@/components/TableWrapper';
 import SeoJsonLd from '@/components/SeoJsonLd';
 import ArticleBottomCta from '@/components/ArticleBottomCta';
 import NewsletterSignupForm from '@/components/NewsletterSignupForm';
+import HeroProductCard from '@/components/HeroProductCard';
+import AccentCard from '@/components/AccentCard';
 import {
   buildBlogPostingSchema,
   buildBreadcrumbSchema,
@@ -21,6 +23,23 @@ import { buildArticleMetadata } from '@/lib/seo/metadata';
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
+}
+
+interface ProductRecord {
+  _id?: string;
+  productName?: string;
+  affiliateLink?: string;
+  imageUrl?: string;
+  awardLabel?: string;
+  score?: number;
+  reviewCount?: number;
+  stars?: number;
+  pros?: string[];
+  cons?: string[];
+  specs?: Array<{ label: string; value: string }>;
+  editorNote?: string;
+  jumpTargetId?: string;
+  description?: string;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -45,8 +64,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
+function normalizeHtmlFragment(input: string) {
+  return stripHeadMetadataTags(
+    String(input || '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\u00A0/g, ' ')
+      .replace(/â€“|–/g, '-')
+      .replace(/â€”|—/g, '-')
+  );
+}
+
+function escapeHtml(value: string) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export default async function BlogPostPage({ params }: Props) {
   const { category, slug } = await params;
+  const articlePath = `/${category}/${slug}`;
 
   if (!CATEGORY_MAP[category]) {
     notFound();
@@ -75,14 +114,8 @@ export default async function BlogPostPage({ params }: Props) {
     : (post.featuredImage as any)?.url;
 
   const renderContent = () => {
-    if (!post.content) return null;
-    return stripHeadMetadataTags(
-      post.content
-      .replace(/&nbsp;/g, ' ')
-      .replace(/\u00A0/g, ' ')
-      .replace(/â€“|–/g, '-')
-      .replace(/â€”|—/g, '-')
-    );
+    if (!post.content || typeof post.content !== 'string') return null;
+    return normalizeHtmlFragment(post.content);
   };
 
   const estimateReadTimeFromHtml = (html: string) => {
@@ -108,13 +141,22 @@ export default async function BlogPostPage({ params }: Props) {
     : [];
   const isEditorsPick = Boolean((post as any).isEditorsPick ?? (post as any).editorsPick);
 
+  const productMap = Object.fromEntries(
+    productBlocks
+      .map((block: any) => [
+        String(block?.productId || block?.product?._id || '').trim(),
+        block,
+      ])
+      .filter(([productId]: [string, any]) => Boolean(productId))
+  ) as Record<string, { blockType?: 'accent' | 'hero'; productId?: string; product?: ProductRecord }>;
+
   const toFiniteNumber = (value: unknown, fallback: number) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
   };
 
   const productBlockById = new Map(
-    productBlocks.map((block: any) => [String(block.productId || ''), block])
+    productBlocks.map((block: any) => [String(block.productId || block?.product?._id || ''), block])
   );
 
   const upgradeLegacyAffiliateBlocks = (html: string) => {
@@ -441,6 +483,133 @@ export default async function BlogPostPage({ params }: Props) {
   };
 
   const normalizedContent = upgradeLegacyAffiliateBlocks(renderContent() || '');
+
+  const renderHtmlSegment = (html: string, key: string) => {
+    if (!html || !html.trim()) return null;
+
+    return (
+      <div key={key} className="w-full max-w-full" style={{ maxWidth: '100%' }}>
+        <TableWrapper>
+          <div
+            className="
+              w-full
+              prose prose-base sm:prose-lg !max-w-none
+              prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
+              prose-h2:text-2xl sm:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4
+              prose-h3:text-xl sm:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
+              prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
+              prose-a:text-[#CC0000] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+              prose-strong:text-gray-900
+              prose-ul:my-6 prose-ul:space-y-2
+              prose-ol:my-6 prose-ol:space-y-2
+              prose-li:text-gray-700
+              prose-blockquote:border-l-4 prose-blockquote:border-[#CC0000] prose-blockquote:pl-4 sm:prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-gray-50 prose-blockquote:py-2 prose-blockquote:pr-4 sm:prose-blockquote:pr-6
+              prose-img:rounded-xl prose-img:shadow-md prose-img:my-8
+              prose-code:text-[#CC0000] prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm
+              prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:shadow-lg prose-pre:overflow-x-auto
+              prose-hr:my-12 prose-hr:border-gray-200
+              [&>*]:!max-w-none [&_table]:w-full
+              break-words
+            "
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </TableWrapper>
+      </div>
+    );
+  };
+
+  const renderMixedContentFromHtml = (html: string) => {
+    const elements: React.ReactNode[] = [];
+    const placeholderRegex = /<div\b[^>]*\bdata-product-block(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?[^>]*\bdata-block-type=["'](accent|hero)["'][^>]*\bdata-product-id=["']([a-f0-9]{24})["'][^>]*>\s*<\/div>/gi;
+
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    let segmentIndex = 0;
+
+    while ((match = placeholderRegex.exec(html)) !== null) {
+      const [rawPlaceholder, blockTypeFromHtml, productId] = match;
+      const htmlBefore = html.slice(lastIndex, match.index);
+
+      const upgradedBefore = upgradeLegacyAffiliateBlocks(htmlBefore);
+      const htmlSegment = renderHtmlSegment(upgradedBefore, `html-segment-${segmentIndex}`);
+      if (htmlSegment) {
+        elements.push(htmlSegment);
+      }
+
+      const block = productMap[String(productId || '').trim()];
+      const product = block?.product;
+
+      if (product) {
+        const jumpTargetId = String(product.jumpTargetId || '').trim() || undefined;
+        const blockType = (String(block?.blockType || blockTypeFromHtml).toLowerCase() === 'hero' ? 'hero' : 'accent') as 'hero' | 'accent';
+
+        if (blockType === 'hero') {
+          const score = toFiniteNumber(product.score, 9.0);
+          const specs = Array.isArray(product.specs)
+            ? product.specs
+                .map((spec) => `${String(spec?.label || '').trim()}: ${String(spec?.value || '').trim()}`)
+                .filter((value) => value !== ': ')
+            : [];
+
+          elements.push(
+            <div key={`hero-block-${segmentIndex}`} id={jumpTargetId} className="my-8 md:my-10 scroll-mt-24">
+              <HeroProductCard
+                productName={String(product.productName || 'Top Pick')}
+                description={String(product.description || post.excerpt || '')}
+                year={new Date(post.publishedAt || Date.now()).getFullYear()}
+                author={String((post as any).author?.name || 'Rider Complex Team')}
+                overallScore={score}
+                metrics={[
+                  { label: 'Value', score },
+                  { label: 'Durability', score },
+                  { label: 'Comfort', score },
+                ]}
+                specs={specs}
+                pros={Array.isArray(product.pros) && product.pros.length > 0 ? product.pros : ['Strong all-around performance']}
+                cons={Array.isArray(product.cons) && product.cons.length > 0 ? product.cons : ['Premium pricing']}
+                editorNote={String(product.editorNote || 'Top pick selected by the Rider Complex editorial team.')}
+                amazonUrl={String(product.affiliateLink || '#')}
+                reviewUrl={jumpTargetId ? `#${jumpTargetId}` : articlePath}
+                otherRetailers={[]}
+                imageUrl={String(product.imageUrl || '') || undefined}
+              />
+            </div>
+          );
+        } else {
+          elements.push(
+            <AccentCard
+              key={`accent-block-${segmentIndex}`}
+              id={jumpTargetId}
+              productName={String(product.productName || 'Product')}
+              affiliateUrl={String(product.affiliateLink || '#')}
+              imageUrl={String(product.imageUrl || '')}
+              awardLabel={product.awardLabel}
+              score={Number.isFinite(Number(product.score)) ? Number(product.score) : undefined}
+              reviewCount={Number.isFinite(Number(product.reviewCount)) ? Number(product.reviewCount) : undefined}
+              stars={Number.isFinite(Number(product.stars)) ? Number(product.stars) : undefined}
+            />
+          );
+        }
+      } else {
+        const fallbackSegment = renderHtmlSegment(rawPlaceholder, `placeholder-fallback-${segmentIndex}`);
+        if (fallbackSegment) {
+          elements.push(fallbackSegment);
+        }
+      }
+
+      lastIndex = match.index + rawPlaceholder.length;
+      segmentIndex += 1;
+    }
+
+    const htmlAfter = html.slice(lastIndex);
+    const upgradedAfter = upgradeLegacyAffiliateBlocks(htmlAfter);
+    const trailingSegment = renderHtmlSegment(upgradedAfter, `html-tail-${segmentIndex}`);
+    if (trailingSegment) {
+      elements.push(trailingSegment);
+    }
+
+    return elements;
+  };
   const cmsCta = (post as any).cta;
   const articleCta = cmsCta?.enabled
     ? {
@@ -459,7 +628,6 @@ export default async function BlogPostPage({ params }: Props) {
   const publishedIso = toIsoDate(post.publishedAt) || '1970-01-01T00:00:00.000Z';
   const updatedIso = toIsoDate((post as any).updatedAt || post.publishedAt) || publishedIso;
 
-  const articlePath = `/${category}/${slug}`;
   const articleSchemas: Array<Record<string, unknown>> = [
     buildBlogPostingSchema({
       url: articlePath,
@@ -569,33 +737,7 @@ export default async function BlogPostPage({ params }: Props) {
               </figure>
             )}
 
-            <div className="w-full max-w-full" style={{ maxWidth: '100%' }}>
-              <TableWrapper>
-                <div
-                className="
-                  w-full
-                  prose prose-base sm:prose-lg !max-w-none
-                  prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
-                  prose-h2:text-2xl sm:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4
-                  prose-h3:text-xl sm:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
-                  prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
-                  prose-a:text-[#CC0000] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
-                  prose-strong:text-gray-900
-                  prose-ul:my-6 prose-ul:space-y-2
-                  prose-ol:my-6 prose-ol:space-y-2
-                  prose-li:text-gray-700
-                  prose-blockquote:border-l-4 prose-blockquote:border-[#CC0000] prose-blockquote:pl-4 sm:prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-gray-50 prose-blockquote:py-2 prose-blockquote:pr-4 sm:prose-blockquote:pr-6
-                  prose-img:rounded-xl prose-img:shadow-md prose-img:my-8
-                  prose-code:text-[#CC0000] prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm
-                  prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:shadow-lg prose-pre:overflow-x-auto
-                  prose-hr:my-12 prose-hr:border-gray-200
-                  [&>*]:!max-w-none [&_table]:w-full
-                  break-words
-                "
-                  dangerouslySetInnerHTML={{ __html: normalizedContent }}
-                />
-              </TableWrapper>
-            </div>
+            {renderMixedContentFromHtml(normalizedContent)}
 
             {articleCta && articleCta.primaryHref && (
               <ArticleBottomCta

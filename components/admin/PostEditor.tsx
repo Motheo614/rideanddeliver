@@ -353,32 +353,18 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       return;
     }
 
-    const safeName = escapeHtml(name);
     const safeProductId = escapeHtml(product._id);
     const isHero = blockType === 'hero';
-    const labelText = isHero ? '★ Hero Card' : 'Accent Card';
-    const labelColor = isHero ? '#CC0000' : '#6b7280';
     const borderColor = isHero ? '#CC0000' : '#9ca3af';
-    const helperText = isHero
-      ? 'Featured #1 pick block for this post.'
-      : 'Standard mid-article product mention block.';
 
     const productHtml = `
 <div
-  class="product-card-placeholder"
-  data-product-block="true"
+  data-product-block
   data-product-id="${safeProductId}"
   data-block-type="${blockType}"
   contenteditable="false"
-  style="margin:18px 0;padding:14px 16px;border:1px dashed #d1d5db;border-left:4px solid ${borderColor};border-radius:8px;background:#ffffff;"
->
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-    <strong style="font-size:14px;color:#111827;">${safeName}</strong>
-    <span style="font-size:11px;font-weight:700;color:${labelColor};text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap;">${labelText}</span>
-  </div>
-  <p style="margin:6px 0 0;font-size:12px;color:#6b7280;">${helperText}</p>
-  <p style="margin:4px 0 0;font-size:11px;color:#9ca3af;">blockType: ${blockType} · productId: ${safeProductId}</p>
-</div>`;
+  style="margin:18px 0;min-height:24px;border:1px dashed #d1d5db;border-left:4px solid ${borderColor};border-radius:8px;background:#ffffff;"
+></div><p><br></p>`;
 
     const range = getSafeRange(quill);
     const insertIndex = range ? range.index : 0;

@@ -39,6 +39,10 @@ export interface IPost extends Document {
     image: string;
     description: string;
   }>;
+  productBlocks?: Array<{
+    blockType: 'accent' | 'hero';
+    productId: mongoose.Types.ObjectId;
+  }>;
   seoMetadata?: {
     metaTitle: string;
     metaDescription: string;
@@ -124,6 +128,20 @@ const PostSchema = new Schema<IPost, IPostModel>(
         price: String,
         image: String,
         description: String,
+      },
+    ],
+    productBlocks: [
+      {
+        blockType: {
+          type: String,
+          enum: ['accent', 'hero'],
+          required: true,
+        },
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true,
+        },
       },
     ],
     seoMetadata: {
