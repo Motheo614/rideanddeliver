@@ -369,6 +369,10 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
     const range = getSafeRange(quill);
     const insertIndex = range ? range.index : 0;
     quill.clipboard.dangerouslyPasteHTML(insertIndex, productHtml);
+    const updatedHtml = quill.root.innerHTML;
+    React.startTransition(() => {
+      setContent(updatedHtml);
+    });
     quill.setSelection(insertIndex + 1, 0, 'silent');
     showToast(`Inserted ${name} as ${isHero ? 'Hero Card' : 'Accent Card'}`, 'success');
   };
