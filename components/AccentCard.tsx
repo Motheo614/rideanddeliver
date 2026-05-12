@@ -33,7 +33,7 @@ export default function AccentCard({
   return (
     <div
       id={jumpTargetId}
-      className="my-8 mx-auto w-full max-w-[324px] overflow-hidden rounded-[16px] border border-[#d2d2d2] border-t-4 border-t-[#d40000] bg-[#ffffff] md:my-10 scroll-mt-24"
+      className="my-8 mx-auto w-full max-w-[324px] overflow-hidden rounded-[16px] border border-dashed border-[#d40000] bg-[#ffffff] md:my-10 scroll-mt-24"
     >
       <div className="flex min-h-[210px] items-center justify-center border-b border-[#dfdfdf] bg-[#ffffff] px-6 py-6">
         <div className="relative w-full max-w-[240px]">
