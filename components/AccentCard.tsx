@@ -23,7 +23,6 @@ export default function AccentCard({
   imageUrl,
   affiliateUrl,
   specs,
-  priceText,
 }: AccentCardProps) {
   const safeName = String(productName || 'Product').trim();
   const safeAwardLabel = String(awardLabel || 'Top Pick').trim().toUpperCase();
@@ -32,22 +31,21 @@ export default function AccentCard({
   const safeSpecs = (Array.isArray(specs) ? specs : [])
     .map((item) => String(item || '').trim())
     .filter(Boolean);
-  const safePriceText = String(priceText || '').trim() || '~$25-$40 on Amazon';
   const href = String(affiliateUrl || '#').trim() || '#';
   const isExternal = /^https?:\/\//i.test(href);
 
   return (
     <div
       id={jumpTargetId}
-      className="my-8 mx-auto w-full max-w-[320px] overflow-hidden rounded-[14px] border border-[#cfcfcf] border-t-4 border-t-[#d62525] bg-[#f6f5f2] md:my-10 scroll-mt-24"
+      className="my-8 mx-auto w-full max-w-[272px] overflow-hidden rounded-[14px] border border-[#cfcfcf] border-t-4 border-t-[#d62525] bg-[#f6f5f2] md:my-10 scroll-mt-24"
     >
-      <div className="w-full bg-[#0c0d10] px-5 py-[14px]">
+      <div className="w-full bg-[#0c0d10] px-4 py-3">
         <span className="block text-[14px] leading-[1.15] font-extrabold uppercase tracking-[0.01em] text-[#f0f0ef]" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
           {safeAwardLabel}
         </span>
       </div>
 
-      <div className="flex min-h-[205px] items-center justify-center bg-[#ececed] px-6 py-6">
+      <div className="flex min-h-[205px] items-center justify-center bg-[#ffffff] px-5 py-5">
         <div className="relative w-full max-w-[240px]">
           {imageUrl ? (
             <Image
@@ -65,7 +63,7 @@ export default function AccentCard({
         </div>
       </div>
 
-      <div className="border-t border-[#d0d0d0] bg-[#e2e1dc] px-5 py-5">
+      <div className="border-t border-[#d0d0d0] bg-[#e2e1dc] px-4 py-4">
         <div className="mb-2">
           <h3
             className="text-[17px] font-bold leading-[1.2] text-[#1e1e1d]"
@@ -89,10 +87,6 @@ export default function AccentCard({
           </div>
         </div>
 
-        <p className="mb-4 text-[17px] leading-[1.2] text-[#444444]" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
-          {safePriceText}
-        </p>
-
         {safeSpecs.length > 0 && (
           <div className="mb-4 flex flex-wrap gap-2">
             {safeSpecs.map((spec) => (
@@ -110,16 +104,12 @@ export default function AccentCard({
           href={href}
           target={isExternal ? '_blank' : undefined}
           rel={isExternal ? 'noopener noreferrer sponsored' : undefined}
-          className="inline-flex w-full items-center justify-center gap-3 rounded-[14px] border border-[#a8a8a6] bg-[#ecebe6] px-4 py-3 text-center text-[14px] font-bold leading-[1.15] text-[#1f1f1f] transition-colors hover:bg-[#e7e6e0]"
+          className="inline-flex w-full items-center justify-center gap-3 rounded-[14px] border border-[#CC0000] bg-[#CC0000] px-4 py-3 text-center text-[14px] font-bold leading-[1.15] text-[#ffffff] transition-colors hover:bg-[#a80000]"
           style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}
         >
           <span aria-hidden="true" className="text-[18px] leading-none">↪</span>
           <span>Check Price on Amazon</span>
         </a>
-
-        <p className="mt-3 text-[11px] text-[#767676]">
-            As an Amazon Associate I earn from qualifying purchases.
-        </p>
       </div>
     </div>
   );
