@@ -33,9 +33,9 @@ export default function AccentCard({
   return (
     <div
       id={jumpTargetId}
-      className="my-8 mx-auto w-full max-w-[324px] overflow-hidden rounded-[16px] border border-[#d2d2d2] border-t-4 border-t-[#d40000] bg-[#f5f5f5] md:my-10 scroll-mt-24"
+      className="my-8 mx-auto w-full max-w-[324px] overflow-hidden rounded-[16px] border border-[#d2d2d2] border-t-4 border-t-[#d40000] bg-[#ffffff] md:my-10 scroll-mt-24"
     >
-      <div className="flex min-h-[210px] items-center justify-center border-b border-[#dfdfdf] bg-[#f4f4f6] px-6 py-6">
+      <div className="flex min-h-[210px] items-center justify-center border-b border-[#dfdfdf] bg-[#ffffff] px-6 py-6">
         <div className="relative w-full max-w-[240px]">
           {imageUrl ? (
             <Image
@@ -53,7 +53,7 @@ export default function AccentCard({
         </div>
       </div>
 
-      <div className="bg-[#f7f7f6] px-5 py-5">
+      <div className="bg-[#ffffff] px-5 py-5">
         <div className="mb-3">
           <span
             className="inline-flex rounded-[5px] border border-[#d40000] px-3 py-1 text-[11px] font-bold leading-none tracking-[0.06em] text-[#d40000]"
