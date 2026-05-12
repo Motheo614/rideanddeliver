@@ -64,16 +64,8 @@ export default function HeroProductCard({
     >
       <div className="flex items-center justify-between bg-[#111111] px-[18px] py-[9px]">
         <div className="flex items-center gap-2">
-          <span
-            className="inline-flex items-center rounded-[3px] bg-[#CC0000] px-[10px] py-[3px] text-[11px] font-black uppercase text-white"
-            style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}
-          >
-            #1 Pick {year}
-          </span>
           <span className="text-[11px] uppercase text-[#666666]">{safeAwardLabel}</span>
         </div>
-
-        <span className="text-[11px] text-[#555555]">Reviewed by Rider Complex Team</span>
       </div>
 
       <div className="grid" style={{ gridTemplateColumns: '1fr 200px' }}>
@@ -155,10 +147,6 @@ export default function HeroProductCard({
             </span>
             <span>Buy on Amazon</span>
           </a>
-
-          <p className="mt-2 text-center text-[10px] text-[#888888]">
-            As an Amazon Associate I earn from qualifying purchases.
-          </p>
         </div>
 
         <div className="self-stretch border-l border-[#e2e2e2] bg-white">
