@@ -22,30 +22,20 @@ export default function AccentCard({
   stars,
   imageUrl,
   affiliateUrl,
-  specs,
 }: AccentCardProps) {
   const safeName = String(productName || 'Product').trim();
   const safeAwardLabel = String(awardLabel || 'Top Pick').trim().toUpperCase();
   const safeScore = Number.isFinite(Number(score)) ? Number(score) : 9.5;
   const safeStars = Math.max(0, Math.min(5, Math.round(Number.isFinite(Number(stars)) ? Number(stars) : 5)));
-  const safeSpecs = (Array.isArray(specs) ? specs : [])
-    .map((item) => String(item || '').trim())
-    .filter(Boolean);
   const href = String(affiliateUrl || '#').trim() || '#';
   const isExternal = /^https?:\/\//i.test(href);
 
   return (
     <div
       id={jumpTargetId}
-      className="my-8 mx-auto w-full max-w-[272px] overflow-hidden rounded-[14px] border border-[#cfcfcf] border-t-4 border-t-[#d62525] bg-[#f6f5f2] md:my-10 scroll-mt-24"
+      className="my-8 mx-auto w-full max-w-[324px] overflow-hidden rounded-[16px] border border-[#d2d2d2] border-t-4 border-t-[#d40000] bg-[#f5f5f5] md:my-10 scroll-mt-24"
     >
-      <div className="w-full bg-[#0c0d10] px-4 py-3">
-        <span className="block text-[14px] leading-[1.15] font-extrabold uppercase tracking-[0.01em] text-[#f0f0ef]" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
-          {safeAwardLabel}
-        </span>
-      </div>
-
-      <div className="flex min-h-[205px] items-center justify-center bg-[#ffffff] px-5 py-5">
+      <div className="flex min-h-[210px] items-center justify-center border-b border-[#dfdfdf] bg-[#f4f4f6] px-6 py-6">
         <div className="relative w-full max-w-[240px]">
           {imageUrl ? (
             <Image
@@ -63,52 +53,47 @@ export default function AccentCard({
         </div>
       </div>
 
-      <div className="border-t border-[#d0d0d0] bg-[#e2e1dc] px-4 py-4">
-        <div className="mb-2">
+      <div className="bg-[#f7f7f6] px-5 py-5">
+        <div className="mb-3">
+          <span
+            className="inline-flex rounded-[5px] border border-[#d40000] px-3 py-1 text-[11px] font-bold leading-none tracking-[0.06em] text-[#d40000]"
+            style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}
+          >
+            {safeAwardLabel}
+          </span>
+        </div>
+
+        <div className="mb-4">
           <h3
-            className="text-[17px] font-bold leading-[1.2] text-[#1e1e1d]"
+            className="text-[17px] font-bold leading-[1.2] text-[#1f1f1f]"
             style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}
           >
             {safeName}
           </h3>
         </div>
 
-        <div className="mb-2 flex items-end justify-between gap-2">
+        <div className="mb-4 flex items-end justify-between gap-2">
           <div className="leading-none" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
-            <span className="text-[41px] font-extrabold text-[#d62525]">{safeScore.toFixed(1)}</span>
-            <span className="ml-1 text-[20px] font-medium text-[#444444]">/10</span>
+            <span className="text-[56px] font-extrabold text-[#d40000]">{safeScore.toFixed(1)}</span>
+            <span className="ml-1 text-[20px] font-semibold text-[#9a9a9a]">/10</span>
           </div>
-          <div className="mb-[6px] text-[17px] leading-none text-[#d62525]" aria-label={`${safeStars} star rating`}>
+          <div className="mb-[8px] text-[21px] leading-none" aria-label={`${safeStars} star rating`}>
             {Array.from({ length: 5 }, (_unused, index) => (
-              <span key={`accent-star-${index}`} className={index < safeStars ? 'text-[#d62525]' : 'text-[#a7a7a5]'}>
+              <span key={`accent-star-${index}`} className={index < safeStars ? 'text-[#d40000]' : 'text-[#b9b9b9]'}>
                 ★
               </span>
             ))}
           </div>
         </div>
 
-        {safeSpecs.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {safeSpecs.map((spec) => (
-              <span
-                key={`${safeName}-${spec}`}
-                className="rounded-[6px] border border-[#c9c9c7] bg-[#ecebe6] px-2.5 py-1 text-[11px] font-semibold text-[#575757]"
-              >
-                {spec}
-              </span>
-            ))}
-          </div>
-        )}
-
         <a
           href={href}
           target={isExternal ? '_blank' : undefined}
           rel={isExternal ? 'noopener noreferrer sponsored' : undefined}
-          className="inline-flex w-full items-center justify-center gap-3 rounded-[14px] border border-[#CC0000] bg-[#CC0000] px-4 py-3 text-center text-[14px] font-bold leading-[1.15] text-[#ffffff] transition-colors hover:bg-[#a80000]"
+          className="inline-flex w-full items-center justify-center rounded-[14px] border border-[#b7b7b7] bg-[#f6f6f5] px-4 py-3 text-center text-[13px] font-extrabold leading-[1.15] tracking-[0.04em] text-[#1f1f1f] transition-colors hover:bg-[#efefee]"
           style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}
         >
-          <span aria-hidden="true" className="text-[18px] leading-none">↪</span>
-          <span>Check Price on Amazon</span>
+          <span>BUY ON AMAZON</span>
         </a>
       </div>
     </div>
