@@ -11,6 +11,7 @@ interface AccentCardProps {
   imageUrl?: string;
   affiliateUrl?: string;
   specs?: string[];
+  priceText?: string;
 }
 
 export default function AccentCard({
@@ -22,98 +23,103 @@ export default function AccentCard({
   imageUrl,
   affiliateUrl,
   specs,
+  priceText,
 }: AccentCardProps) {
   const safeName = String(productName || 'Product').trim();
-  const safeAwardLabel = String(awardLabel || 'Top Pick').trim();
+  const safeAwardLabel = String(awardLabel || 'Top Pick').trim().toUpperCase();
   const safeScore = Number.isFinite(Number(score)) ? Number(score) : 9.5;
   const safeStars = Math.max(0, Math.min(5, Math.round(Number.isFinite(Number(stars)) ? Number(stars) : 5)));
   const safeSpecs = (Array.isArray(specs) ? specs : [])
     .map((item) => String(item || '').trim())
     .filter(Boolean);
+  const safePriceText = String(priceText || '').trim() || '~$25-$40 on Amazon';
   const href = String(affiliateUrl || '#').trim() || '#';
   const isExternal = /^https?:\/\//i.test(href);
 
   return (
     <div
       id={jumpTargetId}
-      className="my-8 overflow-hidden rounded-[10px] border border-[#e2e2e2] bg-white md:my-10 scroll-mt-24"
+      className="my-8 mx-auto w-full max-w-[320px] overflow-hidden rounded-[14px] border border-[#cfcfcf] border-t-4 border-t-[#d62525] bg-[#f6f5f2] md:my-10 scroll-mt-24"
     >
-      <div className="flex w-full items-center justify-between bg-[#111111] px-4 py-2">
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#999999]">
+      <div className="w-full bg-[#0c0d10] px-5 py-[14px]">
+        <span className="block text-[14px] leading-[1.15] font-extrabold uppercase tracking-[0.01em] text-[#f0f0ef]" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
           {safeAwardLabel}
         </span>
-
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] leading-none text-[#CC0000]" aria-label={`${safeStars} star rating`}>
-            {Array.from({ length: 5 }, (_unused, index) => (
-              <span key={`accent-star-${index}`} className={index < safeStars ? 'text-[#CC0000]' : 'text-[#5a5a5a]'}>
-                ★
-              </span>
-            ))}
-          </span>
-          <span className="text-white" style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}>
-            <span className="text-[15px] font-extrabold">{safeScore.toFixed(1)}</span>
-            <span className="ml-0.5 text-[11px] text-[#888888]">/10</span>
-          </span>
-        </div>
       </div>
 
-      <div className="flex">
-        <div className="flex h-[138px] w-[120px] shrink-0 items-center justify-center bg-[#f5f5f5] px-2">
+      <div className="flex min-h-[205px] items-center justify-center bg-[#ececed] px-6 py-6">
+        <div className="relative w-full max-w-[240px]">
           {imageUrl ? (
             <Image
               src={imageUrl}
               alt={safeName}
-              width={96}
-              height={96}
-              className="max-h-[110px] w-auto object-contain"
+              width={240}
+              height={180}
+              className="mx-auto max-h-[180px] w-auto object-contain"
             />
           ) : (
-            <ImageIcon size={24} className="text-[#9ca3af]" aria-hidden="true" />
+            <div className="flex h-[180px] items-center justify-center">
+              <ImageIcon size={44} className="text-[#9ca3af]" aria-hidden="true" />
+            </div>
           )}
         </div>
+      </div>
 
-        <div className="flex-1 p-4">
+      <div className="border-t border-[#d0d0d0] bg-[#e2e1dc] px-5 py-5">
+        <div className="mb-2">
           <h3
-            className="mb-2 text-[21px] font-extrabold leading-tight text-[#111111]"
-            style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}
+            className="text-[17px] font-bold leading-[1.2] text-[#1e1e1d]"
+            style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}
           >
             {safeName}
           </h3>
-
-          {safeSpecs.length > 0 && (
-            <div className="mb-[14px] flex flex-wrap gap-2">
-              {safeSpecs.map((spec) => (
-                <span
-                  key={`${safeName}-${spec}`}
-                  className="rounded-[4px] border border-[#e2e2e2] bg-[#f5f5f5] px-[9px] py-[3px] text-[11px] font-semibold text-[#555555]"
-                >
-                  {spec}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <a
-            href={href}
-            target={isExternal ? '_blank' : undefined}
-            rel={isExternal ? 'noopener noreferrer sponsored' : undefined}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-[4px] bg-[#CC0000] px-5 py-[10px] text-[12px] font-extrabold uppercase tracking-[0.09em] text-white transition-colors hover:bg-red-700"
-            style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}
-          >
-            <span aria-hidden="true" className="inline-flex h-[14px] w-[14px] items-center justify-center">
-              <svg viewBox="0 0 24 24" width="14" height="14" role="img" aria-label="Amazon">
-                <text x="8.5" y="12.5" fill="currentColor" fontSize="12" fontWeight="700" fontFamily="Arial, sans-serif">a</text>
-                <path d="M4.5 16.8c3.3 2 7.1 2.1 10.8.2" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </span>
-            <span>Check Price on Amazon</span>
-          </a>
-
-          <p className="mt-2 text-[10px] text-[#888888]">
-            As an Amazon Associate I earn from qualifying purchases.
-          </p>
         </div>
+
+        <div className="mb-2 flex items-end justify-between gap-2">
+          <div className="leading-none" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
+            <span className="text-[41px] font-extrabold text-[#d62525]">{safeScore.toFixed(1)}</span>
+            <span className="ml-1 text-[20px] font-medium text-[#444444]">/10</span>
+          </div>
+          <div className="mb-[6px] text-[17px] leading-none text-[#d62525]" aria-label={`${safeStars} star rating`}>
+            {Array.from({ length: 5 }, (_unused, index) => (
+              <span key={`accent-star-${index}`} className={index < safeStars ? 'text-[#d62525]' : 'text-[#a7a7a5]'}>
+                ★
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <p className="mb-4 text-[17px] leading-[1.2] text-[#444444]" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
+          {safePriceText}
+        </p>
+
+        {safeSpecs.length > 0 && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {safeSpecs.map((spec) => (
+              <span
+                key={`${safeName}-${spec}`}
+                className="rounded-[6px] border border-[#c9c9c7] bg-[#ecebe6] px-2.5 py-1 text-[11px] font-semibold text-[#575757]"
+              >
+                {spec}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <a
+          href={href}
+          target={isExternal ? '_blank' : undefined}
+          rel={isExternal ? 'noopener noreferrer sponsored' : undefined}
+          className="inline-flex w-full items-center justify-center gap-3 rounded-[14px] border border-[#a8a8a6] bg-[#ecebe6] px-4 py-3 text-center text-[14px] font-bold leading-[1.15] text-[#1f1f1f] transition-colors hover:bg-[#e7e6e0]"
+          style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}
+        >
+          <span aria-hidden="true" className="text-[18px] leading-none">↪</span>
+          <span>Check Price on Amazon</span>
+        </a>
+
+        <p className="mt-3 text-[11px] text-[#767676]">
+            As an Amazon Associate I earn from qualifying purchases.
+        </p>
       </div>
     </div>
   );
