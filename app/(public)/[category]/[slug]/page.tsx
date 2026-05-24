@@ -532,11 +532,28 @@ export default async function BlogPostPage({ params }: Props) {
       });
 
     const elements: React.ReactNode[] = [];
+    const cardBuffer: React.ReactNode[] = [];
     const placeholderRegex = /<div\b[^>]*\bdata-product-block(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?[^>]*\bdata-block-type=["'](accent|hero)["'][^>]*\bdata-product-id=["']([a-f0-9]{24})["'][^>]*>[\s\S]*?<\/div>/gi;
 
     let lastIndex = 0;
     let match: RegExpExecArray | null;
     let segmentIndex = 0;
+    let gridIndex = 0;
+
+    const flushCardGrid = () => {
+      if (cardBuffer.length === 0) return;
+
+      elements.push(
+        <div
+          key={`product-grid-${gridIndex}`}
+          className="my-8 grid grid-cols-1 gap-6 md:my-10 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {cardBuffer.splice(0, cardBuffer.length)}
+        </div>
+      );
+
+      gridIndex += 1;
+    };
 
     while ((match = placeholderRegex.exec(normalizedHtml)) !== null) {
       const [rawPlaceholder, blockTypeFromHtml, productId] = match;
@@ -545,6 +562,7 @@ export default async function BlogPostPage({ params }: Props) {
       const upgradedBefore = upgradeLegacyAffiliateBlocks(htmlBefore);
       const htmlSegment = renderHtmlSegment(upgradedBefore, `html-segment-${segmentIndex}`);
       if (htmlSegment) {
+        flushCardGrid();
         elements.push(htmlSegment);
       }
 
@@ -563,7 +581,7 @@ export default async function BlogPostPage({ params }: Props) {
                 .filter((value) => value !== ': ')
             : [];
 
-          elements.push(
+          cardBuffer.push(
             <div key={`hero-block-${segmentIndex}`} id={jumpTargetId} className="my-8 md:my-10 scroll-mt-24">
               <HeroProductCard
                 productName={String(product.productName || 'Top Pick')}
@@ -586,7 +604,7 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
           );
         } else {
-          elements.push(
+          cardBuffer.push(
             <AccentCard
               key={`accent-block-${segmentIndex}`}
               jumpTargetId={jumpTargetId}
@@ -617,8 +635,11 @@ export default async function BlogPostPage({ params }: Props) {
     const upgradedAfter = upgradeLegacyAffiliateBlocks(htmlAfter);
     const trailingSegment = renderHtmlSegment(upgradedAfter, `html-tail-${segmentIndex}`);
     if (trailingSegment) {
+      flushCardGrid();
       elements.push(trailingSegment);
     }
+
+    flushCardGrid();
 
     return elements;
   };
