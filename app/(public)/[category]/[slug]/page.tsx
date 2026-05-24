@@ -574,6 +574,7 @@ export default async function BlogPostPage({ params }: Props) {
         const blockType = (String(block?.blockType || blockTypeFromHtml).toLowerCase() === 'hero' ? 'hero' : 'accent') as 'hero' | 'accent';
 
         if (blockType === 'hero') {
+          flushCardGrid();
           const score = toFiniteNumber(product.score, 9.0);
           const specs = Array.isArray(product.specs)
             ? product.specs
@@ -581,7 +582,7 @@ export default async function BlogPostPage({ params }: Props) {
                 .filter((value) => value !== ': ')
             : [];
 
-          cardBuffer.push(
+          elements.push(
             <div key={`hero-block-${segmentIndex}`} id={jumpTargetId} className="my-8 md:my-10 scroll-mt-24">
               <HeroProductCard
                 productName={String(product.productName || 'Top Pick')}
