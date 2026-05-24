@@ -546,7 +546,7 @@ export default async function BlogPostPage({ params }: Props) {
       elements.push(
         <div
           key={`product-grid-${gridIndex}`}
-          className="my-8 grid grid-cols-1 gap-6 md:my-10 md:grid-cols-2 lg:grid-cols-3"
+          className="my-8 grid grid-cols-1 gap-6 md:my-10 md:grid-cols-2 lg:grid-cols-4"
         >
           {cardBuffer.splice(0, cardBuffer.length)}
         </div>
