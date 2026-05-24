@@ -571,7 +571,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       if (product) {
         const jumpTargetId = String(product.jumpTargetId || '').trim() || undefined;
-        const blockType = (String(block?.blockType || blockTypeFromHtml).toLowerCase() === 'hero' ? 'hero' : 'accent') as 'hero' | 'accent';
+        const blockType = (String(blockTypeFromHtml || block?.blockType).toLowerCase() === 'hero' ? 'hero' : 'accent') as 'hero' | 'accent';
 
         if (blockType === 'hero') {
           flushCardGrid();
