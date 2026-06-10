@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Search, Menu, X } from 'lucide-react';
+import { getCategoryInfo } from '@/lib/categoryMap';
 
 const navLinks = [
   { label: 'Safety Gear', href: '/safety-gear' },
@@ -21,6 +22,7 @@ interface SearchResult {
   excerpt: string;
   category: string;
   categoryLabel: string;
+  dbCategorySlug?: string;
   featuredImage?: string;
 }
 
@@ -80,11 +82,15 @@ export default function Header() {
     }
   };
 
-  const handleResultClick = (post: any) => {
+  const handleResultClick = (post: SearchResult) => {
     setIsSearchOpen(false);
     setSearchQuery('');
     setSearchResults([]);
-    router.push(`/${post.dbCategorySlug}/${post.slug}`);
+
+    const categorySlug = post.dbCategorySlug || getCategoryInfo(post.category)?.urlSlug || post.category;
+    const targetPath = categorySlug ? `/${categorySlug}/${post.slug}` : `/blog/${post.slug}`;
+
+    router.push(targetPath);
   };
 
   return (
@@ -158,7 +164,7 @@ export default function Header() {
 
                     {!isSearching && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
                       <div className="p-8 text-center text-gray-500">
-                        No results found for "{searchQuery}"
+                        No results found for &quot;{searchQuery}&quot;
                       </div>
                     )}
 
