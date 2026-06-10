@@ -11,13 +11,26 @@ export const metadata = buildPageMetadata({
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default function TechLightingPage() {
+interface Props {
+  searchParams: Promise<{ page?: string }>;
+}
+
+function parsePageParam(pageParam?: string) {
+  const parsed = Number.parseInt(pageParam || '1', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+export default async function TechLightingPage({ searchParams }: Props) {
+  const { page } = await searchParams;
+  const currentPage = parsePageParam(page);
+
   return (
     <HubPage
       title="Tech & Lighting"
       description="Stay connected and stay visible. We review the best dash cams, bike lights, and phone mounts for professional riders."
       categorySlug="tech-lighting"
       intro="Technology is the backbone of a modern delivery business. Whether it's a high-definition dash cam to protect you from liability or a powerful light system that turns night into day, the right tech can make your shifts safer and more efficient. We test the latest gadgets to see which ones actually stand up to the daily grind."
+      currentPage={currentPage}
     />
   );
 }

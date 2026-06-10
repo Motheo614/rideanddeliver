@@ -1,6 +1,13 @@
 import { Post } from './types';
 import { getCategoryInfoByUrlSlug } from './categoryMap';
 
+export interface PostsPageResponse {
+  posts: Post[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 function isLocalhostUrl(url: string) {
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(url);
 }
@@ -76,6 +83,19 @@ export async function getPosts(options?: {
   limit?: number;
   page?: number;
 }): Promise<Post[]> {
+  const data = await getPostsPage(options);
+  return data.posts;
+}
+
+/**
+ * Fetch posts with pagination metadata
+ */
+export async function getPostsPage(options?: {
+  status?: string;
+  category?: string;
+  limit?: number;
+  page?: number;
+}): Promise<PostsPageResponse> {
   try {
     const params = new URLSearchParams();
     if (options?.status) params.append('status', options.status);
@@ -88,14 +108,29 @@ export async function getPosts(options?: {
 
     if (!response.ok) {
       console.error('Failed to fetch posts:', response.statusText);
-      return [];
+      return {
+        posts: [],
+        total: 0,
+        page: options?.page || 1,
+        totalPages: 0,
+      };
     }
 
     const data = await response.json();
-    return data.posts || [];
+    return {
+      posts: data.posts || [],
+      total: data.total || 0,
+      page: data.page || options?.page || 1,
+      totalPages: data.totalPages || 0,
+    };
   } catch (error) {
     console.error('Error fetching posts:', error);
-    return [];
+    return {
+      posts: [],
+      total: 0,
+      page: options?.page || 1,
+      totalPages: 0,
+    };
   }
 }
 
@@ -128,6 +163,25 @@ export async function getPostsByCategory(categorySlug: string): Promise<Post[]> 
   const dbCategory = categoryInfo?.slug || categorySlug;
   
   return getPosts({ status: 'published', category: dbCategory });
+}
+
+/**
+ * Fetch posts by category slug with pagination metadata
+ */
+export async function getPostsByCategoryPage(
+  categorySlug: string,
+  page = 1,
+  limit = 10
+): Promise<PostsPageResponse> {
+  const categoryInfo = getCategoryInfoByUrlSlug(categorySlug);
+  const dbCategory = categoryInfo?.slug || categorySlug;
+
+  return getPostsPage({
+    status: 'published',
+    category: dbCategory,
+    page,
+    limit,
+  });
 }
 
 /**

@@ -11,13 +11,26 @@ export const metadata = buildPageMetadata({
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default function BikeSecurityPage() {
+interface Props {
+  searchParams: Promise<{ page?: string }>;
+}
+
+function parsePageParam(pageParam?: string) {
+  const parsed = Number.parseInt(pageParam || '1', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+export default async function BikeSecurityPage({ searchParams }: Props) {
+  const { page } = await searchParams;
+  const currentPage = parsePageParam(page);
+
   return (
     <HubPage
       title="Bike Security"
       description="Your bike is your livelihood. Learn how to protect it with the world's toughest locks and smartest GPS trackers."
       categorySlug="bike-security"
       intro="Bike theft is the ultimate nightmare for a delivery rider. A stolen bike doesn't just mean a financial loss; it means you can't work. We review heavy-duty U-locks, chain locks, and the latest in GPS tracking technology to give you peace of mind when you have to leave your bike for a drop-off."
+      currentPage={currentPage}
     />
   );
 }

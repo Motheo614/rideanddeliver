@@ -1,23 +1,39 @@
 import React from 'react';
 import ArticleCard from '@/components/ArticleCard';
+import CategoryPagination from '@/components/CategoryPagination';
 import SectionHeading from '@/components/SectionHeading';
-import { getPostsByCategory } from '@/lib/posts';
+import { getPostsByCategoryPage } from '@/lib/posts';
 import Link from 'next/link';
 import { unstable_noStore as noStore } from 'next/cache';
+import { notFound } from 'next/navigation';
 
 interface HubPageProps {
   title: string;
   description: string;
   categorySlug: string;
   intro: string;
+  currentPage?: number;
 }
 
-export default async function HubPage({ title, description, categorySlug, intro }: HubPageProps) {
+const POSTS_PER_PAGE = 10;
+
+export default async function HubPage({
+  title,
+  description,
+  categorySlug,
+  intro,
+  currentPage = 1,
+}: HubPageProps) {
   // Render category hubs with fresh data to avoid stale empty states after publishing.
   noStore();
 
-  // Fetch posts from API
-  const categoryPosts = await getPostsByCategory(categorySlug);
+  // Fetch posts from API with pagination.
+  const categoryData = await getPostsByCategoryPage(categorySlug, currentPage, POSTS_PER_PAGE);
+  const categoryPosts = categoryData.posts;
+
+  if (categoryData.totalPages > 0 && currentPage > categoryData.totalPages) {
+    notFound();
+  }
 
   return (
     <main className="min-h-screen bg-white">
@@ -44,9 +60,16 @@ export default async function HubPage({ title, description, categorySlug, intro 
           
           <div className="flex flex-col">
             {categoryPosts.length > 0 ? (
-              categoryPosts.map((post) => (
-                <ArticleCard key={post.slug} post={post} useAbsoluteUpperDate swapDateWithReadTime />
-              ))
+              <>
+                {categoryPosts.map((post) => (
+                  <ArticleCard key={post.slug} post={post} useAbsoluteUpperDate swapDateWithReadTime />
+                ))}
+                <CategoryPagination
+                  currentPage={currentPage}
+                  totalPages={categoryData.totalPages}
+                  basePath={`/${categorySlug}`}
+                />
+              </>
             ) : (
               <p className="text-gray-400 italic">No articles found in this category yet.</p>
             )}
