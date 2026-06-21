@@ -17,6 +17,7 @@
     "ngrok": "ngrok http 3002"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
     "@google/genai": "^1.17.0",
     "@hookform/resolvers": "^5.2.1",
     "@microsoft/clarity": "^1.0.2",
