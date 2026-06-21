@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
       if (existing.status === 'active' && isLegacyOrVerified) {
         try {
-          await sendNewsletterWelcomeEmail(normalizedEmail);
+          await sendNewsletterWelcomeEmail(normalizedEmail, existing.source);
         } catch (emailError) {
           console.error('Newsletter welcome email error:', emailError);
         }
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
         try {
           await sendNewsletterLeadNotification(normalizedEmail, normalizedSource, existing.subscribedAt);
-          await sendNewsletterWelcomeEmail(normalizedEmail);
+          await sendNewsletterWelcomeEmail(normalizedEmail, existing.source);
         } catch (emailError) {
           console.error('Newsletter welcome email error:', emailError);
         }

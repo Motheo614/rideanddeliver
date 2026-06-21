@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
     if (isSendGridConfigured()) {
       try {
         await sendNewsletterLeadNotification(subscriber.email, subscriber.source || 'website', subscriber.subscribedAt);
-        await sendNewsletterWelcomeEmail(subscriber.email);
+        await sendNewsletterWelcomeEmail(subscriber.email, subscriber.source);
       } catch (emailError) {
         console.error('Newsletter post-verify email error:', emailError);
       }

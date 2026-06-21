@@ -13,10 +13,10 @@ export const metadata = buildPageMetadata({
 });
 
 const checklistBullets = [
-  'The 7 pieces of gear every new rider needs (ranked by priority)',
-  "Budget tiers: what to buy first if you're under $150",
-  'Platform sign-up checklist for DoorDash & Uber Eats',
-  'Safety non-negotiables before your first drop',
+  'What actually surprises new riders in their first 90 days, including pay, app rules, and hazards',
+  'The pain points that wear down veteran riders over time, like burnout, shrinking pay, and no safety net',
+  'Cross platform risks every rider faces no matter which app you drive for',
+  "The gear riders say they wish they'd bought sooner, and why",
 ];
 
 const comparisonCategories = ['Helmets', 'Gloves', 'Cameras', 'Locks', 'Rain Gear', 'Power Banks', 'Shoe Covers'];
@@ -122,9 +122,9 @@ export default async function StartHerePage() {
             <span className="inline-flex items-center gap-1 bg-red-50 border border-[#CC0000] text-[#CC0000] text-xs font-bold uppercase tracking-widest rounded px-3 py-1 mb-4">
               📋 Free guide
             </span>
-            <h2 className="text-2xl md:text-3xl font-black text-[#1a1a1a] mb-3">The New Rider&apos;s Starter Checklist</h2>
+            <h2 className="text-2xl md:text-3xl font-black text-[#1a1a1a] mb-3">What Nobody Tells You Before Your First Delivery</h2>
             <p className="text-gray-600 mb-6 max-w-2xl leading-relaxed">
-              Grab our free starter checklist — the exact gear, budget tiers, and platform sign-up steps every new delivery rider needs before their first shift.
+              The pay traps, safety blind spots, and gear regrets real US delivery riders report. Written for brand new riders and for veterans who&apos;ve been doing this for years.
             </p>
             <ul className="space-y-2 mb-6 max-w-xl">
               {checklistBullets.map((bullet) => (

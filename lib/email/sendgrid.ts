@@ -1,5 +1,7 @@
 import sgMail from '@sendgrid/mail';
 import sendgridClient from '@sendgrid/client';
+import fs from 'fs';
+import path from 'path';
 
 function getSiteUrl() {
   const rawUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
@@ -79,19 +81,40 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   });
 }
 
-export async function sendNewsletterWelcomeEmail(email: string) {
+export async function sendNewsletterWelcomeEmail(email: string, source?: string) {
   const { from } = configureSendGridClient();
+
+  let attachment: { content: string; filename: string; type: string; disposition: string } | undefined;
+
+  if (source && source.startsWith('start-here')) {
+    try {
+      const pdfPath = path.join(process.cwd(), 'public', 'lead-magnets', 'new-rider-starter-checklist.pdf');
+      const pdfBuffer = fs.readFileSync(pdfPath);
+      attachment = {
+        content: pdfBuffer.toString('base64'),
+        filename: 'New-Rider-Starter-Checklist.pdf',
+        type: 'application/pdf',
+        disposition: 'attachment',
+      };
+    } catch (readError) {
+      console.warn('Failed to read lead magnet PDF for newsletter welcome email:', readError);
+    }
+  }
+
+  const attachmentLine = attachment ? 'Your New Rider Starter Checklist is attached to this email.' : '';
 
   await sgMail.send({
     to: email,
     from,
     subject: 'Subscription confirmed – Rider Complex',
-    text: `Your Rider Complex subscription is confirmed. You will receive practical rider guides, gear picks, and updates in your inbox.`,
+    text: `Your Rider Complex subscription is confirmed. You will receive practical rider guides, gear picks, and updates in your inbox.${attachmentLine ? ` ${attachmentLine}` : ''}`,
     html: buildEmailShell(`
       <h1 style="margin:0; font-size:38px; line-height:1.2; font-family:Georgia,serif; color:#111827;">Subscription confirmed</h1>
       <p style="margin:18px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">Thanks for subscribing to Rider Complex.</p>
       <p style="margin:10px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">You will receive practical rider guides, gear picks, and updates in your inbox.</p>
+      ${attachmentLine ? `<p style="margin:10px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">${attachmentLine}</p>` : ''}
     `),
+    ...(attachment ? { attachments: [attachment] } : {}),
   });
 }
 
