@@ -4,6 +4,15 @@ import Link from 'next/link';
 import SectionHeading from './SectionHeading';
 import { getTrendingPosts } from '@/lib/posts';
 
+function formatReadTime(readTime: unknown): string {
+  const raw = String(readTime ?? '').trim();
+  if (!raw) return '5 MIN READ';
+  if (/min\s+read/i.test(raw)) return raw.toUpperCase();
+
+  const minutes = raw.match(/\d+/)?.[0];
+  return minutes ? `${minutes} MIN READ` : raw.toUpperCase();
+}
+
 export default async function TrendingNow() {
   const trendingPosts = await getTrendingPosts();
 
@@ -18,7 +27,7 @@ export default async function TrendingNow() {
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {trendingPosts.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.slug}/`} className="group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+            <Link key={post.slug} href={`/${post.dbCategorySlug}/${post.slug}`} className="group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
               <div className="relative aspect-[4/3] overflow-hidden">
                 {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
                   <Image
@@ -42,7 +51,7 @@ export default async function TrendingNow() {
                   {post.title}
                 </h3>
                 <span className="text-[10px] text-gray-400 font-medium">
-                  {post.readTime}
+                  {formatReadTime(post.readTime)}
                 </span>
               </div>
             </Link>

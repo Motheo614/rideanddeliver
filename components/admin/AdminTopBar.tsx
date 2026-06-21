@@ -5,6 +5,7 @@ import { Search, Bell, X, Check, FileText, Package, Users, TrendingUp, MessageSq
 import { useSession } from 'next-auth/react';
 import { formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Notification {
   _id: string;
@@ -24,6 +25,23 @@ interface SearchResults {
   query: string;
 }
 
+const getPostImageUrl = (featuredImage: unknown): string | null => {
+  if (!featuredImage) return null;
+
+  if (typeof featuredImage === 'string') {
+    return featuredImage.trim() || null;
+  }
+
+  if (typeof featuredImage === 'object' && featuredImage !== null && 'url' in featuredImage) {
+    const url = (featuredImage as { url?: unknown }).url;
+    if (typeof url === 'string' && url.trim()) {
+      return url.trim();
+    }
+  }
+
+  return null;
+};
+
 export default function AdminTopBar() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -41,6 +59,7 @@ export default function AdminTopBar() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
+  const [brokenProductImages, setBrokenProductImages] = useState<Record<string, boolean>>({});
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -51,7 +70,7 @@ export default function AdminTopBar() {
   };
 
   const truncateEmail = (email?: string | null) => {
-    if (!email) return 'admin@ridersection.com';
+    if (!email) return 'info@ridercomplex.com';
     if (email.length > 25) {
       return email.substring(0, 22) + '...';
     }
@@ -137,6 +156,31 @@ export default function AdminTopBar() {
     searchResults.users.forEach(user => results.push({ type: 'user', item: user }));
     
     return results;
+  };
+
+  const normalizeImageUrl = (url: unknown): string | null => {
+    if (typeof url !== 'string') {
+      return null;
+    }
+
+    const trimmed = url.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    if (trimmed.startsWith('//')) {
+      return `https:${trimmed}`;
+    }
+
+    if (trimmed.startsWith('http://')) {
+      return `https://${trimmed.slice('http://'.length)}`;
+    }
+
+    return trimmed;
+  };
+
+  const getProductImageUrl = (product: any): string | null => {
+    return normalizeImageUrl(product?.imageUrl) || normalizeImageUrl(product?.productImage);
   };
 
   const handleResultClick = (type: string, item: any) => {
@@ -306,7 +350,8 @@ export default function AdminTopBar() {
   }, [showNotifications]);
 
   return (
-    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-40">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-40 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex-1 max-w-2xl relative" ref={searchRef}>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -358,6 +403,7 @@ export default function AdminTopBar() {
                     </div>
                     {searchResults.posts.map((post, index) => {
                       const flatIndex = index;
+                      const postImage = getPostImageUrl(post.featuredImage);
                       return (
                         <button
                           key={post._id}
@@ -366,11 +412,16 @@ export default function AdminTopBar() {
                             selectedResultIndex === flatIndex ? 'bg-blue-50' : ''
                           }`}
                         >
-                          {post.featuredImage ? (
-                            <img
-                              src={post.featuredImage}
+                          {postImage ? (
+                            <Image
+                              src={postImage}
                               alt={post.title}
+                              width={48}
+                              height={48}
                               className="w-12 h-12 rounded object-cover flex-shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
                             />
                           ) : (
                             <div className="w-12 h-12 rounded bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -405,6 +456,7 @@ export default function AdminTopBar() {
                     </div>
                     {searchResults.products.map((product, index) => {
                       const flatIndex = searchResults.posts.length + index;
+                      const productImage = getProductImageUrl(product);
                       return (
                         <button
                           key={product._id}
@@ -413,11 +465,15 @@ export default function AdminTopBar() {
                             selectedResultIndex === flatIndex ? 'bg-blue-50' : ''
                           }`}
                         >
-                          {product.productImage ? (
+                          {productImage && !brokenProductImages[product._id] ? (
                             <img
-                              src={product.productImage}
+                              src={productImage}
                               alt={product.productName}
                               className="w-12 h-12 rounded object-cover flex-shrink-0"
+                              loading="lazy"
+                              onError={() => {
+                                setBrokenProductImages(prev => ({ ...prev, [product._id]: true }));
+                              }}
                             />
                           ) : (
                             <div className="w-12 h-12 rounded bg-purple-100 flex items-center justify-center flex-shrink-0">
@@ -487,7 +543,7 @@ export default function AdminTopBar() {
         )}
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center justify-between gap-4 md:justify-end md:gap-6">
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
@@ -503,7 +559,7 @@ export default function AdminTopBar() {
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm md:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50">
               {/* Header */}
               <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50">
                 <div>
@@ -580,13 +636,13 @@ export default function AdminTopBar() {
           )}
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center">
             <span className="text-[#CC0000] text-xl font-bold">
               {getUserInitial(session?.user?.name)}
             </span>
           </div>
-          <div className="flex flex-col">
+          <div className="hidden sm:flex flex-col min-w-0">
             <p className="text-[#1a1a1a] font-semibold text-sm leading-tight">
               {session?.user?.name || 'Admin User'}
             </p>
@@ -595,6 +651,7 @@ export default function AdminTopBar() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </header>
   );

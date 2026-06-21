@@ -1,4 +1,17 @@
 import mongoose, { Schema, Model, Document } from 'mongoose';
+import { generateSlugFromTitle, normalizeSlug } from '@/lib/slug';
+
+function estimateReadTimeFromHtml(html: string): number {
+  const text = (html || '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\u00A0/g, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const words = text ? text.split(' ').length : 0;
+  return Math.max(1, Math.ceil(words / 200));
+}
 
 // TypeScript interface for Post document
 export interface IPost extends Document {
@@ -26,10 +39,23 @@ export interface IPost extends Document {
     image: string;
     description: string;
   }>;
+  productBlocks?: Array<{
+    blockType: 'accent' | 'hero';
+    productId: mongoose.Types.ObjectId;
+  }>;
   seoMetadata?: {
     metaTitle: string;
     metaDescription: string;
     keywords: string[];
+  };
+  cta?: {
+    enabled: boolean;
+    title?: string;
+    description?: string;
+    primaryHref?: string;
+    primaryLabel?: string;
+    secondaryHref?: string;
+    secondaryLabel?: string;
   };
   status: 'draft' | 'published' | 'archived';
   publishedAt?: Date;
@@ -64,7 +90,7 @@ const PostSchema = new Schema<IPost, IPostModel>(
     excerpt: {
       type: String,
       required: [true, 'Excerpt is required'],
-      maxlength: [300, 'Excerpt cannot exceed 300 characters'],
+      maxlength: [800, 'Excerpt cannot exceed 800 characters'],
     },
     content: {
       type: String,
@@ -104,10 +130,36 @@ const PostSchema = new Schema<IPost, IPostModel>(
         description: String,
       },
     ],
+    productBlocks: [
+      {
+        blockType: {
+          type: String,
+          enum: ['accent', 'hero'],
+          required: true,
+        },
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true,
+        },
+      },
+    ],
     seoMetadata: {
       metaTitle: String,
       metaDescription: String,
       keywords: [String],
+    },
+    cta: {
+      enabled: {
+        type: Boolean,
+        default: false,
+      },
+      title: String,
+      description: String,
+      primaryHref: String,
+      primaryLabel: String,
+      secondaryHref: String,
+      secondaryLabel: String,
     },
     status: {
       type: String,
@@ -152,18 +204,24 @@ PostSchema.index({
 
 // Pre-save hook to auto-generate slug from title if slug is empty
 PostSchema.pre('save', function () {
+  if (this.slug && (this.isNew || this.isModified('slug'))) {
+    this.slug = normalizeSlug(this.slug);
+  }
+
   if (!this.slug && this.title) {
-    this.slug = this.title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-      .trim()
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+    this.slug = generateSlugFromTitle(this.title);
   }
 
   // Auto-set publishedAt when status changes to 'published'
   if (this.status === 'published' && !this.publishedAt) {
     this.publishedAt = new Date();
+  }
+
+  // Ensure readTime is always a valid positive number.
+  // Recalculate when content changes, or when readTime is missing/invalid.
+  const hasValidReadTime = typeof this.readTime === 'number' && Number.isFinite(this.readTime) && this.readTime > 0;
+  if (this.isModified('content') || !hasValidReadTime) {
+    this.readTime = estimateReadTimeFromHtml(this.content || '');
   }
 });
 

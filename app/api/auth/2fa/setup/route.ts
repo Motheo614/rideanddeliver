@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
 
     // Generate secret
     const secret = speakeasy.generateSecret({
-      name: `Rider Section (${user.email})`,
-      issuer: 'Rider Section',
+      name: `Rider Complex (${user.email})`,
+      issuer: 'Rider Complex',
     });
 
     // Generate QR code

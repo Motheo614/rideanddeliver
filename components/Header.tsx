@@ -5,13 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Search, Menu, X } from 'lucide-react';
+import { getCategoryInfo } from '@/lib/categoryMap';
 
 const navLinks = [
-  { label: 'Safety Gear', href: '/bike-delivery-rider-gear/' },
-  { label: 'Tech & Lighting', href: '/bike-delivery-tech-and-visibility/' },
-  { label: 'Bike Security', href: '/bike-security-for-delivery-riders/' },
-  { label: 'Delivery Gear', href: '/delivery-rider-equipment/' },
-  { label: 'Platform Reviews', href: '/delivery-platform-reviews/' },
+  { label: 'Safety Gear', href: '/safety-gear' },
+  { label: 'Tech & Lighting', href: '/tech-lighting' },
+  { label: 'Bike Security', href: '/bike-security' },
+  { label: 'Delivery Gear', href: '/delivery-gear' },
+  { label: 'Platform Reviews', href: '/platform-reviews' },
 ];
 
 interface SearchResult {
@@ -21,6 +22,7 @@ interface SearchResult {
   excerpt: string;
   category: string;
   categoryLabel: string;
+  dbCategorySlug?: string;
   featuredImage?: string;
 }
 
@@ -80,11 +82,15 @@ export default function Header() {
     }
   };
 
-  const handleResultClick = (slug: string) => {
+  const handleResultClick = (post: SearchResult) => {
     setIsSearchOpen(false);
     setSearchQuery('');
     setSearchResults([]);
-    router.push(`/blog/${slug}/`);
+
+    const categorySlug = post.dbCategorySlug || getCategoryInfo(post.category)?.urlSlug || post.category;
+    const targetPath = categorySlug ? `/${categorySlug}/${post.slug}` : `/blog/${post.slug}`;
+
+    router.push(targetPath);
   };
 
   return (
@@ -95,7 +101,7 @@ export default function Header() {
           <Link href="/" className="flex items-center group">
             <Image
               src="/Assets/Logo.png"
-              alt="Rider Section Logo"
+              alt="Rider Complex Logo"
               width={360}
               height={79}
               priority
@@ -158,7 +164,7 @@ export default function Header() {
 
                     {!isSearching && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
                       <div className="p-8 text-center text-gray-500">
-                        No results found for "{searchQuery}"
+                        No results found for &quot;{searchQuery}&quot;
                       </div>
                     )}
 
@@ -173,7 +179,7 @@ export default function Header() {
                         {searchResults.map((result) => (
                           <button
                             key={result._id}
-                            onClick={() => handleResultClick(result.slug)}
+                            onClick={() => handleResultClick(result)}
                             className="w-full p-4 hover:bg-gray-50 border-b border-gray-100 text-left transition-colors"
                           >
                             <div className="flex gap-3">
@@ -212,7 +218,7 @@ export default function Header() {
             </div>
 
             <Link
-              href="/start-here/"
+              href="/start-here"
               className="hidden md:block bg-[#CC0000] text-white px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider hover:bg-red-700 transition-colors shadow-lg shadow-red-900/20"
             >
               Start Here
@@ -244,7 +250,7 @@ export default function Header() {
               </Link>
             ))}
             <Link
-              href="/start-here/"
+              href="/start-here"
               className="bg-[#CC0000] text-white px-6 py-4 rounded-lg text-center font-bold uppercase tracking-wider mt-4"
               onClick={() => setIsMenuOpen(false)}
             >

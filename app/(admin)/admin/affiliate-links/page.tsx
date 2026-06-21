@@ -49,6 +49,7 @@ export default function AdminAffiliatePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<Message>(null);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [showInactive, setShowInactive] = useState(false);
@@ -94,6 +95,24 @@ export default function AdminAffiliatePage() {
     }
   }, [message]);
 
+  const normalizeImageUrl = (url?: string) => {
+    const trimmed = (url || '').trim();
+
+    if (!trimmed) {
+      return '';
+    }
+
+    if (trimmed.startsWith('//')) {
+      return `https:${trimmed}`;
+    }
+
+    if (trimmed.startsWith('http://')) {
+      return `https://${trimmed.slice('http://'.length)}`;
+    }
+
+    return trimmed;
+  };
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -120,10 +139,15 @@ export default function AdminAffiliatePage() {
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        imageUrl: normalizeImageUrl(formData.imageUrl),
+      };
+
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -147,10 +171,15 @@ export default function AdminAffiliatePage() {
     if (!selectedProduct) return;
 
     try {
+      const payload = {
+        ...formData,
+        imageUrl: normalizeImageUrl(formData.imageUrl),
+      };
+
       const response = await fetch(`/api/products/${selectedProduct._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -283,19 +312,19 @@ export default function AdminAffiliatePage() {
     <>
       <AdminTopBar />
       
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-[#1a1a1a] mb-2">Affiliate Links</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a] mb-2">Affiliate Links</h1>
             <p className="text-gray-400 font-medium">Manage your affiliate products and track performance</p>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex w-full sm:w-auto flex-col sm:flex-row gap-3">
             <button
               onClick={exportToCSV}
               disabled={!filteredProducts.length}
-              className="bg-white border border-gray-200 px-4 py-3 rounded-xl flex items-center gap-2 text-sm font-bold text-[#1a1a1a] hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto bg-white border border-gray-200 px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-[#1a1a1a] hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download size={18} />
               Export CSV
@@ -303,7 +332,7 @@ export default function AdminAffiliatePage() {
             
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-[#CC0000] text-white px-6 py-3 rounded-xl flex items-center gap-2 text-sm font-bold hover:bg-[#aa0000] transition-colors shadow-sm"
+              className="w-full sm:w-auto bg-[#CC0000] text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold hover:bg-[#aa0000] transition-colors shadow-sm"
             >
               <Plus size={18} />
               Add Product
@@ -431,75 +460,81 @@ export default function AdminAffiliatePage() {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gradient-to-r from-gray-800 to-gray-900">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '250px' }}>
                       Product
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '140px' }}>
                       Category
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '120px' }}>
                       ASIN
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '100px' }}>
                       Price
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '100px' }}>
                       Clicks
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '130px' }}>
                       Earnings
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '110px' }}>
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-black text-white uppercase tracking-wider whitespace-nowrap" style={{ minWidth: '150px' }}>
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredProducts.map((product) => (
-                    <tr key={product._id} className="hover:bg-gray-50 transition-colors">
+                <tbody>
+                  {filteredProducts.map((product, index) => (
+                    <tr key={product._id} className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          {product.imageUrl && (
-                            <img 
-                              src={product.imageUrl} 
+                          {product.imageUrl && !brokenImages[product._id] ? (
+                            <img
+                              src={normalizeImageUrl(product.imageUrl)}
                               alt={product.productName}
+                              loading="lazy"
                               className="w-12 h-12 object-cover rounded-lg"
+                              onError={() => {
+                                setBrokenImages(prev => ({ ...prev, [product._id]: true }));
+                              }}
                             />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-gray-100" />
                           )}
                           <div>
                             <p className="text-sm font-bold text-[#1a1a1a]">{product.productName}</p>
                             {product.rating && (
-                              <p className="text-xs text-gray-500">⭐ {product.rating.toFixed(1)}</p>
+                              <p className="text-xs text-gray-500">â­ {product.rating.toFixed(1)}</p>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">
                           {product.category}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-mono text-gray-600">{product.asin}</span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-bold text-[#1a1a1a]">{product.price || 'N/A'}</span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <MousePointer size={14} className="text-gray-400" />
                           <span className="text-sm font-bold text-[#1a1a1a]">{product.clickCount}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-green-600">
                             ${(product.estimatedEarnings || 0).toFixed(2)}
@@ -509,7 +544,7 @@ export default function AdminAffiliatePage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 text-xs font-bold rounded-full ${
                           product.isActive 
                             ? 'bg-green-50 text-green-700' 
@@ -518,7 +553,7 @@ export default function AdminAffiliatePage() {
                           {product.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => copyToClipboard(product.affiliateLink)}
@@ -870,3 +905,4 @@ export default function AdminAffiliatePage() {
     </>
   );
 }
+

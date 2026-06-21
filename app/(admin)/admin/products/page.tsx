@@ -2,33 +2,50 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminTopBar from '@/components/admin/AdminTopBar';
-import Image from 'next/image';
-import { Plus, Edit2, Trash2, X, Star, StarOff } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Star } from 'lucide-react';
 
 interface Product {
   _id: string;
-  name: string;
+  productName: string;
   asin: string;
   affiliateLink: string;
   category: string;
   price: string;
   imageUrl: string;
   rating: number;
+  awardLabel?: string;
+  score?: number;
+  reviewCount?: number;
+  stars?: number;
   description: string;
   pros: string[];
   cons: string[];
+  specs?: Array<{ label: string; value: string }>;
+  editorNote?: string;
+  jumpTargetId?: string;
   clickCount: number;
   isActive: boolean;
   createdAt: string;
 }
 
 const categoryOptions = [
-  { value: 'safety-gear', label: 'Safety Gear' },
-  { value: 'tech-lighting', label: 'Tech & Lighting' },
-  { value: 'bike-security', label: 'Bike Security' },
-  { value: 'delivery-gear', label: 'Delivery Gear' },
-  { value: 'accessories', label: 'Accessories' },
+  { value: 'helmets', label: 'Safety Gear' },
+  { value: 'lights', label: 'Tech & Lighting' },
+  { value: 'locks', label: 'Bike Security' },
+  { value: 'bags', label: 'Delivery Gear' },
 ];
+
+const normalizeUiCategory = (category: string) => {
+  if (['bags', 'tools', 'clothing', 'accessories'].includes(category)) {
+    return 'bags';
+  }
+
+  return category;
+};
+
+const getCategoryLabel = (category: string) => {
+  return categoryOptions.find(c => c.value === normalizeUiCategory(category))?.label || category;
+};
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -39,19 +56,34 @@ export default function ProductsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
+  const [previewImageBroken, setPreviewImageBroken] = useState(false);
+
+  const buildJumpTargetId = (value: string) => {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  };
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
+    productName: '',
     asin: '',
     affiliateLink: '',
     category: '',
     price: '',
     imageUrl: '',
     rating: 5,
+    awardLabel: '',
+    score: '',
+    reviewCount: '',
     description: '',
     pros: [''],
     cons: [''],
+    jumpTargetId: '',
     isActive: true,
   });
 
@@ -85,12 +117,12 @@ export default function ProductsPage() {
     let filtered = [...products];
 
     if (categoryFilter !== 'all') {
-      filtered = filtered.filter(p => p.category === categoryFilter);
+      filtered = filtered.filter(p => normalizeUiCategory(p.category) === categoryFilter);
     }
 
     if (searchQuery) {
       filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.asin.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
@@ -101,46 +133,56 @@ export default function ProductsPage() {
   const openAddModal = () => {
     setEditingProduct(null);
     setFormData({
-      name: '',
+      productName: '',
       asin: '',
       affiliateLink: '',
       category: '',
       price: '',
       imageUrl: '',
       rating: 5,
+      awardLabel: '',
+      score: '',
+      reviewCount: '',
       description: '',
       pros: [''],
       cons: [''],
+      jumpTargetId: '',
       isActive: true,
     });
     setFormErrors({});
+    setPreviewImageBroken(false);
     setShowModal(true);
   };
 
   const openEditModal = (product: Product) => {
     setEditingProduct(product);
     setFormData({
-      name: product.name,
+      productName: product.productName,
       asin: product.asin,
       affiliateLink: product.affiliateLink,
-      category: product.category,
+      category: normalizeUiCategory(product.category),
       price: product.price,
       imageUrl: product.imageUrl,
       rating: product.rating,
+      awardLabel: product.awardLabel || '',
+      score: typeof product.score === 'number' ? String(product.score) : '',
+      reviewCount: typeof product.reviewCount === 'number' ? String(product.reviewCount) : '',
       description: product.description,
       pros: product.pros.length > 0 ? product.pros : [''],
       cons: product.cons.length > 0 ? product.cons : [''],
+      jumpTargetId: product.jumpTargetId || buildJumpTargetId(product.productName),
       isActive: product.isActive,
     });
     setFormErrors({});
+    setPreviewImageBroken(false);
     setShowModal(true);
   };
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
 
-    if (!formData.name.trim()) {
-      errors.name = 'Product name is required';
+    if (!formData.productName.trim()) {
+      errors.productName = 'Product name is required';
     }
 
     if (!formData.asin.trim()) {
@@ -159,8 +201,40 @@ export default function ProductsPage() {
       errors.category = 'Category is required';
     }
 
+    if (formData.score !== '') {
+      const scoreValue = Number(formData.score);
+      if (!Number.isFinite(scoreValue) || scoreValue < 0 || scoreValue > 10) {
+        errors.score = 'Score must be between 0 and 10';
+      }
+    }
+
+    if (formData.reviewCount !== '') {
+      const reviewCountValue = Number(formData.reviewCount);
+      if (!Number.isFinite(reviewCountValue) || reviewCountValue < 0 || !Number.isInteger(reviewCountValue)) {
+        errors.reviewCount = 'Review count must be a whole number >= 0';
+      }
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const normalizeImageUrl = (url: string) => {
+    const trimmed = (url || '').trim();
+
+    if (!trimmed) {
+      return '';
+    }
+
+    if (trimmed.startsWith('//')) {
+      return `https:${trimmed}`;
+    }
+
+    if (trimmed.startsWith('http://')) {
+      return `https://${trimmed.slice('http://'.length)}`;
+    }
+
+    return trimmed;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -173,8 +247,13 @@ export default function ProductsPage() {
     const productData = {
       ...formData,
       asin: formData.asin.toUpperCase(),
+      imageUrl: normalizeImageUrl(formData.imageUrl),
+      awardLabel: formData.awardLabel.trim(),
+      score: formData.score === '' ? undefined : Number(formData.score),
+      reviewCount: formData.reviewCount === '' ? undefined : Number(formData.reviewCount),
       pros: formData.pros.filter(p => p.trim()),
       cons: formData.cons.filter(c => c.trim()),
+      jumpTargetId: (formData.jumpTargetId || buildJumpTargetId(formData.productName)).trim(),
     };
 
     try {
@@ -237,8 +316,15 @@ export default function ProductsPage() {
 
   const updateFormField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+
     if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handleProductNameBlur = () => {
+    if (!String(formData.jumpTargetId || '').trim()) {
+      updateFormField('jumpTargetId', buildJumpTargetId(formData.productName));
     }
   };
 
@@ -311,13 +397,13 @@ export default function ProductsPage() {
     <>
       <AdminTopBar />
 
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-black text-[#1a1a1a]">Affiliate Products</h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a]">Affiliate Products</h1>
           <button
             onClick={openAddModal}
-            className="bg-[#CC0000] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#AA0000] transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto bg-[#CC0000] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#AA0000] transition-colors flex items-center justify-center gap-2"
           >
             <Plus size={20} />
             Add Product
@@ -325,8 +411,8 @@ export default function ProductsPage() {
         </div>
 
         {/* Filter Bar */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex gap-4">
-          <div className="flex-1">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 min-w-0">
             <input
               type="text"
               value={searchQuery}
@@ -338,7 +424,7 @@ export default function ProductsPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] min-w-[200px]"
+            className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] sm:min-w-[200px]"
           >
             <option value="all">All Categories</option>
             {categoryOptions.map(cat => (
@@ -376,13 +462,15 @@ export default function ProductsPage() {
               >
                 {/* Product Image */}
                 <div className="bg-white h-[120px] flex items-center justify-center p-4 border-b border-gray-100">
-                  {product.imageUrl ? (
-                    <Image
-                      src={product.imageUrl}
-                      alt={product.name}
-                      width={120}
-                      height={120}
-                      className="object-contain max-h-[120px]"
+                  {product.imageUrl && !brokenImages[product._id] ? (
+                    <img
+                      src={normalizeImageUrl(product.imageUrl)}
+                      alt={product.productName}
+                      loading="lazy"
+                      className="max-h-[120px] max-w-[120px] object-contain"
+                      onError={() => {
+                        setBrokenImages(prev => ({ ...prev, [product._id]: true }));
+                      }}
                     />
                   ) : (
                     <div className="w-[120px] h-[120px] bg-gray-100 flex items-center justify-center rounded">
@@ -393,11 +481,11 @@ export default function ProductsPage() {
 
                 {/* Product Info */}
                 <div className="p-4">
-                  <h3 className="font-bold text-[#1a1a1a] mb-2 line-clamp-2">{product.name}</h3>
+                  <h3 className="font-bold text-[#1a1a1a] mb-2 line-clamp-2">{product.productName}</h3>
                   
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                      {categoryOptions.find(c => c.value === product.category)?.label || product.category}
+                      {getCategoryLabel(product.category)}
                     </span>
                   </div>
 
@@ -475,15 +563,16 @@ export default function ProductsPage() {
                   </label>
                   <input
                     type="text"
-                    value={formData.name}
-                    onChange={(e) => updateFormField('name', e.target.value)}
+                    value={formData.productName}
+                    onChange={(e) => updateFormField('productName', e.target.value)}
+                    onBlur={handleProductNameBlur}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] ${
-                      formErrors.name ? 'border-red-500' : 'border-gray-200'
+                      formErrors.productName ? 'border-red-500' : 'border-gray-200'
                     }`}
                     placeholder="Enter product name"
                   />
-                  {formErrors.name && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>
+                  {formErrors.productName && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.productName}</p>
                   )}
                 </div>
 
@@ -574,18 +663,20 @@ export default function ProductsPage() {
                   <input
                     type="url"
                     value={formData.imageUrl}
-                    onChange={(e) => updateFormField('imageUrl', e.target.value)}
+                    onChange={(e) => {
+                      setPreviewImageBroken(false);
+                      updateFormField('imageUrl', e.target.value);
+                    }}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
                     placeholder="https://..."
                   />
-                  {formData.imageUrl && (
+                  {formData.imageUrl && !previewImageBroken && (
                     <div className="mt-3 p-4 bg-gray-50 rounded-lg flex items-center justify-center">
-                      <Image
-                        src={formData.imageUrl}
+                      <img
+                        src={normalizeImageUrl(formData.imageUrl)}
                         alt="Preview"
-                        width={120}
-                        height={120}
-                        className="object-contain max-h-[120px]"
+                        className="object-contain max-h-[120px] max-w-[120px]"
+                        onError={() => setPreviewImageBroken(true)}
                       />
                     </div>
                   )}
@@ -597,6 +688,81 @@ export default function ProductsPage() {
                     Rating
                   </label>
                   {renderStarSelector(formData.rating, (rating) => updateFormField('rating', rating))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Award Label
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.awardLabel}
+                      onChange={(e) => updateFormField('awardLabel', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                      placeholder="e.g. Best Overall, Best Budget, Most Versatile"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Shows as the badge on the product card</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Score
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      step="0.1"
+                      value={formData.score}
+                      onChange={(e) => updateFormField('score', e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] ${
+                        formErrors.score ? 'border-red-500' : 'border-gray-200'
+                      }`}
+                      placeholder="e.g. 9.2"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Your editorial score out of 10</p>
+                    {formErrors.score && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.score}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Review Count
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      step="1"
+                      value={formData.reviewCount}
+                      onChange={(e) => updateFormField('reviewCount', e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] ${
+                        formErrors.reviewCount ? 'border-red-500' : 'border-gray-200'
+                      }`}
+                      placeholder="e.g. 214"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Number of customer reviews to display</p>
+                    {formErrors.reviewCount && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.reviewCount}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Jump Target ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.jumpTargetId}
+                      onChange={(e) => updateFormField('jumpTargetId', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                      placeholder="e.g. joe-rocket-eclipse-gloves"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Used for anchor links from comparison cards to this product's review section
+                    </p>
+                  </div>
                 </div>
 
                 {/* Description */}
@@ -694,7 +860,7 @@ export default function ProductsPage() {
                     type="button"
                     onClick={() => updateFormField('isActive', !formData.isActive)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.isActive ? 'bg-green-600' : 'bg-gray-300'
+                      formData.isActive ? 'bg-[#CC0000]' : 'bg-gray-300'
                     }`}
                   >
                     <span
@@ -755,3 +921,4 @@ export default function ProductsPage() {
     </>
   );
 }
+

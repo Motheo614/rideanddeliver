@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import NewsletterSignupForm from '@/components/NewsletterSignupForm';
 
 export default function NewsletterWidget() {
   return (
@@ -11,23 +12,18 @@ export default function NewsletterWidget() {
         Subscribe to our newsletter and receive the latest insights, guides, and product reviews delivered straight to your inbox.
       </p>
       
-      <form className="flex flex-col gap-4">
-        <input
-          type="email"
-          placeholder="your@email.com"
-          className="w-full px-4 py-3 border border-gray-200 rounded focus:outline-none focus:border-[#CC0000] transition-colors"
-          required
-        />
-        <button
-          type="submit"
-          className="w-full bg-[#CC0000] text-white py-3 font-bold uppercase tracking-widest hover:bg-red-700 transition-colors"
-        >
-          SUBSCRIBE
-        </button>
-      </form>
+      <NewsletterSignupForm
+        source="sidebar-widget"
+        inputId="newsletter-widget-email"
+        inputPlaceholder="your@email.com"
+        buttonText="SUBSCRIBE"
+        rowClassName="flex flex-col gap-4"
+        inputClassName="w-full px-4 py-3 border border-gray-200 rounded focus:outline-none focus:border-[#CC0000] transition-colors"
+        buttonClassName="w-full bg-[#CC0000] text-white py-3 font-bold uppercase tracking-widest hover:bg-red-700 transition-colors"
+      />
       
       <p className="mt-4 text-[10px] text-gray-400 text-center">
-        We respect your privacy. <Link href="/privacy-policy/" className="text-[#CC0000] hover:underline">Privacy Policy</Link>
+        We respect your privacy. <Link href="/privacy-policy" className="text-[#CC0000] hover:underline">Privacy Policy</Link>
       </p>
     </div>
   );

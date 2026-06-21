@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import AdminTopBar from '@/components/admin/AdminTopBar';
 import StatCard from '@/components/admin/StatCard';
 import AnalyticsChart from '@/components/admin/AnalyticsChart';
+import Image from 'next/image';
 import { 
   Calendar, 
   TrendingUp, 
@@ -51,6 +52,44 @@ export default function AdminDashboard() {
   const [pageviewsData, setPageviewsData] = useState<any[]>([]);
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  const [brokenRecentProductImages, setBrokenRecentProductImages] = useState<Record<string, boolean>>({});
+
+  const getPostImageUrl = (featuredImage: unknown): string | null => {
+    if (!featuredImage) return null;
+    if (typeof featuredImage === 'string') {
+      return featuredImage.trim() || null;
+    }
+
+    if (typeof featuredImage === 'object' && featuredImage !== null && 'url' in featuredImage) {
+      const url = (featuredImage as { url?: unknown }).url;
+      if (typeof url === 'string' && url.trim()) {
+        return url.trim();
+      }
+    }
+
+    return null;
+  };
+
+  const normalizeImageUrl = (url: unknown): string | null => {
+    if (typeof url !== 'string') {
+      return null;
+    }
+
+    const trimmed = url.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    if (trimmed.startsWith('//')) {
+      return `https:${trimmed}`;
+    }
+
+    if (trimmed.startsWith('http://')) {
+      return `https://${trimmed.slice('http://'.length)}`;
+    }
+
+    return trimmed;
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -136,10 +175,10 @@ export default function AdminDashboard() {
     <>
       <AdminTopBar />
       
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-[#1a1a1a] mb-2">Dashboard</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a] mb-2">Dashboard</h1>
             <p className="text-gray-400 font-medium">Welcome back, Admin. Here&apos;s what&apos;s happening with your site today.</p>
           </div>
 
@@ -338,17 +377,25 @@ export default function AdminDashboard() {
                 
                 {recentPosts.length > 0 ? (
                   <div className="space-y-4">
-                    {recentPosts.map((post: any) => (
+                    {recentPosts.map((post: any) => {
+                      const imageUrl = getPostImageUrl(post.featuredImage);
+
+                      return (
                       <div
                         key={post._id}
                         onClick={() => router.push(`/admin/posts/${post._id}/edit`)}
                         className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200"
                       >
-                        {post.featuredImage && (
-                          <img
-                            src={post.featuredImage}
+                        {imageUrl && (
+                          <Image
+                            src={imageUrl}
                             alt={post.title}
+                            width={64}
+                            height={64}
                             className="w-16 h-16 object-cover rounded-lg"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
                           />
                         )}
                         <div className="flex-1 min-w-0">
@@ -375,7 +422,7 @@ export default function AdminDashboard() {
                         </div>
                         <Edit size={16} className="text-gray-400" />
                       </div>
-                    ))}
+                    )})}
                   </div>
                 ) : (
                   <div className="text-center py-8">
@@ -402,24 +449,33 @@ export default function AdminDashboard() {
                 
                 {recentProducts.length > 0 ? (
                   <div className="space-y-4">
-                    {recentProducts.map((product: any) => (
+                    {recentProducts.map((product: any) => {
+                      const productImageUrl = normalizeImageUrl(product.imageUrl);
+
+                      return (
                       <div
                         key={product._id}
                         className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-200"
                       >
-                        {product.imageUrl && (
+                        {productImageUrl && !brokenRecentProductImages[product._id] ? (
                           <img
-                            src={product.imageUrl}
+                            src={productImageUrl}
                             alt={product.productName}
+                            loading="lazy"
                             className="w-16 h-16 object-cover rounded-lg"
+                            onError={() => {
+                              setBrokenRecentProductImages(prev => ({ ...prev, [product._id]: true }));
+                            }}
                           />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-gray-100" />
                         )}
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-bold text-[#1a1a1a] truncate">
                             {product.productName}
                           </h4>
                           <p className="text-xs text-gray-500 mt-1">
-                            {product.category} • {product.price || 'N/A'}
+                            {product.category} â€¢ {product.price || 'N/A'}
                           </p>
                           <div className="flex items-center gap-3 mt-2">
                             <span className="flex items-center gap-1 text-xs text-gray-600">
@@ -436,7 +492,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 ) : (
                   <div className="text-center py-8">
@@ -452,3 +508,4 @@ export default function AdminDashboard() {
     </>
   );
 }
+

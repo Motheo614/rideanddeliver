@@ -1,37 +1,46 @@
-/* Custom styles for React Quill editor */
+/* Custom styles for React Quill editor - scoped to editor only */
 
+/* Only apply these styles within the editor context */
 .quill {
   font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
 }
 
-.ql-toolbar {
+.quill .ql-toolbar {
   background-color: #f9fafb;
   border-color: #e5e7eb !important;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
   padding: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
-.ql-container {
+.quill .ql-container {
   border-color: #e5e7eb !important;
   border-bottom-left-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
   font-size: 16px;
   font-family: inherit;
-  min-height: 500px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
-.ql-editor {
-  min-height: 500px;
+.quill .ql-editor {
+  min-height: 100%;
   padding: 20px;
   line-height: 1.7;
 }
 
-.ql-editor p {
+.quill .ql-editor p {
   margin-bottom: 1em;
 }
 
-.ql-editor h2 {
+.quill .ql-editor h2 {
   font-size: 1.875rem;
   font-weight: 800;
   margin-top: 1.5em;
@@ -39,7 +48,7 @@
   color: #1a1a1a;
 }
 
-.ql-editor h3 {
+.quill .ql-editor h3 {
   font-size: 1.5rem;
   font-weight: 700;
   margin-top: 1.25em;
@@ -47,17 +56,17 @@
   color: #1a1a1a;
 }
 
-.ql-editor ul,
-.ql-editor ol {
+.quill .ql-editor ul,
+.quill .ql-editor ol {
   padding-left: 1.5em;
   margin-bottom: 1em;
 }
 
-.ql-editor li {
+.quill .ql-editor li {
   margin-bottom: 0.5em;
 }
 
-.ql-editor blockquote {
+.quill .ql-editor blockquote {
   border-left: 4px solid #CC0000;
   padding-left: 1em;
   margin-left: 0;
@@ -67,70 +76,218 @@
   color: #4b5563;
 }
 
-.ql-editor a {
+.quill .ql-editor a {
   color: #CC0000;
   text-decoration: underline;
 }
 
-.ql-editor img {
+.quill .ql-editor img {
   max-width: 100%;
   height: auto;
   border-radius: 0.5rem;
   margin: 1em 0;
 }
 
-.ql-editor.ql-blank::before {
+.quill .ql-editor.ql-blank::before {
   color: #9ca3af;
   font-style: normal;
 }
 
 /* Toolbar button styling */
-.ql-toolbar button {
+.quill .ql-toolbar button {
   width: 32px;
   height: 32px;
 }
 
-.ql-toolbar button:hover {
+.quill .ql-toolbar button:hover {
   color: #CC0000;
 }
 
-.ql-toolbar button.ql-active {
+.quill .ql-toolbar button.ql-active {
   color: #CC0000;
 }
 
-.ql-toolbar .ql-stroke {
+.quill .ql-toolbar .ql-stroke {
   stroke: #4b5563;
 }
 
-.ql-toolbar button:hover .ql-stroke {
+.quill .ql-toolbar button:hover .ql-stroke {
   stroke: #CC0000;
 }
 
-.ql-toolbar button.ql-active .ql-stroke {
+.quill .ql-toolbar button.ql-active .ql-stroke {
   stroke: #CC0000;
 }
 
-.ql-toolbar .ql-fill {
+.quill .ql-toolbar .ql-fill {
   fill: #4b5563;
 }
 
-.ql-toolbar button:hover .ql-fill {
+.quill .ql-toolbar button:hover .ql-fill {
   fill: #CC0000;
 }
 
-.ql-toolbar button.ql-active .ql-fill {
+.quill .ql-toolbar button.ql-active .ql-fill {
   fill: #CC0000;
 }
 
 /* Picker styling */
-.ql-toolbar .ql-picker-label {
+.quill .ql-toolbar .ql-picker-label {
   color: #4b5563;
 }
 
-.ql-toolbar .ql-picker-label:hover {
+.quill .ql-toolbar .ql-picker-label:hover {
   color: #CC0000;
 }
 
-.ql-toolbar .ql-picker-label.ql-active {
+.quill .ql-toolbar .ql-picker-label.ql-active {
   color: #CC0000;
+}
+
+/* Custom toolbar icons for table and internal link */
+.quill .ql-toolbar button.ql-table::before {
+  content: '⊞';
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.quill .ql-toolbar button.ql-internal-link::before {
+  content: '🔗';
+  font-size: 16px;
+}
+
+/* Table styles in editor - only for preview within editor */
+.quill .ql-editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.quill .ql-editor table td,
+.quill .ql-editor table th {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+}
+
+.quill .ql-editor table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  text-align: left;
+}
+
+.quill .ql-editor table tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .quill .ql-editor table {
+    border-radius: 8px;
+    margin: 1.5em 0;
+    font-size: 13px;
+  }
+  
+  .quill .ql-editor table thead th,
+  .quill .ql-editor table thead td,
+  .quill .ql-editor table tbody tr:first-child th,
+  .quill .ql-editor table tbody tr:first-child td,
+  .quill .ql-editor table tbody td,
+  .quill .ql-editor table tbody th {
+    padding: 12px;
+    font-size: 13px;
+    min-width: 120px;
+  }
+  
+  .quill .ql-editor table thead th,
+  .quill .ql-editor table tbody tr:first-child th,
+  .quill .ql-editor table tbody tr:first-child td {
+    font-size: 11px;
+  }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+  .quill .ql-editor table thead th,
+  .quill .ql-editor table thead td,
+  .quill .ql-editor table tbody tr:first-child th,
+  .quill .ql-editor table tbody tr:first-child td,
+  .quill .ql-editor table tbody td,
+  .quill .ql-editor table tbody th {
+    padding: 10px;
+    font-size: 12px;
+    min-width: 100px;
+  }
+}
+
+.quill .ql-toolbar .ql-stroke {
+  stroke: #4b5563;
+}
+
+.quill .ql-toolbar button:hover .ql-stroke {
+  stroke: #CC0000;
+}
+
+.quill .ql-toolbar button.ql-active .ql-stroke {
+  stroke: #CC0000;
+}
+
+.quill .ql-toolbar .ql-fill {
+  fill: #4b5563;
+}
+
+.quill .ql-toolbar button:hover .ql-fill {
+  fill: #CC0000;
+}
+
+.quill .ql-toolbar button.ql-active .ql-fill {
+  fill: #CC0000;
+}
+
+/* Picker styling */
+.quill .ql-toolbar .ql-picker-label {
+  color: #4b5563;
+}
+
+.quill .ql-toolbar .ql-picker-label:hover {
+  color: #CC0000;
+}
+
+.quill .ql-toolbar .ql-picker-label.ql-active {
+  color: #CC0000;
+}
+
+/* Custom toolbar icons for table and internal link */
+.quill .ql-toolbar button.ql-table::before {
+  content: '⊞';
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.quill .ql-toolbar button.ql-internal-link::before {
+  content: '🔗';
+  font-size: 16px;
+}
+
+/* Table styles in editor */
+.quill .ql-editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.quill .ql-editor table td,
+.quill .ql-editor table th {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  min-width: 50px;
+}
+
+.quill .ql-editor table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  text-align: left;
+}
+
+.quill .ql-editor table tr:hover {
+  background-color: #f9fafb;
 }

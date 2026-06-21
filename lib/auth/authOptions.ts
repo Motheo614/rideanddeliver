@@ -3,14 +3,16 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import connectDB from '@/lib/db/mongoose';
 import User from '@/lib/db/models/User';
 import bcrypt from 'bcryptjs';
+import speakeasy from 'speakeasy';
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'email', placeholder: 'admin@ridersection.com' },
+        email: { label: 'Email', type: 'email', placeholder: 'info@ridercomplex.com' },
         password: { label: 'Password', type: 'password' },
+        twoFactorCode: { label: '2FA Code', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -21,27 +23,9 @@ export const authOptions: NextAuthOptions = {
           await connectDB();
 
           // Find user in database
-          const user = await User.findOne({ email: credentials.email }).select('+password');
+          const user = await User.findOne({ email: credentials.email }).select('+password +twoFactorSecret');
 
           if (!user) {
-            // Fallback to environment variables for backward compatibility
-            const adminEmail = process.env.ADMIN_EMAIL;
-            const adminPassword = process.env.ADMIN_PASSWORD;
-
-            if (
-              adminEmail &&
-              adminPassword &&
-              credentials.email === adminEmail &&
-              credentials.password === adminPassword
-            ) {
-              return {
-                id: '1',
-                name: 'Admin',
-                email: credentials.email,
-                role: 'admin',
-              };
-            }
-
             return null;
           }
 
@@ -50,6 +34,29 @@ export const authOptions: NextAuthOptions = {
 
           if (!isValid) {
             return null;
+          }
+
+          if (user.role !== 'admin') {
+            return null;
+          }
+
+          if (user.twoFactorEnabled) {
+            const providedCode = credentials.twoFactorCode?.trim();
+
+            if (!providedCode || !user.twoFactorSecret) {
+              throw new Error('TwoFactorCodeRequired');
+            }
+
+            const isTokenValid = speakeasy.totp.verify({
+              secret: user.twoFactorSecret,
+              encoding: 'base32',
+              token: providedCode,
+              window: 2,
+            });
+
+            if (!isTokenValid) {
+              throw new Error('InvalidTwoFactorCode');
+            }
           }
 
           return {
@@ -67,9 +74,12 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 60 * 60 * 8,
+    updateAge: 60 * 60,
   },
   pages: {
     signIn: '/login',
+    error: '/auth-error',
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -90,4 +100,5 @@ export const authOptions: NextAuthOptions = {
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 };

@@ -5,6 +5,64 @@ import connectDB from '@/lib/db/mongoose';
 import Product from '@/lib/db/models/Product';
 import { User } from '@/lib/db/models';
 
+const toJumpTargetId = (value: string) => {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+};
+
+const toOptionalNumber = (value: unknown, integer = false) => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return undefined;
+  return integer ? Math.max(0, Math.round(parsed)) : parsed;
+};
+
+const normalizeStringArray = (value: unknown) => {
+  if (!Array.isArray(value)) return [] as string[];
+  return value
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+};
+
+const normalizeSpecs = (value: unknown) => {
+  if (!Array.isArray(value)) return [] as Array<{ label: string; value: string }>;
+  return value
+    .map((item: any) => ({
+      label: String(item?.label || '').trim(),
+      value: String(item?.value || '').trim(),
+    }))
+    .filter((item) => item.label && item.value);
+};
+
+const normalizeProductPayload = (payload: any) => {
+  const productName = String(payload?.productName || '').trim();
+  const jumpTargetRaw = String(payload?.jumpTargetId || '').trim();
+
+  return {
+    ...payload,
+    productName,
+    asin: String(payload?.asin || '').trim().toUpperCase(),
+    affiliateLink: String(payload?.affiliateLink || '').trim(),
+    category: String(payload?.category || '').trim(),
+    price: String(payload?.price || '').trim(),
+    imageUrl: String(payload?.imageUrl || '').trim(),
+    description: String(payload?.description || '').trim(),
+    awardLabel: String(payload?.awardLabel || '').trim(),
+    score: toOptionalNumber(payload?.score),
+    reviewCount: toOptionalNumber(payload?.reviewCount, true),
+    stars: toOptionalNumber(payload?.stars),
+    pros: normalizeStringArray(payload?.pros),
+    cons: normalizeStringArray(payload?.cons),
+    specs: normalizeSpecs(payload?.specs),
+    editorNote: String(payload?.editorNote || '').trim(),
+    jumpTargetId: toJumpTargetId(jumpTargetRaw || productName),
+  };
+};
+
 /**
  * GET /api/products
  * Fetch products with optional filters
@@ -91,7 +149,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const body = normalizeProductPayload(await request.json());
 
     // Validate required fields
     const { productName, asin, affiliateLink, category } = body;

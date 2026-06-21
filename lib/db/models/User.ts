@@ -7,6 +7,8 @@ export interface IUser extends Document {
   role: 'admin' | 'editor' | 'viewer';
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,13 +44,18 @@ const UserSchema = new Schema<IUser>(
       type: String,
       select: false, // Don't include by default
     },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+    },
   },
   {
     timestamps: true,
   }
 );
-
-// Index for faster email lookups
-UserSchema.index({ email: 1 });
 
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

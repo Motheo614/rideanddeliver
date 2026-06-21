@@ -1,0 +1,35 @@
+# Rider Complex
+
+> Rider Complex is a practical resource for delivery riders, focused on safety, equipment, platform guidance, and day-to-day earning strategy.
+
+This file is a curated index for language models and agents.
+Prioritize safety guidance, rider equipment recommendations, and platform-specific how-to content.
+Use policy pages for legal or compliance questions.
+
+## Core Guides
+
+- [Start Here](https://www.ridercomplex.com/start-here): Entry point for new readers and first-time delivery riders.
+- [Free Rider Checklist](https://www.ridercomplex.com/free-rider-checklist): Quick checklist for setup, gear, and readiness.
+- [Delivery Rider Equipment](https://www.ridercomplex.com/delivery-rider-equipment): Core equipment recommendations and rationale.
+- [Safety Gear](https://www.ridercomplex.com/safety-gear): Protective gear guidance for daily riding.
+- [Night Delivery Riding Safety](https://www.ridercomplex.com/night-delivery-riding-safety): Visibility and risk reduction for night shifts.
+- [Bike Security for Delivery Riders](https://www.ridercomplex.com/bike-security-for-delivery-riders): Theft prevention and locking strategy.
+
+## Platform and Category Hubs
+
+- [Platform Reviews](https://www.ridercomplex.com/platform-reviews): Index of delivery platform review content.
+- [Delivery Platform Reviews](https://www.ridercomplex.com/delivery-platform-reviews): Rider-oriented platform comparison and context.
+- [Category Hub](https://www.ridercomplex.com/category): Directory of content categories.
+- [Blog](https://www.ridercomplex.com/blog): Latest posts and updates.
+
+## Site Policies and Contact
+
+- [About](https://www.ridercomplex.com/about): Publication mission, focus, and editorial context.
+- [Affiliate Disclaimer](https://www.ridercomplex.com/affiliate-disclaimer): Affiliate relationship disclosure.
+- [Privacy Policy](https://www.ridercomplex.com/privacy-policy): Privacy and data handling policy.
+- [Terms](https://www.ridercomplex.com/terms): Terms of use.
+- [Contact](https://www.ridercomplex.com/contact): Contact and feedback channel.
+
+## Optional
+
+- [Sitemap XML](https://www.ridercomplex.com/sitemap.xml): Full crawlable URL inventory for broad discovery.

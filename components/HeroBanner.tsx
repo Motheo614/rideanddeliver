@@ -45,7 +45,7 @@ export default function HeroBanner({ post }: HeroBannerProps) {
 
         <div className="flex items-center gap-6">
           <Link
-            href={`/blog/${post.slug}/`}
+            href={`/${post.dbCategorySlug}/${post.slug}`}
             className="border-2 border-white text-white px-8 py-3 font-bold uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300"
           >
             Read Review

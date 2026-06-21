@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         { asin: searchRegex },
       ],
     })
-      .select('productName asin category productImage clickCount isActive price')
+      .select('productName asin category imageUrl productImage clickCount isActive price')
       .limit(5)
       .sort({ clickCount: -1 })
       .lean();

@@ -13,7 +13,8 @@ import {
   Settings, 
   LogOut,
   Package,
-  BarChart3
+  BarChart3,
+  Mail
 } from 'lucide-react';
 
 const navItems = [
@@ -22,6 +23,7 @@ const navItems = [
   { label: 'Products', href: '/admin/products', icon: Package },
   { label: 'Affiliate Links', href: '/admin/affiliate-links', icon: LinkIcon },
   { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { label: 'Subscribers', href: '/admin/subscribers', icon: Mail },
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
@@ -34,22 +36,22 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-black border-r border-gray-800 flex flex-col h-screen sticky top-0">
+    <aside className="w-64 bg-black border-r border-gray-800 flex flex-col h-[100svh] sticky top-0">
       {/* Logo */}
       <div className="p-6 border-b border-gray-800">
         <Link href="/" className="flex items-center justify-center">
           <Image 
             src="/Assets/LogoBlack.png"
-            alt="Rider Section Logo"
+            alt="Rider Complex Logo"
             width={180}
-            height={50}
-            className="object-contain"
+            height={32}
+            className="h-7 w-auto object-contain xl:h-8 2xl:h-9"
           />
         </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -81,7 +83,7 @@ export default function AdminSidebar() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white truncate">Admin User</p>
-              <p className="text-xs text-gray-400 truncate">admin@ridersection.com</p>
+              <p className="text-xs text-gray-400 truncate">info@ridercomplex.com</p>
             </div>
           </div>
         </div>

@@ -9,9 +9,19 @@ export interface IProduct extends Document {
   price?: string;
   imageUrl?: string;
   rating?: number;
+  awardLabel?: string;
+  score?: number;
+  reviewCount?: number;
+  stars?: number;
   description?: string;
   pros: string[];
   cons: string[];
+  specs?: Array<{
+    label: string;
+    value: string;
+  }>;
+  editorNote?: string;
+  jumpTargetId?: string;
   specifications: Map<string, string>;
   isActive: boolean;
   clickCount: number;
@@ -62,6 +72,24 @@ const ProductSchema = new Schema<IProduct>(
       min: [1, 'Rating must be at least 1'],
       max: [5, 'Rating cannot exceed 5'],
     },
+    awardLabel: {
+      type: String,
+      trim: true,
+    },
+    score: {
+      type: Number,
+      min: [0, 'Score must be at least 0'],
+      max: [10, 'Score cannot exceed 10'],
+    },
+    reviewCount: {
+      type: Number,
+      min: [0, 'Review count cannot be negative'],
+    },
+    stars: {
+      type: Number,
+      min: [1, 'Stars must be at least 1'],
+      max: [5, 'Stars cannot exceed 5'],
+    },
     description: {
       type: String,
       trim: true,
@@ -73,6 +101,30 @@ const ProductSchema = new Schema<IProduct>(
     cons: {
       type: [String],
       default: [],
+    },
+    specs: {
+      type: [
+        {
+          label: {
+            type: String,
+            trim: true,
+          },
+          value: {
+            type: String,
+            trim: true,
+          },
+        },
+      ],
+      default: [],
+    },
+    editorNote: {
+      type: String,
+      trim: true,
+    },
+    jumpTargetId: {
+      type: String,
+      trim: true,
+      lowercase: true,
     },
     specifications: {
       type: Map,

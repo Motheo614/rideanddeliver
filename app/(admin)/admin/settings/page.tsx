@@ -172,7 +172,7 @@ export default function AdminSettingsPage() {
     <>
       <AdminTopBar />
       <main className="p-8 max-w-4xl">
-        <h1 className="text-4xl font-black text-[#1a1a1a] mb-8">Settings</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a] mb-8">Settings</h1>
 
         <div className="space-y-6">
           {/* Security Section */}
@@ -442,3 +442,4 @@ export default function AdminSettingsPage() {
     </>
   );
 }
+

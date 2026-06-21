@@ -78,7 +78,7 @@ export default function NewProductPage() {
     <>
       <AdminTopBar />
       
-      <main className="p-8">
+      <main className="p-4 sm:p-6 lg:p-8">
         <div className="mb-6">
           <Link 
             href="/admin/products" 
@@ -87,7 +87,7 @@ export default function NewProductPage() {
             <ArrowLeft size={18} />
             Back to Products
           </Link>
-          <h1 className="text-4xl font-black text-[#1a1a1a]">Add New Product</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a]">Add New Product</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-8 max-w-4xl">
@@ -256,3 +256,4 @@ export default function NewProductPage() {
     </>
   );
 }
+

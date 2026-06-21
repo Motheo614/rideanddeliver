@@ -5,12 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { Lock, Mail, AlertCircle } from 'lucide-react';
+import { Lock, Mail, AlertCircle, Shield } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -23,11 +24,20 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
+        twoFactorCode,
         redirect: false,
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        const authError = decodeURIComponent(result.error);
+
+        if (authError.includes('TwoFactorCodeRequired')) {
+          setError('Two-factor code is required for this account.');
+        } else if (authError.includes('InvalidTwoFactorCode')) {
+          setError('Invalid two-factor code. Please try again.');
+        } else {
+          setError('Invalid email or password');
+        }
       } else if (result?.ok) {
         router.push('/admin');
         router.refresh();
@@ -44,12 +54,12 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         {/* Logo & Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
+          <Link href="/" className="inline-block mt-2 mb-6">
             <Image
               src="/Assets/Logo.png"
-              alt="Rider Section Logo"
-              width={400}
-              height={120}
+              alt="Rider Complex Logo"
+              width={280}
+              height={84}
               className="object-contain"
             />
           </Link>
@@ -79,7 +89,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
-                  placeholder="admin@ridersection.com"
+                  placeholder="info@ridercomplex.com"
                   required
                 />
               </div>
@@ -103,6 +113,26 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div>
+              <label htmlFor="twoFactorCode" className="block text-sm font-bold text-[#1a1a1a] mb-2">
+                2FA Code
+              </label>
+              <div className="relative">
+                <Shield size={18} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  id="twoFactorCode"
+                  type="text"
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent text-center tracking-[0.35em] font-mono"
+                  placeholder="000000"
+                  inputMode="numeric"
+                  maxLength={6}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">Required only if 2FA is enabled on your account.</p>
+            </div>
+
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2">
                 <input
@@ -111,9 +141,9 @@ export default function LoginPage() {
                 />
                 <span className="text-sm text-gray-600">Remember me</span>
               </label>
-              <a href="#" className="text-sm font-bold text-[#CC0000] hover:text-[#AA0000] transition-colors">
+              <Link href="/forgot-password" className="text-sm font-bold text-[#CC0000] hover:text-[#AA0000] transition-colors">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <button
@@ -125,14 +155,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center mb-2 font-semibold">Demo Credentials:</p>
-            <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 font-mono">
-              <p>Email: {process.env.NEXT_PUBLIC_DEMO_EMAIL || 'Set in .env.local'}</p>
-              <p>Password: {process.env.NEXT_PUBLIC_DEMO_PASSWORD || 'Set in .env.local'}</p>
-            </div>
-          </div>
         </div>
 
         {/* Back to Site Link */}

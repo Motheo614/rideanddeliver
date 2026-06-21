@@ -12,7 +12,7 @@ export default async function LatestGuidesWidget() {
       
       <div className="flex flex-col gap-6">
         {latestPosts.map((post) => (
-          <Link key={post.slug} href={`/blog/${post.slug}/`} className="group flex gap-4">
+          <Link key={post.slug} href={`/${post.dbCategorySlug}/${post.slug}`} className="group flex gap-4">
             <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden">
               {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
                 <Image
