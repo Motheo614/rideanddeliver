@@ -48,31 +48,10 @@ function PostCard({ post }: { post: any }) {
   );
 }
 
-function MidListCapture() {
-  return (
-    <div className="bg-gray-50 border border-gray-100 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 my-4">
-      <div>
-        <p className="font-bold text-[#1a1a1a]">Get weekly gear picks in your inbox</p>
-        <p className="text-sm text-gray-500">Budget-first recommendations for working delivery riders. No fluff.</p>
-      </div>
-      <div className="w-full md:w-auto md:min-w-[320px]">
-        <NewsletterSignupForm
-          source="start-here-midlist"
-          buttonText="Join free"
-          rowClassName="flex flex-col sm:flex-row gap-2"
-          inputClassName="flex-1 px-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:border-[#CC0000] transition-colors"
-          buttonClassName="bg-[#CC0000] text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-700 transition-colors whitespace-nowrap"
-        />
-      </div>
-    </div>
-  );
-}
 
 export default async function StartHerePage() {
   const allPosts = await getPosts({ status: 'published' });
-  const importantPosts = allPosts.slice(0, 8);
-  const firstPosts = importantPosts.slice(0, 4);
-  const restPosts = importantPosts.slice(4, 8);
+  const readingPosts = allPosts.slice(0, 8);
 
   const hubs = [
     { label: 'Safety Gear', href: '/safety-gear', desc: 'Helmets, clothing, and safety tips.' },
@@ -85,7 +64,14 @@ export default async function StartHerePage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Zone 1: hero */}
-      <section className="bg-[#CC0000] py-20 md:py-24 text-white">
+      <section
+        className="relative py-20 md:py-24 text-white overflow-hidden"
+        style={{
+          backgroundImage: `linear-gradient(180deg, rgba(204,0,0,0.78) 0%, rgba(90,0,0,0.85) 100%), url('/Assets/start-here-hero.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
         <div className="container mx-auto px-4 text-center max-w-4xl">
           <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-90 mb-4">
             New to delivery riding?
@@ -105,20 +91,9 @@ export default async function StartHerePage() {
       </section>
 
       <div className="container mx-auto px-4 py-16 md:py-20">
-        <div className="max-w-5xl mx-auto">
-          {/* Zone 1: category grid */}
-          <h2 className="text-2xl font-black text-[#1a1a1a] mb-8 text-center">Browse by category</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            {hubs.map((hub) => (
-              <Link key={hub.href} href={hub.href} className="group p-8 bg-gray-50 rounded-2xl border border-gray-100 hover:border-[#CC0000] transition-all">
-                <h3 className="text-xl font-bold text-[#1a1a1a] mb-2 group-hover:text-[#CC0000] transition-colors">{hub.label}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{hub.desc}</p>
-              </Link>
-            ))}
-          </div>
-
-          {/* Zone 2: lead magnet */}
-          <div className="bg-gray-50 border border-gray-100 border-l-4 border-l-[#CC0000] rounded-2xl p-8 md:p-10 mb-16">
+        <div className="max-w-screen-xl mx-auto">
+          {/* Zone 2: lead magnet (moved first after hero) */}
+          <div className="bg-gray-50 border border-gray-100 border-l-4 border-l-[#CC0000] rounded-2xl p-8 md:p-10 mb-12">
             <span className="inline-flex items-center gap-1 bg-red-50 border border-[#CC0000] text-[#CC0000] text-xs font-bold uppercase tracking-widest rounded px-3 py-1 mb-4">
               📋 Free guide
             </span>
@@ -142,13 +117,34 @@ export default async function StartHerePage() {
               />
             </div>
             <p className="text-xs text-gray-400 mt-3">
-              We&apos;ll email it to you shortly after you confirm your subscription. No spam, unsubscribe any time.
+              Check your inbox — we&apos;ll send it over as soon as you confirm your subscription. No spam, unsubscribe any time.
             </p>
-            {/* TODO: once the starter checklist PDF is hosted, link it directly here (and/or attach it in sendNewsletterWelcomeEmail) instead of the "shortly" messaging above. */}
           </div>
 
-          {/* Zone 3: gear comparison teaser */}
-          <div className="bg-gradient-to-br from-red-50 to-white border border-red-100 rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 mb-16">
+          {/* Zone 4: essential reading (moved after lead magnet) */}
+          <h2 className="text-2xl font-black text-[#1a1a1a] mb-8 text-center">Essential Reading</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+            {readingPosts.map((post) => (
+              <PostCard key={post.slug} post={post} />
+            ))}
+          </div>
+
+          {/* Zone 1: category pills (demoted from cards) */}
+          <h2 className="text-lg font-black text-[#1a1a1a] mb-6 text-center">Browse by category</h2>
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            {hubs.map((hub) => (
+              <Link
+                key={hub.href}
+                href={hub.href}
+                className="inline-flex items-center text-sm bg-gray-50 border border-gray-100 rounded-full px-3 py-2 text-gray-700 hover:bg-white hover:border-[#CC0000] transition-colors"
+              >
+                {hub.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Zone 3: gear comparison teaser (moved to bottom) */}
+          <div className="bg-gradient-to-br from-red-50 to-white border border-red-100 rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
             <div>
               <p className="text-[#CC0000] text-xs font-bold uppercase tracking-widest mb-2"> AI-powered tool</p>
               <h2 className="text-xl md:text-2xl font-black text-[#1a1a1a] mb-2">Can&apos;t decide between two products?</h2>
@@ -165,27 +161,11 @@ export default async function StartHerePage() {
             </div>
             <Link
               href="/tools/gear-comparison"
-              className="bg-[#CC0000] text-white rounded-xl px-6 py-4 font-bold text-center hover:bg-red-700 transition-colors whitespace-nowrap"
+              className="border-2 border-[#CC0000] text-[#CC0000] rounded-xl px-6 py-4 font-bold text-center hover:bg-[#CC0000] hover:text-white transition-colors whitespace-nowrap"
             >
               Compare gear now 
               <span className="block text-xs font-normal opacity-80 mt-1">Free · No sign-in needed</span>
             </Link>
-          </div>
-
-          {/* Zone 4: essential reading */}
-          <h2 className="text-2xl font-black text-[#1a1a1a] mb-8 text-center">Essential Reading</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {firstPosts.map((post) => (
-              <PostCard key={post.slug} post={post} />
-            ))}
-          </div>
-
-          <MidListCapture />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {restPosts.map((post) => (
-              <PostCard key={post.slug} post={post} />
-            ))}
           </div>
         </div>
       </div>

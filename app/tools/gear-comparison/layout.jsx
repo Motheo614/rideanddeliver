@@ -5,5 +5,15 @@ export const metadata = {
 };
 
 export default function GearComparisonLayout({ children }) {
-  return children;
+  // Use the site's public header/footer chrome so the tool matches the blog
+  const Header = require('@/components/Header').default;
+  const Footer = require('@/components/Footer').default;
+
+  return (
+    <>
+      <Header />
+      {children}
+      <Footer />
+    </>
+  );
 }

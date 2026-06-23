@@ -34,13 +34,14 @@ const CATEGORY_CONFIG = {
   },
 };
 
-const ACCENT = "#E8401C";
-const DARK = "#0F0F0F";
-const MID = "#1A1A1A";
-const PANEL = "#222222";
-const BORDER = "#333333";
-const TEXT = "#F0EDE8";
-const MUTED = "#888888";
+// Theme tokens changed to match the main site (light theme)
+const ACCENT = "#CC0000"; // brand red
+const DARK = "#ffffff";
+const MID = "#ffffff";
+const PANEL = "#ffffff";
+const BORDER = "#e5e7eb"; // light gray border
+const TEXT = "#1a1a1a";
+const MUTED = "#6b7280";
 
 export default function GearComparator() {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -180,25 +181,18 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
 
   return (
     <div style={{ minHeight: "100vh", background: DARK, color: TEXT, fontFamily: "'Inter', 'Helvetica Neue', sans-serif" }}>
-      {/* Header */}
-      <div style={{ background: MID, borderBottom: `1px solid ${BORDER}`, padding: "20px 24px", display: "flex", alignItems: "center", gap: "12px" }}>
-        <div style={{ width: "32px", height: "32px", background: ACCENT, borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>
-          {config ? config.icon : "⚙️"}
-        </div>
-        <div>
-          <div style={{ fontSize: "13px", color: ACCENT, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>RiderComplex</div>
-          <div style={{ fontSize: "18px", fontWeight: 700, letterSpacing: "-0.02em" }}>
-            {config ? `${config.label} Comparison` : "Gear Comparison Tool"}
-          </div>
-        </div>
-        {selectedCategory && (
-          <button onClick={resetCategory} style={{ marginLeft: "auto", background: "none", border: `1px solid ${BORDER}`, color: MUTED, borderRadius: "6px", padding: "6px 12px", fontSize: "12px", cursor: "pointer" }}>
-            ← All categories
-          </button>
-        )}
-      </div>
+      <div style={{ maxWidth: "920px", margin: "0 auto", padding: "32px 20px" }}>
 
-      <div style={{ maxWidth: "760px", margin: "0 auto", padding: "32px 20px" }}>
+        {/* Back to all categories (moved from bespoke header) */}
+        {selectedCategory && (
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-start' }}>
+            <button onClick={resetCategory} style={{ background: 'none', border: `1px solid ${BORDER}`, color: MUTED, borderRadius: 6, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>
+              ← All categories
+            </button>
+          </div>
+        )}
+
+        
 
         {/* Step 1 — Category picker */}
         {!selectedCategory && (
@@ -410,9 +404,6 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
           </>
         )}
 
-        <div style={{ textAlign: "center", fontSize: "11px", color: BORDER, marginTop: "32px" }}>
-          Powered by AI • ridercomplex.com
-        </div>
       </div>
     </div>
   );
