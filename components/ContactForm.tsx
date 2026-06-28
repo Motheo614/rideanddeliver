@@ -96,7 +96,7 @@ export default function ContactForm() {
             value={form.email}
             onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
             className="px-4 py-3 border border-gray-200 rounded focus:outline-none focus:border-[#CC0000]"
-            placeholder="your@email.com"
+            placeholder="Email Address"
             autoComplete="email"
             required
           />

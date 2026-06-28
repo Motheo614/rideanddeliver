@@ -152,7 +152,7 @@ export default function ComparisonTable({
                         rel="noopener noreferrer sponsored"
                         className="inline-flex items-center justify-center w-full md:w-auto px-6 py-3 bg-[#CC0000] hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-200 hover:shadow-lg text-sm"
                       >
-                        Check Price on Amazon →
+                        Check Price on Amazon
                       </a>
                     </div>
                   </div>

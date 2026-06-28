@@ -17,7 +17,7 @@ interface NewsletterSignupFormProps {
 export default function NewsletterSignupForm({
   source = 'website',
   inputId = 'newsletter-email',
-  inputPlaceholder = 'your@email.com',
+  inputPlaceholder = 'Email Address',
   buttonText = 'Subscribe',
   formClassName = '',
   rowClassName = 'flex flex-col gap-4',

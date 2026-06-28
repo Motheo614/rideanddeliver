@@ -114,7 +114,7 @@ export default async function HomePage() {
             <NewsletterSignupForm
               source="homepage-footer"
               inputId="bottom-email"
-              inputPlaceholder="your@email.com"
+              inputPlaceholder="Email Address"
               buttonText="Subscribe"
               rowClassName="flex flex-col gap-3 sm:flex-row"
               inputClassName="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-black placeholder:text-gray-400 focus:border-[#CC0000] focus:outline-none"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 // Category config — comparison attributes are tailored per category
 const CATEGORY_CONFIG = {
@@ -43,6 +44,78 @@ const BORDER = "#e5e7eb"; // light gray border
 const TEXT = "#1a1a1a";
 const MUTED = "#6b7280";
 
+const PRODUCT_COLORS = [
+  {
+    dot: 'bg-red-600',
+    border: 'border-red-600',
+    text: 'text-red-700',
+    pillBg: 'bg-red-100',
+    pillText: 'text-red-700',
+    bar: 'bg-red-600',
+    mutedBar: 'bg-red-600/30',
+  },
+  {
+    dot: 'bg-sky-600',
+    border: 'border-sky-600',
+    text: 'text-sky-700',
+    pillBg: 'bg-sky-100',
+    pillText: 'text-sky-700',
+    bar: 'bg-sky-600',
+    mutedBar: 'bg-sky-600/30',
+  },
+];
+
+function getShortName(name) {
+  if (!name) return 'Product';
+  const cleaned = String(name).trim().replace(/\s*[-–|:]\s*.*$/, '');
+  const words = cleaned.split(/\s+/);
+  return words.length <= 4 ? cleaned : `${words.slice(0, 4).join(' ')}...`;
+}
+
+function getDefaultRiderStyle(category) {
+  switch (category) {
+    case 'safety-gear':
+      return 'general safety';
+    case 'tech-lighting':
+      return 'general use';
+    case 'bike-security':
+      return 'general security';
+    case 'delivery-gear':
+      return 'general delivery';
+    case 'platform-reviews':
+      return 'general';
+    default:
+      return 'general';
+  }
+}
+
+function ProductThumbnail({ src, alt, colorClasses }) {
+  const [failed, setFailed] = useState(false);
+  const hasImage = src && !failed;
+
+  return (
+    <div className={`relative w-11 h-11 min-w-[36px] min-h-[36px] rounded-xl overflow-hidden border ${colorClasses.border} bg-gray-100 flex items-center justify-center`}>
+      {hasImage ? (
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes="44px"
+          className="object-cover"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-gray-400">
+          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 21l-4.35-4.35" />
+            <circle cx="10" cy="10" r="7" />
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function GearComparator() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [products, setProducts] = useState([]);
@@ -53,8 +126,6 @@ export default function GearComparator() {
   const [customB, setCustomB] = useState("");
   const [useCustomA, setUseCustomA] = useState(false);
   const [useCustomB, setUseCustomB] = useState(false);
-  const [riderStyle, setRiderStyle] = useState("");
-  const [budget, setBudget] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -92,8 +163,9 @@ export default function GearComparator() {
 
     const catLabel = config.label;
     const comparisonAxes = config.categories.join(", ");
-    const riderContext = riderStyle ? `Rider style/use case: ${riderStyle}.` : "";
-    const budgetContext = budget ? `Budget range: ${budget}.` : "";
+    const defaultRiderStyle = getDefaultRiderStyle(selectedCategory);
+    const riderContext = `Rider style/use case: ${defaultRiderStyle}.`;
+    const budgetContext = `Budget range: Any.`;
 
     // Find DB data for the two products (for review summaries / affiliate links)
     const productAData = products.find(p => p.name === nameA);
@@ -149,9 +221,25 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
       const text = data.content?.find(b => b.type === "text")?.text || "";
       const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
-      // Inject affiliate links from DB if available
-      parsed.productA.affiliateUrl = productAData?.affiliateUrl || null;
-      parsed.productB.affiliateUrl = productBData?.affiliateUrl || null;
+      // Inject affiliate links and metadata from DB if available
+      const affiliateLinkA = productAData?.affiliateUrl || null;
+      const affiliateLinkB = productBData?.affiliateUrl || null;
+      parsed.productA = {
+        ...parsed.productA,
+        affiliateLink: affiliateLinkA,
+        affiliateUrl: affiliateLinkA,
+        imageUrl: productAData?.imageUrl || null,
+        score: typeof productAData?.score === 'number' ? productAData.score : null,
+        shortName: productAData?.shortName || getShortName(nameA),
+      };
+      parsed.productB = {
+        ...parsed.productB,
+        affiliateLink: affiliateLinkB,
+        affiliateUrl: affiliateLinkB,
+        imageUrl: productBData?.imageUrl || null,
+        score: typeof productBData?.score === 'number' ? productBData.score : null,
+        shortName: productBData?.shortName || getShortName(nameB),
+      };
       setResult(parsed);
     } catch (e) {
       setError("Something went wrong. Please try again.");
@@ -169,30 +257,27 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
     setCustomB("");
     setUseCustomA(false);
     setUseCustomB(false);
-    setRiderStyle("");
-    setBudget("");
   }
 
   function resetCategory() {
-    reset();
     setSelectedCategory("");
-    setProducts([]);
+    reset();
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: DARK, color: TEXT, fontFamily: "'Inter', 'Helvetica Neue', sans-serif" }}>
-      <div style={{ maxWidth: "920px", margin: "0 auto", padding: "32px 20px" }}>
-
-        {/* Back to all categories (moved from bespoke header) */}
-        {selectedCategory && (
-          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-start' }}>
-            <button onClick={resetCategory} style={{ background: 'none', border: `1px solid ${BORDER}`, color: MUTED, borderRadius: 6, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>
-              ← All categories
-            </button>
+    <div style={{ background: "#f9fafb", minHeight: "100vh", padding: "24px 16px" }}>
+      <div style={{ maxWidth: "920px", margin: "0 auto", background: DARK, border: `1px solid ${BORDER}`, borderRadius: "16px", padding: "24px", boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
+        <div style={{ marginBottom: "20px" }}>
+          <div style={{ fontSize: "12px", color: ACCENT, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "6px" }}>
+            Gear comparison
           </div>
-        )}
-
-        
+          <div style={{ fontSize: "26px", fontWeight: 800, color: TEXT, marginBottom: "6px" }}>
+            Compare two products side by side
+          </div>
+          <div style={{ fontSize: "14px", color: MUTED, lineHeight: 1.6 }}>
+            Choose a category, pick two products, and get a quick expert verdict.
+          </div>
+        </div>
 
         {/* Step 1 — Category picker */}
         {!selectedCategory && (
@@ -256,33 +341,6 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
                   />
                 </div>
 
-                {/* Optional filters */}
-                <div style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: "10px", padding: "20px", marginBottom: "24px" }}>
-                  <div style={{ fontSize: "11px", color: MUTED, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px", fontWeight: 600 }}>
-                    Optional — personalise the comparison
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    <div>
-                      <label style={{ fontSize: "13px", color: MUTED, display: "block", marginBottom: "6px" }}>Use case</label>
-                      <select value={riderStyle} onChange={e => setRiderStyle(e.target.value)} style={selectStyle()}>
-                        <option value="">Any</option>
-                        {config.filters.map(f => <option key={f}>{f}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ fontSize: "13px", color: MUTED, display: "block", marginBottom: "6px" }}>Budget</label>
-                      <select value={budget} onChange={e => setBudget(e.target.value)} style={selectStyle()}>
-                        <option value="">Any</option>
-                        <option>Under $50</option>
-                        <option>$50–$150</option>
-                        <option>$150–$300</option>
-                        <option>$300–$500</option>
-                        <option>$500+</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
                 {error && (
                   <div style={{ color: "#FF6B6B", background: "#1A0000", border: "1px solid #FF6B6B", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", fontSize: "14px" }}>
                     {error}
@@ -300,7 +358,7 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
                     fontSize: "15px", fontWeight: 700, cursor: canCompare && !loading ? "pointer" : "not-allowed",
                   }}
                 >
-                  {loading ? `Comparing ${config.label.toLowerCase()}…` : `Compare ${config.label} →`}
+                  {loading ? `Comparing ${config.label.toLowerCase()}…` : `Compare ${config.label}`}
                 </button>
               </>
             )}
@@ -317,49 +375,36 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
             </div>
 
             {/* Side by side */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
-              {[result.productA, result.productB].map((p, i) => (
-                <div key={i} style={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: "10px", padding: "20px" }}>
-                  <div style={{ fontSize: "11px", color: ACCENT, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "4px" }}>
-                    Product {i === 0 ? "A" : "B"}
-                  </div>
-                  <div style={{ fontSize: "15px", fontWeight: 700, marginBottom: "4px" }}>{p.name}</div>
-                  <div style={{ fontSize: "13px", color: MUTED, marginBottom: "16px" }}>{p.priceRange}</div>
-                  <div style={{ marginBottom: "12px" }}>
-                    {p.pros.map((pro, j) => (
-                      <div key={j} style={{ display: "flex", gap: "8px", fontSize: "13px", marginBottom: "6px", alignItems: "flex-start" }}>
-                        <span style={{ color: "#4CAF50", flexShrink: 0 }}>✓</span><span>{pro}</span>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
+              {[result.productA, result.productB].map((p, i) => {
+                const color = PRODUCT_COLORS[i];
+                return (
+                  <div key={i} className="rounded-2xl border border-gray-200 bg-white p-4">
+                    <div className="flex items-center gap-3">
+                      <ProductThumbnail src={p.imageUrl} alt={p.name} colorClasses={color} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-block h-2.5 w-2.5 rounded-full ${color.dot}`} />
+                          <p className="truncate text-sm font-semibold text-gray-900">{p.shortName || getShortName(p.name)}</p>
+                        </div>
+                        <p className="mt-2 text-xs text-gray-500">
+                          Editorial score: {typeof p.score === 'number' ? `${p.score.toFixed(1)}/10` : 'N/A'}
+                        </p>
                       </div>
-                    ))}
-                    {p.cons.map((con, j) => (
-                      <div key={j} style={{ display: "flex", gap: "8px", fontSize: "13px", marginBottom: "6px", alignItems: "flex-start", color: "#aaa" }}>
-                        <span style={{ color: "#FF6B6B", flexShrink: 0 }}>✗</span><span>{con}</span>
-                      </div>
-                    ))}
+                    </div>
+                    {p.affiliateLink ? (
+                      <a
+                        href={p.affiliateLink}
+                        target="_blank"
+                        rel="noopener noreferrer sponsored"
+                        className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-[#CC0000] px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-red-700"
+                      >
+                        Check Price
+                      </a>
+                    ) : null}
                   </div>
-                  <div style={{ fontSize: "12px", color: MUTED, borderTop: `1px solid ${BORDER}`, paddingTop: "12px", marginBottom: "12px" }}>
-                    <span style={{ color: ACCENT, fontWeight: 600 }}>Best for: </span>{p.bestFor}
-                  </div>
-                  {p.affiliateUrl ? (
-                    <a
-                      href={p.affiliateUrl}
-                      target="_blank"
-                      rel="noopener noreferrer sponsored"
-                      style={{
-                        display: "block", textAlign: "center",
-                        background: ACCENT, color: "#fff",
-                        padding: "10px", borderRadius: "8px",
-                        fontSize: "13px", fontWeight: 700,
-                        textDecoration: "none",
-                      }}
-                    >
-                      Check Price →
-                    </a>
-                  ) : (
-                    <div style={{ textAlign: "center", fontSize: "11px", color: BORDER, padding: "8px" }}>[ Add affiliate link ]</div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Head to head */}
@@ -370,20 +415,23 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
               {Object.entries(result.categories).map(([cat, data]) => {
                 const isA = data.winner === "A";
                 const isB = data.winner === "B";
-                const winnerName = isA ? nameA : isB ? nameB : "Tie";
+                const winnerLabel = data.winner === "Tie"
+                  ? "Tie"
+                  : `${getShortName(data.winner === "A" ? result.productA.shortName || result.productA.name : result.productB.shortName || result.productB.name)} wins`;
+                const winnerColor = data.winner === "A" ? PRODUCT_COLORS[0] : data.winner === "B" ? PRODUCT_COLORS[1] : null;
                 return (
-                  <div key={cat} style={{ marginBottom: "14px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                      <span style={{ fontSize: "13px", fontWeight: 600 }}>{cat}</span>
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: data.winner === "Tie" ? MUTED : ACCENT, background: data.winner === "Tie" ? BORDER : `${ACCENT}22`, padding: "2px 8px", borderRadius: "4px" }}>
-                        {data.winner === "Tie" ? "Tie" : `${winnerName} wins`}
+                  <div key={cat} className="mb-3 last:mb-0">
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <span className="text-sm font-semibold text-gray-900">{cat}</span>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${data.winner === "Tie" ? 'bg-gray-100 text-gray-500' : `${winnerColor.pillBg} ${winnerColor.pillText}`}`}>
+                        {winnerLabel}
                       </span>
                     </div>
-                    <div style={{ display: "flex", gap: "4px", marginBottom: "4px" }}>
-                      <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: isA ? ACCENT : BORDER }} />
-                      <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: isB ? ACCENT : BORDER }} />
+                    <div className="flex gap-2 mb-2">
+                      <div className={`flex-1 h-2 rounded-full ${isA ? PRODUCT_COLORS[0].bar : PRODUCT_COLORS[0].mutedBar}`} />
+                      <div className={`flex-1 h-2 rounded-full ${isB ? PRODUCT_COLORS[1].bar : PRODUCT_COLORS[1].mutedBar}`} />
                     </div>
-                    <div style={{ fontSize: "12px", color: MUTED }}>{data.note}</div>
+                    <div className="text-xs text-gray-500">{data.note}</div>
                   </div>
                 );
               })}
@@ -396,14 +444,13 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
             </div>
 
             <button onClick={reset} style={{ width: "100%", padding: "14px", background: "transparent", color: TEXT, border: `1px solid ${BORDER}`, borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", marginBottom: "12px" }}>
-              ← Compare other {config.label.toLowerCase()}
+              Compare other {config.label.toLowerCase()}
             </button>
             <button onClick={resetCategory} style={{ width: "100%", padding: "14px", background: "transparent", color: MUTED, border: "none", fontSize: "13px", cursor: "pointer" }}>
               Choose a different category
             </button>
           </>
         )}
-
       </div>
     </div>
   );

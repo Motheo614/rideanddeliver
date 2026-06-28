@@ -15,6 +15,13 @@ const CATEGORY_QUERY = {
   'platform-reviews': null,
 };
 
+function getShortName(productName) {
+  if (!productName) return '';
+  const cleaned = String(productName).trim().replace(/\s*[-–|:]\s*.*$/, '');
+  const words = cleaned.split(/\s+/);
+  return words.length <= 4 ? cleaned : `${words.slice(0, 4).join(' ')}...`;
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
@@ -42,6 +49,9 @@ export async function GET(request) {
       name: p.productName,
       affiliateUrl: p.affiliateLink || null,
       reviewSummary: p.editorNote || p.description || null,
+      imageUrl: p.imageUrl || null,
+      score: typeof p.score === 'number' ? p.score : null,
+      shortName: getShortName(p.productName),
     })),
   });
 }

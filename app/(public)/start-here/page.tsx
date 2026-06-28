@@ -163,8 +163,7 @@ export default async function StartHerePage() {
               href="/tools/gear-comparison"
               className="border-2 border-[#CC0000] text-[#CC0000] rounded-xl px-6 py-4 font-bold text-center hover:bg-[#CC0000] hover:text-white transition-colors whitespace-nowrap"
             >
-              Compare gear now 
-              <span className="block text-xs font-normal opacity-80 mt-1">Free · No sign-in needed</span>
+              Compare Gear
             </Link>
           </div>
         </div>

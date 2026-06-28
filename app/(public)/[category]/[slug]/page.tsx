@@ -828,7 +828,7 @@ export default async function BlogPostPage({ params }: Props) {
               <NewsletterSignupForm
                 source="article-sidebar"
                 inputId="article-sidebar-newsletter-email"
-                inputPlaceholder="your@email.com"
+                inputPlaceholder="Email Address"
                 buttonText="SUBSCRIBE"
                 rowClassName="flex flex-col gap-3"
                 inputClassName="w-full px-4 py-3 border border-gray-200 rounded focus:outline-none focus:border-[#CC0000] transition-colors"

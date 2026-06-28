@@ -228,6 +228,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'aventon-images.imgix.net',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   transpilePackages: ['motion'],
