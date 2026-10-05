@@ -59,6 +59,7 @@ export default function HeroProductCard({
 
   return (
     <section
+      data-product-card="true"
       id={jumpTargetId}
       className="w-full overflow-hidden rounded-[10px] border-2 border-[#CC0000] bg-white"
     >

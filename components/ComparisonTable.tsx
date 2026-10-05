@@ -66,7 +66,7 @@ export default function ComparisonTable({
   description = '* Based on extensive testing and real-world delivery experience'
 }: ComparisonTableProps) {
   return (
-    <section className="my-12 md:my-16 lg:my-20 w-full max-w-none" style={{ maxWidth: '100%' }}>
+    <section data-comparison-table="true" className="my-12 md:my-16 lg:my-20 w-full max-w-none" style={{ maxWidth: '100%' }}>
       <div className="w-full max-w-none bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
           <Award className="text-[#CC0000]" size={28} />

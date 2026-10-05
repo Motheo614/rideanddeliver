@@ -31,6 +31,7 @@ export default function AccentCard({
 
   return (
     <div
+      data-product-card="true"
       id={jumpTargetId}
       className="my-8 mx-auto w-full max-w-[268px] overflow-hidden rounded-[16px] border-[4px] border-dashed border-[#d40000] bg-[#ffffff] md:my-10 scroll-mt-24"
     >

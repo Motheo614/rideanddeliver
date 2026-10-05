@@ -192,7 +192,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       if (!hasMeta) {
         return [
-          '<div class="affiliate-product-card">',
+          '<div class="affiliate-product-card" data-product-card="true">',
           safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" />` : '',
           `<h3>${safeName}</h3>`,
           `<div class="affiliate-card-cta"><a href="${safeUrl}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></div>`,
@@ -209,7 +209,7 @@ export default async function BlogPostPage({ params }: Props) {
       const scoreColor = Number(scoreValue) >= 8.5 ? '#CC0000' : '#6b7280';
 
       return `
-<div style="margin:40px 0;background:#fff;border:1px solid #e2e2e2;border-left:5px solid #CC0000;border-radius:0 8px 8px 0;overflow:hidden;">
+<div data-product-card="true" style="margin:40px 0;background:#fff;border:1px solid #e2e2e2;border-left:5px solid #CC0000;border-radius:0 8px 8px 0;overflow:hidden;">
   <div style="padding:24px;">
     <div style="display:inline-block;background:#CC0000;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:4px;">${safeAwardLabel}</div>
     <div style="margin-top:16px;background:#f4f4f4;border-radius:6px;height:160px;display:flex;align-items:center;justify-content:center;padding:12px;">
@@ -260,7 +260,7 @@ export default async function BlogPostPage({ params }: Props) {
         : '';
 
       return `
-<section style="width:100%;border:2px solid #CC0000;border-radius:10px;background:#fff;overflow:hidden;margin:40px 0;">
+<section data-product-card="true" style="width:100%;border:2px solid #CC0000;border-radius:10px;background:#fff;overflow:hidden;margin:40px 0;">
   <div style="background:#111;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
     <span style="display:inline-block;background:#CC0000;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:4px;">#1 Pick ${new Date(post.publishedAt || Date.now()).getFullYear()}</span>
     <span style="font-size:12px;color:#9ca3af;">Reviewed by ${authorName}</span>
@@ -397,7 +397,7 @@ export default async function BlogPostPage({ params }: Props) {
         const scoreColor = score >= 8.5 ? '#CC0000' : '#6b7280';
 
         const upgradedCard = `
-<div style="margin:40px 0;background:#fff;border:1px solid #e2e2e2;border-left:5px solid #CC0000;border-radius:0 8px 8px 0;overflow:hidden;">
+<div data-product-card="true" style="margin:40px 0;background:#fff;border:1px solid #e2e2e2;border-left:5px solid #CC0000;border-radius:0 8px 8px 0;overflow:hidden;">
   <div style="padding:24px;">
     <div style="display:inline-block;background:#CC0000;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:4px;">${safeAwardLabel}</div>
     <div style="margin-top:16px;background:#f4f4f4;border-radius:6px;height:160px;display:flex;align-items:center;justify-content:center;padding:12px;">
@@ -417,7 +417,7 @@ export default async function BlogPostPage({ params }: Props) {
       }
 
       const card = [
-        '<div class="affiliate-product-card">',
+        '<div class="affiliate-product-card" data-product-card="true">',
         imageTag,
         `<h3>${trimmedName}</h3>`,
         `<div class="affiliate-card-cta"><a href="${trimmedHref}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></div>`,

@@ -16,7 +16,8 @@
     "normalize-slugs": "tsx scripts/normalize-slugs.ts",
     "ngrok": "ngrok http 3002",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:schema": "tsx scripts/check-schema.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
