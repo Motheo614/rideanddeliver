@@ -1,13 +1,13 @@
 import React from 'react';
 import Image from 'next/image';
 import { ImageIcon } from 'lucide-react';
+import { toReviewRatingValue } from '@/lib/seo/schema';
 
 interface AccentCardProps {
   jumpTargetId?: string;
   productName?: string;
   awardLabel?: string;
   score?: number;
-  stars?: number;
   imageUrl?: string;
   affiliateUrl?: string;
   specs?: string[];
@@ -19,17 +19,13 @@ export default function AccentCard({
   productName,
   awardLabel,
   score,
-  stars,
   imageUrl,
   affiliateUrl,
 }: AccentCardProps) {
   const safeName = String(productName || 'Product').trim();
   const safeAwardLabel = String(awardLabel || 'Top Pick').trim().toUpperCase();
   const safeScore = Number.isFinite(Number(score)) ? Number(score) : 9.5;
-  // Stars derived from score using the same formula as toReviewRatingValue() in lib/seo/schema.ts
-  // (score / 2, rounded to 1dp, clamped 1-5). Keep in sync with that helper.
-  const rawStars = Number.isFinite(Number(stars)) ? Number(stars) : safeScore / 2;
-  const safeStars = Math.max(1, Math.min(5, Math.round(rawStars * 10) / 10));
+  const safeStars = toReviewRatingValue(safeScore) ?? 1;
   const href = String(affiliateUrl || '#').trim() || '#';
   const isExternal = /^https?:\/\//i.test(href);
 

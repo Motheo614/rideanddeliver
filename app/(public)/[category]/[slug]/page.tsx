@@ -37,9 +37,6 @@ interface ProductRecord {
   imageUrl?: string;
   awardLabel?: string;
   score?: number;
-  reviewCount?: number;
-  stars?: number;
-  price?: string;
   pros?: string[];
   cons?: string[];
   specs?: Array<{ label: string; value: string }>;
@@ -175,8 +172,6 @@ export default async function BlogPostPage({ params }: Props) {
       imageUrl?: string;
       awardLabel?: string;
       score?: number;
-      reviewCount?: number;
-      stars?: number;
       jumpTargetId?: string;
     }) => {
       const safe = (value: string) =>
@@ -192,9 +187,8 @@ export default async function BlogPostPage({ params }: Props) {
       const safeImageUrl = params.imageUrl ? safe(params.imageUrl) : '';
       const safeAwardLabel = params.awardLabel ? safe(params.awardLabel) : '';
       const scoreValue = Number.isFinite(Number(params.score)) ? Number(params.score) : undefined;
-      const starsValue = Number.isFinite(Number(params.stars)) ? Number(params.stars) : undefined;
-      const reviewsValue = Number.isFinite(Number(params.reviewCount)) ? Math.max(0, Math.round(Number(params.reviewCount))) : undefined;
-      const hasMeta = Boolean(safeAwardLabel && scoreValue !== undefined && starsValue !== undefined && reviewsValue !== undefined);
+      const ratingValue = scoreValue !== undefined ? toReviewRatingValue(scoreValue) : null;
+      const hasMeta = Boolean(safeAwardLabel && scoreValue !== undefined && ratingValue !== null);
 
       if (!hasMeta) {
         return [
@@ -206,9 +200,8 @@ export default async function BlogPostPage({ params }: Props) {
         ].join('');
       }
 
-      const normalizedStars = Math.max(1, Math.min(5, Math.round(Number(starsValue))));
       const starsHtml = Array.from({ length: 5 }, (_unused, index) => {
-        const color = index < normalizedStars ? '#CC0000' : '#ddd';
+        const color = index < (ratingValue ?? 0) ? '#CC0000' : '#ddd';
         return `<span style="color:${color};">★</span>`;
       }).join('');
 
@@ -225,7 +218,6 @@ export default async function BlogPostPage({ params }: Props) {
     <h3 style="margin:16px 0 0;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;line-height:1.2;color:#111;text-decoration:underline;">${safeName}</h3>
     <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
       <span style="font-size:18px;line-height:1;">${starsHtml}</span>
-      <span style="font-size:14px;color:#6b7280;">(${reviewsValue} reviews)</span>
     </div>
     <p style="margin:8px 0 0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${scoreColor};">${Number(scoreValue).toFixed(1)} / 10 Rating</p>
     <a href="${safeUrl}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>
@@ -246,9 +238,9 @@ export default async function BlogPostPage({ params }: Props) {
       const productName = safe(String(product?.productName || 'Top Pick'));
       const productDescription = safe(String(product?.description || post.excerpt || ''));
       const authorName = safe(String((post as any).author?.name || 'Rider Complex Team'));
-      const score = toFiniteNumber(product?.score ?? product?.rating, 9.0);
-      const reviewCount = Math.max(0, Math.round(toFiniteNumber(product?.reviewCount, 0)));
-      const stars = Math.max(1, Math.min(5, Math.round(toFiniteNumber(product?.stars, 5))));
+      const rawScore = Number(product?.score ?? product?.rating);
+      const score = Number.isFinite(rawScore) ? rawScore : undefined;
+      const ratingValue = score !== undefined ? toReviewRatingValue(score) : null;
       const imageUrl = safe(String(product?.imageUrl || ''));
       const amazonUrl = safe(String(product?.affiliateLink || '#'));
       const reviewUrl = safe(String(product?.jumpTargetId ? `#${product.jumpTargetId}` : articlePath));
@@ -257,7 +249,15 @@ export default async function BlogPostPage({ params }: Props) {
       const specs = Array.isArray(product?.specs) ? product.specs.slice(0, 8) : [];
       const pros = Array.isArray(product?.pros) ? product.pros.slice(0, 6) : [];
       const cons = Array.isArray(product?.cons) ? product.cons.slice(0, 6) : [];
-      const starsHtml = Array.from({ length: 5 }, (_unused, index) => (index < stars ? '<span style="color:#CC0000;">★</span>' : '<span style="color:#ddd;">★</span>')).join('');
+      const ratingHtml = score !== undefined && ratingValue !== null
+        ? `<div style="margin-top:16px;background:#f4f4f4;border-radius:6px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;">
+        <div style="color:#CC0000;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:40px;font-weight:900;line-height:1;">${score.toFixed(1)}</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#6b7280;">${Array.from({ length: 5 }, (_unused, index) => (index < ratingValue ? '<span style="color:#CC0000;">★</span>' : '<span style="color:#ddd;">★</span>')).join('')}</div>
+          <div style="margin-top:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${score >= 8.5 ? '#CC0000' : '#6b7280'};">${score.toFixed(1)} / 10 Rating</div>
+        </div>
+      </div>`
+        : '';
 
       return `
 <section style="width:100%;border:2px solid #CC0000;border-radius:10px;background:#fff;overflow:hidden;margin:40px 0;">
@@ -269,13 +269,7 @@ export default async function BlogPostPage({ params }: Props) {
     <div style="padding:24px;border-bottom:1px solid #e5e7eb;">
       <h2 style="margin:0;color:#111;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:32px;line-height:1.1;font-weight:900;">${productName}</h2>
       <p style="margin:12px 0 0;color:#6b7280;font-size:14px;line-height:1.6;">${productDescription}</p>
-      <div style="margin-top:16px;background:#f4f4f4;border-radius:6px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;">
-        <div style="color:#CC0000;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:40px;font-weight:900;line-height:1;">${score.toFixed(1)}</div>
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#6b7280;">${starsHtml}<span>(${reviewCount} reviews)</span></div>
-          <div style="margin-top:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${score >= 8.5 ? '#CC0000' : '#6b7280'};">${score.toFixed(1)} / 10 Rating</div>
-        </div>
-      </div>
+      ${ratingHtml}
       ${specs.length > 0 ? `<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;">${specs.map((spec: any) => `<span style=\"display:inline-flex;align-items:center;padding:4px 10px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;\">${safe(`${spec.label}: ${spec.value}`)}</span>`).join('')}</div>` : ''}
       <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-flex;align-items:center;justify-content:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:12px 10px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:18px;font-weight:900;text-transform:uppercase;">BUY ON AMAZON</a>
@@ -331,7 +325,7 @@ export default async function BlogPostPage({ params }: Props) {
           const product = block?.product || null;
 
           if (effectiveType === 'hero') {
-            return renderHeroCardHtml(product || { productName: placeholderName, affiliateLink: '#', score: 9.0, stars: 5, reviewCount: 0 });
+            return renderHeroCardHtml(product || { productName: placeholderName, affiliateLink: '#' });
           }
 
           return renderAccentCardHtml({
@@ -340,8 +334,6 @@ export default async function BlogPostPage({ params }: Props) {
             imageUrl: String(product?.imageUrl || ''),
             awardLabel: product?.awardLabel,
             score: toFiniteNumber(product?.score ?? product?.rating, NaN),
-            reviewCount: toFiniteNumber(product?.reviewCount, NaN),
-            stars: toFiniteNumber(product?.stars, NaN),
             jumpTargetId: String(product?.jumpTargetId || ''),
           });
         }
@@ -389,16 +381,13 @@ export default async function BlogPostPage({ params }: Props) {
       });
 
       const score = toNumberOrUndefined(matchedProduct?.score ?? matchedProduct?.ratingScore ?? matchedProduct?.rating);
-      const reviewCount = toNumberOrUndefined(matchedProduct?.reviewCount ?? matchedProduct?.reviews);
-      const stars = toNumberOrUndefined(matchedProduct?.stars ?? matchedProduct?.starRating);
       const awardLabel = String(matchedProduct?.awardLabel || matchedProduct?.award || '').trim() || undefined;
       const imageSrc = String(matchedProduct?.image || '').trim() || extractImageSrc(imageTag) || undefined;
 
-      // Opt into upgraded card only when all metadata exists; otherwise keep legacy card markup.
-      if (awardLabel && typeof score === 'number' && typeof reviewCount === 'number' && typeof stars === 'number') {
-        const normalizedStars = Math.max(1, Math.min(5, Math.round(stars)));
+      if (awardLabel && typeof score === 'number' && toReviewRatingValue(score) !== null) {
+        const ratingValue = toReviewRatingValue(score) ?? 1;
         const starsHtml = Array.from({ length: 5 }, (_unused, index) => {
-          const color = index < normalizedStars ? '#CC0000' : '#ddd';
+          const color = index < ratingValue ? '#CC0000' : '#ddd';
           return `<span style="color:${color};">★</span>`;
         }).join('');
         const safeName = escapeHtml(trimmedName);
@@ -417,7 +406,6 @@ export default async function BlogPostPage({ params }: Props) {
     <h3 style="margin:16px 0 0;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;line-height:1.2;color:#111;text-decoration:underline;">${safeName}</h3>
     <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
       <span style="font-size:18px;line-height:1;">${starsHtml}</span>
-      <span style="font-size:14px;color:#6b7280;">(${Math.max(0, Math.round(reviewCount))} reviews)</span>
     </div>
     <p style="margin:8px 0 0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${scoreColor};">${score.toFixed(1)} / 10 Rating</p>
     <a href="${safeHref}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>
@@ -595,7 +583,6 @@ export default async function BlogPostPage({ params }: Props) {
                 year={new Date(post.publishedAt || Date.now()).getFullYear()}
                 awardLabel={String(product.awardLabel || 'Best Overall')}
                 overallScore={score}
-                stars={Number.isFinite(Number(product.stars)) ? Number(product.stars) : undefined}
                 metrics={[
                   { label: 'Value', score },
                   { label: 'Durability', score },
@@ -620,7 +607,6 @@ export default async function BlogPostPage({ params }: Props) {
               imageUrl={String(product.imageUrl || '')}
               awardLabel={product.awardLabel}
               score={Number.isFinite(Number(product.score)) ? Number(product.score) : undefined}
-              stars={Number.isFinite(Number(product.stars)) ? Number(product.stars) : undefined}
               specs={Array.isArray(product.specs)
                 ? product.specs
                     .map((spec) => `${String(spec?.label || '').trim()}: ${String(spec?.value || '').trim()}`)
