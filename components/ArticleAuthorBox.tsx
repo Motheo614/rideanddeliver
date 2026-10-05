@@ -8,12 +8,14 @@ interface ArticleAuthorBoxProps {
   className?: string;
   publishedLabel?: string;
   readTimeLabel?: string;
+  updatedLabel?: string;
 }
 
 export default function ArticleAuthorBox({
   className = '',
   publishedLabel,
   readTimeLabel,
+  updatedLabel,
 }: ArticleAuthorBoxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const bioId = useId();
@@ -71,7 +73,7 @@ export default function ArticleAuthorBox({
         </div>
       )}
 
-      {(publishedLabel || readTimeLabel) && (
+      {(publishedLabel || readTimeLabel || updatedLabel) && (
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gray-200 pt-3 text-xs font-medium text-gray-500 sm:text-sm">
           {publishedLabel && (
             <span className="inline-flex items-center gap-1">
@@ -84,6 +86,12 @@ export default function ArticleAuthorBox({
             <span className="inline-flex items-center gap-1">
               <Clock size={12} className="text-gray-400" />
               {readTimeLabel}
+            </span>
+          )}
+          {(publishedLabel || readTimeLabel) && updatedLabel && <span className="text-gray-300" aria-hidden="true">•</span>}
+          {updatedLabel && (
+            <span className="inline-flex items-center gap-1">
+              Last updated: {updatedLabel}
             </span>
           )}
         </div>
