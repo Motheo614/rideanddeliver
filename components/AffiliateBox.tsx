@@ -7,11 +7,9 @@ interface AffiliateBoxProps {
   image?: string;
   awardLabel?: string;
   score?: number;
-  reviewCount?: number;
   stars?: number;
   // Backward-compatible aliases for existing usages.
   name?: string;
-  price?: string;
   url?: string;
 }
 
@@ -21,10 +19,8 @@ export default function AffiliateBox({
   image,
   awardLabel,
   score,
-  reviewCount,
   stars,
   name,
-  price,
   url,
 }: AffiliateBoxProps) {
   const resolvedName = (productName || name || '').trim();
@@ -33,7 +29,6 @@ export default function AffiliateBox({
   const hasMetaLayout = Boolean(
     awardLabel
     && typeof score === 'number'
-    && typeof reviewCount === 'number'
     && typeof stars === 'number'
   );
 
@@ -46,7 +41,6 @@ export default function AffiliateBox({
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex-1">
             <h3 className="text-xl font-bold text-[#1a1a1a] mb-2">{resolvedName}</h3>
-            {price && <p className="text-2xl font-black text-[#CC0000]">{price}</p>}
           </div>
 
           <a
@@ -102,7 +96,6 @@ export default function AffiliateBox({
               </span>
             ))}
           </span>
-          <span className="text-sm text-gray-500">({reviewCount} reviews)</span>
         </div>
 
         <p className={`mt-2 text-[11px] uppercase tracking-wide font-bold ${scoreLabelClass}`}>
