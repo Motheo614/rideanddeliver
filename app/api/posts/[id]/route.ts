@@ -105,7 +105,7 @@ export async function GET(
 
     if (objectIds.length > 0) {
       const products = await Product.find({ _id: { $in: objectIds } })
-        .select('productName affiliateLink imageUrl awardLabel score reviewCount stars pros cons specs editorNote jumpTargetId description price')
+        .select('productName affiliateLink imageUrl awardLabel score pros cons specs editorNote jumpTargetId description')
         .lean();
 
       hydratedProductsById = Object.fromEntries(
