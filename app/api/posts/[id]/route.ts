@@ -7,6 +7,7 @@ import { requireAdmin } from '@/lib/auth/requireAdmin';
 import { transformPost } from '@/lib/categoryMap';
 import { getSlugLookupCandidates } from '@/lib/slug';
 import { computeContentHash } from '@/lib/contentHash';
+import { decideContentUpdate } from '@/lib/contentUpdateDecision';
 
 function extractProductBlocksFromContent(content: string) {
   const html = String(content || '')
@@ -174,7 +175,7 @@ export async function PUT(
     const allowedFields: (keyof typeof body)[] = [
       'title', 'slug', 'excerpt', 'content', 'featuredImage',
       'category', 'categoryLabel', 'tags', 'author', 'amazonProducts',
-      'seoMetadata', 'status', 'publishedAt', 'contentUpdatedAt', 'readTime',
+      'seoMetadata', 'status', 'publishedAt', 'readTime',
       'featured', 'trending', 'editorsPick', 'cta'
     ];
 
@@ -188,15 +189,8 @@ export async function PUT(
     (post as any).content = normalizedContent;
     (post as any).productBlocks = extractProductBlocksFromContent(normalizedContent);
 
-    // Content-hash guard: only bump contentUpdatedAt when the editable content
-    // (title, body, productBlocks) has actually changed. This prevents SEO metadata
-    // tweaks, status changes, and other non-editorial saves from advancing dateModified.
-    //
-    // Special cases:
-    //   1. minorEdit=true in body — save without bumping contentUpdatedAt regardless.
-    //   2. No stored hash (first save of an existing post) — store hash silently,
-    //      do NOT bump contentUpdatedAt (backfill behaviour for legacy posts).
-    //   3. Editor explicitly set contentUpdatedAt — that value takes precedence.
+    // Only changes to hash-relevant editorial content and the minor-edit flag
+    // determine whether contentUpdatedAt advances.
     const incomingHash = computeContentHash({
       title: (post as any).title,
       content: normalizedContent,
@@ -205,19 +199,18 @@ export async function PUT(
 
     const storedHash: string | undefined = (post as any).contentHash;
     const isMinorEdit = Boolean(body.minorEdit);
+    const updateDecision = decideContentUpdate({
+      storedHash,
+      newHash: incomingHash,
+      minorEdit: isMinorEdit,
+    });
 
-    if (incomingHash !== storedHash) {
+    if (updateDecision !== 'none') {
       (post as any).contentHash = incomingHash;
-
-      if (!storedHash) {
-        // First save — backfill hash only, do not bump contentUpdatedAt.
-      } else if (!isMinorEdit && !body.contentUpdatedAt) {
-        // Real content change, not a minor edit, no explicit date — auto-bump.
-        (post as any).contentUpdatedAt = new Date();
-      }
-      // If editor explicitly provided contentUpdatedAt it was already set above.
     }
-    // If hash is unchanged, leave contentUpdatedAt as-is (no bump).
+    if (updateDecision === 'bump') {
+      (post as any).contentUpdatedAt = new Date();
+    }
 
     await post.save();
 

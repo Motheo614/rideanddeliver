@@ -30,6 +30,7 @@ interface Post {
   tags: string[];
   status: 'draft' | 'published' | 'archived';
   publishedAt?: string;
+  contentUpdatedAt?: string;
   views: number;
   readTime?: number;
   featured: boolean;
@@ -188,6 +189,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [tags, setTags] = useState<string[]>(post?.tags || []);
   const [tagInput, setTagInput] = useState('');
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>(post?.status || 'draft');
+  const [minorEdit, setMinorEdit] = useState(false);
   const [featured, setFeatured] = useState(post?.featured || false);
   const [trending, setTrending] = useState(post?.trending || false);
   const [editorsPick, setEditorsPick] = useState(post?.editorsPick || false);
@@ -912,6 +914,7 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       tags,
       status: publishPost ? 'published' : status,
       publishedAt: publishPost ? new Date().toISOString() : post?.publishedAt,
+      minorEdit,
       readTime: calculateReadTime(normalizedContent),
       featured,
       trending,
@@ -1314,6 +1317,27 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
                   status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                 }`}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+              </div>
+
+              <div className="mt-3 border-t border-gray-100 pt-3">
+                <label className="flex items-center justify-between gap-3 cursor-pointer">
+                  <span className="text-xs text-gray-500">Minor edit (no &quot;Last updated&quot; bump)</span>
+                  <input
+                    type="checkbox"
+                    checked={minorEdit}
+                    onChange={(event) => setMinorEdit(event.target.checked)}
+                    className="w-4 h-4 text-[#CC0000] border-gray-300 rounded focus:ring-[#CC0000]"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-3 border-t border-gray-100 pt-3 text-sm">
+                <span className="text-gray-500">Content last updated: </span>
+                <span className="font-bold text-gray-900">
+                  {post?.contentUpdatedAt
+                    ? new Date(post.contentUpdatedAt).toLocaleDateString()
+                    : 'Same as published'}
                 </span>
               </div>
 
