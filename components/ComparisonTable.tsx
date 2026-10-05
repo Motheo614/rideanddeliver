@@ -9,7 +9,7 @@ interface ComparisonItem {
   name: string;
   image?: string;
   rating: number; // 1-5
-  price: string;
+  price?: string;
   bestFor: string;
   keyFeatures: string[];
   affiliateLink?: string;
@@ -26,7 +26,6 @@ const defaultItems: ComparisonItem[] = [
   {
     name: 'Premium Delivery Backpack',
     rating: 5,
-    price: '$89.99',
     bestFor: 'All-weather deliveries',
     keyFeatures: ['Waterproof', '40L capacity', 'Insulated'],
     badge: 'Best Overall'
@@ -34,7 +33,6 @@ const defaultItems: ComparisonItem[] = [
   {
     name: 'Budget Courier Bag',
     rating: 4,
-    price: '$39.99',
     bestFor: 'Light urban deliveries',
     keyFeatures: ['Lightweight', '25L capacity', 'Reflective'],
     badge: 'Best Value'
@@ -42,7 +40,6 @@ const defaultItems: ComparisonItem[] = [
   {
     name: 'Heavy Duty Carrier',
     rating: 4.5,
-    price: '$129.99',
     bestFor: 'Large orders',
     keyFeatures: ['Reinforced', '60L capacity', 'Multiple compartments'],
   },
@@ -119,10 +116,12 @@ export default function ComparisonTable({
                     {/* Rating & Price Row */}
                     <div className="flex flex-wrap items-center gap-4 mb-3">
                       <StarRating rating={item.rating} />
-                      <div className="flex items-center gap-1.5 text-lg font-bold text-gray-900">
-                        <DollarSign size={18} className="text-gray-500" />
-                        {item.price.replace('$', '')}
-                      </div>
+                      {item.price && (
+                        <div className="flex items-center gap-1.5 text-lg font-bold text-gray-900">
+                          <DollarSign size={18} className="text-gray-500" />
+                          {item.price.replace('$', '')}
+                        </div>
+                      )}
                     </div>
 
                     {/* Best For */}
