@@ -3,6 +3,7 @@ export const revalidate = 3600;
 
 import connectDB from '@/lib/db/mongoose';
 import Post from '@/lib/db/models/Post';
+import { getEditorialDates } from '@/lib/dates';
 
 function normalizeBaseUrl(siteUrl?: string) {
   const fallback = 'https://www.ridercomplex.com';
@@ -48,18 +49,20 @@ export async function GET() {
     await connectDB();
 
     const articles = await Post.find({ status: 'published' })
-      .select('slug category updatedAt publishedAt')
+      .select('slug category contentUpdatedAt publishedAt')
       .sort({ publishedAt: -1 })
       .lean();
 
     articleEntries = articles
       .filter((article) => Boolean(article?.slug) && Boolean(article?.category))
       .map((article) => {
-        const lastModified = new Date((article as any).updatedAt || (article as any).publishedAt || currentDate).toISOString();
-
+        const { dateModified } = getEditorialDates(
+          (article as any).publishedAt,
+          (article as any).contentUpdatedAt
+        );
         return `  <url>
     <loc>${baseUrl}/${(article as any).category}/${(article as any).slug}</loc>
-    <lastmod>${lastModified}</lastmod>
+    <lastmod>${dateModified}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>`;

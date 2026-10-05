@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import { requireAdmin } from '@/lib/auth/requireAdmin';
 import { transformPost } from '@/lib/categoryMap';
 import { getSlugLookupCandidates } from '@/lib/slug';
+import { computeContentHash } from '@/lib/contentHash';
 
 function extractProductBlocksFromContent(content: string) {
   const html = String(content || '')
@@ -78,15 +79,22 @@ export async function GET(
       return NextResponse.json({ post });
     }
 
-    // Increment views count for public reads
-    post.views = (post.views || 0) + 1;
-    await post.save();
+    // Increment views count for public reads.
+    // Use updateOne with $inc so Mongoose's pre-save hook does NOT run and
+    // updatedAt is NOT bumped — view counts are not editorial changes.
+    await Post.updateOne({ _id: post._id }, { $inc: { views: 1 } });
+
+    // Re-fetch the post after the view increment so the returned document is fresh.
+    const freshPost = await findPostByIdOrSlug(id);
+    if (!freshPost) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
 
     // Transform post to include proper category display names and slugs
-    const transformedPost = transformPost(post) as any;
+    const transformedPost = transformPost(freshPost) as any;
 
-    const storedProductBlocks = Array.isArray((post as any).productBlocks)
-      ? (post as any).productBlocks
+    const storedProductBlocks = Array.isArray((freshPost as any).productBlocks)
+      ? (freshPost as any).productBlocks
       : extractProductBlocksFromContent(String((transformedPost as any).content || ''));
     let hydratedProductsById: Record<string, any> = {};
 
@@ -96,7 +104,7 @@ export async function GET(
 
     if (objectIds.length > 0) {
       const products = await Product.find({ _id: { $in: objectIds } })
-        .select('productName affiliateLink imageUrl awardLabel score reviewCount stars pros cons specs editorNote jumpTargetId description')
+        .select('productName affiliateLink imageUrl awardLabel score reviewCount stars pros cons specs editorNote jumpTargetId description price')
         .lean();
 
       hydratedProductsById = Object.fromEntries(
@@ -166,7 +174,7 @@ export async function PUT(
     const allowedFields: (keyof typeof body)[] = [
       'title', 'slug', 'excerpt', 'content', 'featuredImage',
       'category', 'categoryLabel', 'tags', 'author', 'amazonProducts',
-      'seoMetadata', 'status', 'publishedAt', 'readTime',
+      'seoMetadata', 'status', 'publishedAt', 'contentUpdatedAt', 'readTime',
       'featured', 'trending', 'editorsPick', 'cta'
     ];
 
@@ -179,6 +187,37 @@ export async function PUT(
     const normalizedContent = String((post as any).content || '');
     (post as any).content = normalizedContent;
     (post as any).productBlocks = extractProductBlocksFromContent(normalizedContent);
+
+    // Content-hash guard: only bump contentUpdatedAt when the editable content
+    // (title, body, productBlocks) has actually changed. This prevents SEO metadata
+    // tweaks, status changes, and other non-editorial saves from advancing dateModified.
+    //
+    // Special cases:
+    //   1. minorEdit=true in body — save without bumping contentUpdatedAt regardless.
+    //   2. No stored hash (first save of an existing post) — store hash silently,
+    //      do NOT bump contentUpdatedAt (backfill behaviour for legacy posts).
+    //   3. Editor explicitly set contentUpdatedAt — that value takes precedence.
+    const incomingHash = computeContentHash({
+      title: (post as any).title,
+      content: normalizedContent,
+      productBlocks: (post as any).productBlocks,
+    });
+
+    const storedHash: string | undefined = (post as any).contentHash;
+    const isMinorEdit = Boolean(body.minorEdit);
+
+    if (incomingHash !== storedHash) {
+      (post as any).contentHash = incomingHash;
+
+      if (!storedHash) {
+        // First save — backfill hash only, do not bump contentUpdatedAt.
+      } else if (!isMinorEdit && !body.contentUpdatedAt) {
+        // Real content change, not a minor edit, no explicit date — auto-bump.
+        (post as any).contentUpdatedAt = new Date();
+      }
+      // If editor explicitly provided contentUpdatedAt it was already set above.
+    }
+    // If hash is unchanged, leave contentUpdatedAt as-is (no bump).
 
     await post.save();
 

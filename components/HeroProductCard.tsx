@@ -11,7 +11,7 @@ interface HeroProductCardProps {
   year: number | string;
   awardLabel?: string;
   overallScore: number;
-  stars: number;
+  stars?: number;
   metrics: HeroProductMetric[];
   specs: string[];
   pros: string[];
@@ -19,6 +19,7 @@ interface HeroProductCardProps {
   affiliateUrl: string;
   jumpTargetId?: string;
   imageUrl?: string;
+  // priceText removed — no live-price pipeline approved. Do not re-add.
 }
 
 const toBarPercent = (score: number) => {
@@ -53,7 +54,10 @@ export default function HeroProductCard({
   const displayedSpecs = specs.slice(0, 10);
   const displayedPros = pros.slice(0, 5);
   const displayedCons = cons.slice(0, 5);
-  const normalizedStars = Math.max(0, Math.min(5, Math.round(Number.isFinite(Number(stars)) ? Number(stars) : 5)));
+  // Stars derived from score using the same formula as toReviewRatingValue() in lib/seo/schema.ts
+  // (score / 2, rounded to 1dp, clamped 1-5). Keep in sync with that helper.
+  const rawStars = Number.isFinite(Number(stars)) ? Number(stars) : overallScore / 2;
+  const normalizedStars = Math.max(1, Math.min(5, Math.round(rawStars * 10) / 10));
   const safeAffiliateUrl = String(affiliateUrl || '#').trim() || '#';
   const safeAwardLabel = String(awardLabel || 'Best Overall').trim().toUpperCase();
 

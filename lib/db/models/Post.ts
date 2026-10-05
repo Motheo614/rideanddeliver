@@ -59,6 +59,13 @@ export interface IPost extends Document {
   };
   status: 'draft' | 'published' | 'archived';
   publishedAt?: Date;
+  // Set only when the editor explicitly marks a substantive content edit (see admin editor).
+  // Never touched by view-count increments or other auto-saves — that's what dateModified in
+  // JSON-LD and the visible "Last updated" label are sourced from.
+  contentUpdatedAt?: Date;
+  /** SHA-256 hash of (title + content + productBlocks). Used server-side only to detect
+   * editorial changes and auto-bump contentUpdatedAt. Never exposed in API responses. */
+  contentHash?: string;
   views: number;
   readTime?: number;
   featured: boolean;
@@ -169,6 +176,13 @@ const PostSchema = new Schema<IPost, IPostModel>(
     publishedAt: {
       type: Date,
     },
+    contentUpdatedAt: {
+      type: Date,
+    },
+    contentHash: {
+      type: String,
+      select: false, // never returned in API responses
+    },
     views: {
       type: Number,
       default: 0,
@@ -215,6 +229,12 @@ PostSchema.pre('save', function () {
   // Auto-set publishedAt when status changes to 'published'
   if (this.status === 'published' && !this.publishedAt) {
     this.publishedAt = new Date();
+  }
+
+  // Default contentUpdatedAt to publishedAt so dateModified is never blank; from then on it
+  // only changes when the editor explicitly sets it (see PUT /api/posts/[id]).
+  if (!this.contentUpdatedAt && this.publishedAt) {
+    this.contentUpdatedAt = this.publishedAt;
   }
 
   // Ensure readTime is always a valid positive number.

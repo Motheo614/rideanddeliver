@@ -11,7 +11,7 @@ interface AccentCardProps {
   imageUrl?: string;
   affiliateUrl?: string;
   specs?: string[];
-  priceText?: string;
+  // priceText removed — no live-price pipeline approved. Do not re-add.
 }
 
 export default function AccentCard({
@@ -26,7 +26,10 @@ export default function AccentCard({
   const safeName = String(productName || 'Product').trim();
   const safeAwardLabel = String(awardLabel || 'Top Pick').trim().toUpperCase();
   const safeScore = Number.isFinite(Number(score)) ? Number(score) : 9.5;
-  const safeStars = Math.max(0, Math.min(5, Math.round(Number.isFinite(Number(stars)) ? Number(stars) : 5)));
+  // Stars derived from score using the same formula as toReviewRatingValue() in lib/seo/schema.ts
+  // (score / 2, rounded to 1dp, clamped 1-5). Keep in sync with that helper.
+  const rawStars = Number.isFinite(Number(stars)) ? Number(stars) : safeScore / 2;
+  const safeStars = Math.max(1, Math.min(5, Math.round(rawStars * 10) / 10));
   const href = String(affiliateUrl || '#').trim() || '#';
   const isExternal = /^https?:\/\//i.test(href);
 

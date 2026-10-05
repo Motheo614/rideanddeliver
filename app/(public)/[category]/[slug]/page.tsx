@@ -17,9 +17,14 @@ import AccentCard from '@/components/AccentCard';
 import {
   buildBlogPostingSchema,
   buildBreadcrumbSchema,
-  buildProductSchema,
+  buildProductReviewSchema,
+  buildRoundupItemListSchema,
+  toReviewRatingValue,
+  isAmazonHostedImage,
+  toAbsoluteUrl,
 } from '@/lib/seo/schema';
 import { buildArticleMetadata } from '@/lib/seo/metadata';
+import { getEditorialDates } from '@/lib/dates';
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
@@ -34,6 +39,7 @@ interface ProductRecord {
   score?: number;
   reviewCount?: number;
   stars?: number;
+  price?: string;
   pros?: string[];
   cons?: string[];
   specs?: Array<{ label: string; value: string }>;
@@ -58,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     image: featuredImageUrl,
     type: 'article',
     publishedTime: post.publishedAt,
-    modifiedTime: (post as any).updatedAt,
+    modifiedTime: getEditorialDates(post.publishedAt, (post as any).contentUpdatedAt).dateModified,
     section: post.category,
     tags: post.tags,
   });
@@ -589,7 +595,7 @@ export default async function BlogPostPage({ params }: Props) {
                 year={new Date(post.publishedAt || Date.now()).getFullYear()}
                 awardLabel={String(product.awardLabel || 'Best Overall')}
                 overallScore={score}
-                stars={Number.isFinite(Number(product.stars)) ? Number(product.stars) : 5}
+                stars={Number.isFinite(Number(product.stars)) ? Number(product.stars) : undefined}
                 metrics={[
                   { label: 'Value', score },
                   { label: 'Durability', score },
@@ -659,8 +665,12 @@ export default async function BlogPostPage({ params }: Props) {
     typeof post.readTime === 'number' && post.readTime > 0
       ? post.readTime
       : estimateReadTimeFromHtml(normalizedContent);
-  const publishedIso = toIsoDate(post.publishedAt) || '1970-01-01T00:00:00.000Z';
-  const updatedIso = toIsoDate((post as any).updatedAt || post.publishedAt) || publishedIso;
+  const { datePublished: publishedIso, dateModified: updatedIso, showUpdatedLabel } =
+    getEditorialDates(post.publishedAt, (post as any).contentUpdatedAt);
+  const updatedLabel = showUpdatedLabel ? formatDateAbsolute(updatedIso) : undefined;
+  // Matches the hardcoded byline in ArticleAuthorBox — keep these in sync if that ever becomes
+  // a real per-post field.
+  const authorName = 'Marcus Webb';
 
   const articleSchemas: Array<Record<string, unknown>> = [
     buildBlogPostingSchema({
@@ -672,6 +682,7 @@ export default async function BlogPostPage({ params }: Props) {
       dateModified: updatedIso,
       category: post.category,
       tags: post.tags,
+      authorName,
     }),
     buildBreadcrumbSchema([
       { name: 'Home', url: '/' },
@@ -680,19 +691,74 @@ export default async function BlogPostPage({ params }: Props) {
     ]),
   ];
 
-  if (amazonProducts.length > 0) {
-    amazonProducts.forEach((product: any) => {
-      if (!product?.productTitle || !product?.affiliateLink) return;
-      articleSchemas.push(
-        buildProductSchema({
-          name: product.productTitle,
-          url: product.affiliateLink,
-          image: product.image,
-          description: product.description,
-          price: product.price,
-        })
+  // Editorial Product + Review schema.
+  // ratingValue comes from toReviewRatingValue(score) — the shared helper that also drives
+  // visible stars. The `stars` DB field is ignored (may be Amazon customer data).
+  // buildProductReviewSchema returns null when name, image, or ratingValue is missing/invalid,
+  // so partial markup never reaches Google.
+  // Amazon-hosted images are skipped by the builder's own guard (isAmazonHostedImage).
+  const AUTHOR_URL = toAbsoluteUrl('/about');
+
+  const uniqueReviewedProducts = Array.from(
+    new Map(
+      Object.values(productMap)
+        .map((block) => block?.product)
+        .filter((product): product is ProductRecord => Boolean(product && product.productName))
+        .map((product) => [String(product._id || product.productName), product])
+    ).values()
+  ).filter((product) => toReviewRatingValue(product.score) !== null);
+
+  // Flag Amazon-hosted product images so they can be replaced (logged server-side only).
+  uniqueReviewedProducts.forEach((product) => {
+    if (product.imageUrl && isAmazonHostedImage(product.imageUrl)) {
+      console.warn(
+        `[schema] Product "${product.productName}" has an Amazon-hosted image and will be excluded from JSON-LD. ` +
+        `Re-upload to Cloudinary and update the imageUrl field.`
       );
-    });
+    }
+  });
+
+  const productReviewSchemas = uniqueReviewedProducts
+    .map((product) =>
+      buildProductReviewSchema({
+        name: String(product.productName),
+        image: String(product.imageUrl || ''),
+        description: product.description,
+        ratingValue: toReviewRatingValue(product.score) as number,
+        authorName,
+        authorUrl: AUTHOR_URL,
+        reviewDatePublished: publishedIso,
+        pros: product.pros,
+        cons: product.cons,
+      })
+    )
+    .filter((s): s is Record<string, unknown> => s !== null);
+
+  // Schema structure decision (owner-approved):
+  //   - Exactly 1 product block (uniqueReviewedProducts.length === 1) AND its schema is
+  //     non-null → emit Product+Review directly (eligible for star snippet).
+  //   - 2+ product blocks → always emit plain ItemList regardless of how many schemas
+  //     are null. Google does not award review snippets for multi-product pages.
+  //   - ItemList items use on-page anchor (#jumpTargetId) when available; omit url
+  //     entirely when there is no anchor (never repeat the article URL, never use
+  //     affiliate links).
+  if (uniqueReviewedProducts.length === 1 && productReviewSchemas.length === 1) {
+    articleSchemas.push(productReviewSchemas[0]);
+  } else if (uniqueReviewedProducts.length > 1) {
+    // Build plain ItemList from all product blocks (including those that failed schema
+    // validation — they still deserve a list entry with name + optional anchor).
+    const listItems = Object.values(productMap)
+      .map((block) => block?.product)
+      .filter((p): p is ProductRecord => Boolean(p?.productName))
+      .map((p) => {
+        const anchor = String(p.jumpTargetId || '').trim();
+        return anchor
+          ? { name: String(p.productName), url: `${articlePath}#${anchor}` }
+          : { name: String(p.productName) };
+      });
+    if (listItems.length > 0) {
+      articleSchemas.push(buildRoundupItemListSchema(listItems as Array<{ name: string; url?: string }>));
+    }
   }
 
   return (
@@ -751,6 +817,7 @@ export default async function BlogPostPage({ params }: Props) {
                 <ArticleAuthorBox
                   publishedLabel={formatDateAbsolute(post.publishedAt)}
                   readTimeLabel={`${estimatedReadTime} min read`}
+                  updatedLabel={updatedLabel}
                 />
               </div>
             </header>
@@ -828,7 +895,7 @@ export default async function BlogPostPage({ params }: Props) {
               <NewsletterSignupForm
                 source="article-sidebar"
                 inputId="article-sidebar-newsletter-email"
-                inputPlaceholder="your@email.com"
+                inputPlaceholder="Email Address"
                 buttonText="SUBSCRIBE"
                 rowClassName="flex flex-col gap-3"
                 inputClassName="w-full px-4 py-3 border border-gray-200 rounded focus:outline-none focus:border-[#CC0000] transition-colors"
