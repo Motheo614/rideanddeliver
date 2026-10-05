@@ -53,7 +53,6 @@ export default function GearComparator() {
   const [useCustomA, setUseCustomA] = useState(false);
   const [useCustomB, setUseCustomB] = useState(false);
   const [riderStyle, setRiderStyle] = useState("");
-  const [budget, setBudget] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -92,7 +91,6 @@ export default function GearComparator() {
     const catLabel = config.label;
     const comparisonAxes = config.categories.join(", ");
     const riderContext = riderStyle ? `Rider style/use case: ${riderStyle}.` : "";
-    const budgetContext = budget ? `Budget range: ${budget}.` : "";
 
     // Find DB data for the two products (for review summaries / affiliate links)
     const productAData = products.find(p => p.name === nameA);
@@ -105,7 +103,6 @@ export default function GearComparator() {
 Products: "${nameA}" vs "${nameB}"
 Category: ${catLabel}
 ${riderContext}
-${budgetContext}
 ${reviewA}
 ${reviewB}
 
@@ -118,15 +115,13 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
     "name": "${nameA}",
     "pros": ["pro 1", "pro 2", "pro 3"],
     "cons": ["con 1", "con 2"],
-    "bestFor": "one sentence on ideal rider/use case",
-    "priceRange": "$XXX–$XXX"
+    "bestFor": "one sentence on ideal rider/use case"
   },
   "productB": {
     "name": "${nameB}",
     "pros": ["pro 1", "pro 2", "pro 3"],
     "cons": ["con 1", "con 2"],
-    "bestFor": "one sentence on ideal rider/use case",
-    "priceRange": "$XXX–$XXX"
+    "bestFor": "one sentence on ideal rider/use case"
   },
   "categories": {
     ${config.categories.map(c => `"${c}": {"winner": "A or B or Tie", "note": "brief reason"}`).join(",\n    ")}
@@ -148,10 +143,25 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
       const text = data.content?.find(b => b.type === "text")?.text || "";
       const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
-      // Inject affiliate links from DB if available
-      parsed.productA.affiliateUrl = productAData?.affiliateUrl || null;
-      parsed.productB.affiliateUrl = productBData?.affiliateUrl || null;
-      setResult(parsed);
+      setResult({
+        verdict: parsed.verdict,
+        productA: {
+          name: parsed.productA.name,
+          pros: parsed.productA.pros,
+          cons: parsed.productA.cons,
+          bestFor: parsed.productA.bestFor,
+          affiliateUrl: productAData?.affiliateUrl || null,
+        },
+        productB: {
+          name: parsed.productB.name,
+          pros: parsed.productB.pros,
+          cons: parsed.productB.cons,
+          bestFor: parsed.productB.bestFor,
+          affiliateUrl: productBData?.affiliateUrl || null,
+        },
+        categories: parsed.categories,
+        buyAdvice: parsed.buyAdvice,
+      });
     } catch (e) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -169,7 +179,6 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
     setUseCustomA(false);
     setUseCustomB(false);
     setRiderStyle("");
-    setBudget("");
   }
 
   function resetCategory() {
@@ -267,25 +276,12 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
                   <div style={{ fontSize: "11px", color: MUTED, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px", fontWeight: 600 }}>
                     Optional — personalise the comparison
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    <div>
-                      <label style={{ fontSize: "13px", color: MUTED, display: "block", marginBottom: "6px" }}>Use case</label>
-                      <select value={riderStyle} onChange={e => setRiderStyle(e.target.value)} style={selectStyle()}>
-                        <option value="">Any</option>
-                        {config.filters.map(f => <option key={f}>{f}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ fontSize: "13px", color: MUTED, display: "block", marginBottom: "6px" }}>Budget</label>
-                      <select value={budget} onChange={e => setBudget(e.target.value)} style={selectStyle()}>
-                        <option value="">Any</option>
-                        <option>Under $50</option>
-                        <option>$50–$150</option>
-                        <option>$150–$300</option>
-                        <option>$300–$500</option>
-                        <option>$500+</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label style={{ fontSize: "13px", color: MUTED, display: "block", marginBottom: "6px" }}>Use case</label>
+                    <select value={riderStyle} onChange={e => setRiderStyle(e.target.value)} style={selectStyle()}>
+                      <option value="">Any</option>
+                      {config.filters.map(f => <option key={f}>{f}</option>)}
+                    </select>
                   </div>
                 </div>
 
@@ -330,7 +326,6 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
                     Product {i === 0 ? "A" : "B"}
                   </div>
                   <div style={{ fontSize: "15px", fontWeight: 700, marginBottom: "4px" }}>{p.name}</div>
-                  <div style={{ fontSize: "13px", color: MUTED, marginBottom: "16px" }}>{p.priceRange}</div>
                   <div style={{ marginBottom: "12px" }}>
                     {p.pros.map((pro, j) => (
                       <div key={j} style={{ display: "flex", gap: "8px", fontSize: "13px", marginBottom: "6px", alignItems: "flex-start" }}>
