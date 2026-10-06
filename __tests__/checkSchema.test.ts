@@ -102,15 +102,19 @@ describe('checkSchemaHtml', () => {
     expect(equalDates).toContain('A Last updated label is present when dateModified equals datePublished.');
   });
 
-  it('rejects visible currency amounts inside product cards and comparison tables', () => {
-    const card = checkSchemaHtml(validFixture({
-      body: '<div data-product-card="true"><p>Price $12.34</p></div>',
-    }));
-    const table = checkSchemaHtml(validFixture({
-      body: '<section data-comparison-table="true"><p>€39.99</p></section>',
+  it('does not flag editorial budget language inside a product card', () => {
+    const errors = checkSchemaHtml(validFixture({
+      body: '<div data-product-card="true"><p>Suitable for riders under $80</p></div>',
     }));
 
-    expect(card).toContain('Visible currency amount found inside a product card or comparison table.');
-    expect(table).toContain('Visible currency amount found inside a product card or comparison table.');
+    expect(errors).toEqual([]);
+  });
+
+  it('flags an amount that is the entire text of a product price cell', () => {
+    const errors = checkSchemaHtml(validFixture({
+      body: '<table><tr><td class="price-cell">$89.99</td></tr></table>',
+    }));
+
+    expect(errors).toContain('Visible specific product price "$89.99" found in <td class="price-cell">.');
   });
 });

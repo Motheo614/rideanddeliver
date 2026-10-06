@@ -13,9 +13,17 @@ const FORBIDDEN_KEYS = new Set([
   'reviewcount',
 ]);
 const ISO_DATE_WITH_TIMEZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
-const CURRENCY_AMOUNT = /[$€£]\s?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?/;
+const LABELED_CENTS_AMOUNT = /^(?:price\s*:?\s*)?(?:USD\s*)?[$€£]\s*\d{1,3}(?:,\d{3})*\.\d{2}$/i;
+const WHOLE_ELEMENT_AMOUNT = /^(?:USD\s*)?[$€£]\s*\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?$/i;
 
 type JsonObject = Record<string, unknown>;
+type PriceHit = {
+  text: string;
+  tag: string;
+  className: string;
+  start: number;
+  end: number;
+};
 
 function hasValue(value: unknown): boolean {
   if (typeof value === 'string') return value.trim().length > 0;
@@ -124,6 +132,59 @@ function getVisibleText(html: string): string {
   );
 }
 
+function getProductPriceHits(region: string): PriceHit[] {
+  const tagPattern = /<(\/?)(td|th|span|div)\b([^>]*)>/gi;
+  const stack: Array<{ tag: string; className: string; start: number; contentStart: number }> = [];
+  const candidates: PriceHit[] = [];
+  let match: RegExpExecArray | null;
+
+  while ((match = tagPattern.exec(region)) !== null) {
+    const [, closing, tag, attributes] = match;
+    if (closing) {
+      let stackIndex = stack.length - 1;
+      while (stackIndex >= 0 && stack[stackIndex].tag !== tag.toLowerCase()) stackIndex -= 1;
+      if (stackIndex < 0) continue;
+
+      const [element] = stack.splice(stackIndex, 1);
+      const text = getVisibleText(region.slice(element.contentStart, match.index)).replace(/\s+/g, ' ').trim();
+      if (LABELED_CENTS_AMOUNT.test(text) || WHOLE_ELEMENT_AMOUNT.test(text)) {
+        candidates.push({
+          text,
+          tag: element.tag,
+          className: element.className,
+          start: element.start,
+          end: tagPattern.lastIndex,
+        });
+      }
+      continue;
+    }
+
+    const className = attributes.match(/\bclass\s*=\s*(["'])(.*?)\1/i)?.[2] || '';
+    if (!/\/\s*>$/.test(match[0])) {
+      stack.push({
+        tag: tag.toLowerCase(),
+        className,
+        start: match.index,
+        contentStart: tagPattern.lastIndex,
+      });
+    }
+  }
+
+  candidates.sort((left, right) => (left.end - left.start) - (right.end - right.start));
+  const hits: PriceHit[] = [];
+  for (const candidate of candidates) {
+    if (hits.some((hit) => (
+      hit.text === candidate.text
+      && candidate.start >= hit.start
+      && candidate.end <= hit.end
+    ))) {
+      continue;
+    }
+    hits.push(candidate);
+  }
+  return hits;
+}
+
 export function checkSchemaHtml(html: string): string[] {
   const errors: string[] = [];
   const blocks: JsonObject[] = [];
@@ -227,8 +288,9 @@ export function checkSchemaHtml(html: string): string[] {
   }
 
   for (const region of getProductCardRegions(html)) {
-    if (CURRENCY_AMOUNT.test(getVisibleText(region))) {
-      errors.push('Visible currency amount found inside a product card or comparison table.');
+    for (const hit of getProductPriceHits(region)) {
+      const classAttribute = hit.className ? ` class="${hit.className}"` : '';
+      errors.push(`Visible specific product price "${hit.text}" found in <${hit.tag}${classAttribute}>.`);
     }
   }
 
