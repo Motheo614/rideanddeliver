@@ -226,8 +226,8 @@ PostSchema.pre('save', function () {
     this.slug = generateSlugFromTitle(this.title);
   }
 
-  // Auto-set publishedAt when status changes to 'published'
-  if (this.status === 'published' && !this.publishedAt) {
+  // Set publishedAt once, when a new post is published or status transitions to published.
+  if (this.status === 'published' && (this.isNew || this.isModified('status')) && !this.publishedAt) {
     this.publishedAt = new Date();
   }
 

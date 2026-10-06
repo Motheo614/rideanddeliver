@@ -8,6 +8,7 @@ import { transformPost } from '@/lib/categoryMap';
 import { getSlugLookupCandidates } from '@/lib/slug';
 import { computeContentHash } from '@/lib/contentHash';
 import { decideContentUpdate } from '@/lib/contentUpdateDecision';
+import { getClientPostUpdates } from '@/lib/postUpdateFields';
 
 function extractProductBlocksFromContent(content: string) {
   const html = String(content || '')
@@ -171,19 +172,8 @@ export async function PUT(
       );
     }
 
-    // Update post fields selectively to avoid validation issues
-    const allowedFields: (keyof typeof body)[] = [
-      'title', 'slug', 'excerpt', 'content', 'featuredImage',
-      'category', 'categoryLabel', 'tags', 'author', 'amazonProducts',
-      'seoMetadata', 'status', 'publishedAt', 'readTime',
-      'featured', 'trending', 'editorsPick', 'cta'
-    ];
-
-    allowedFields.forEach(field => {
-      if (field in body) {
-        (post as any)[field] = body[field];
-      }
-    });
+    // Server-owned dates are excluded from client updates.
+    Object.assign(post, getClientPostUpdates(body));
 
     const normalizedContent = String((post as any).content || '');
     (post as any).content = normalizedContent;

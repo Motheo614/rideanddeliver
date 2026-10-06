@@ -913,7 +913,6 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       categoryLabel: categoryOptions.find(c => c.value === category)?.label,
       tags,
       status: publishPost ? 'published' : status,
-      publishedAt: publishPost ? new Date().toISOString() : post?.publishedAt,
       minorEdit,
       readTime: calculateReadTime(normalizedContent),
       featured,
