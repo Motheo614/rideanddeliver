@@ -1,6 +1,24 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+.start-here-hero-overlay {
+  background: rgba(14, 8, 8, 0.72);
+}
+
+@media (min-width: 768px) {
+  .start-here-hero-overlay {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(14, 8, 8, 0.86) 0%,
+        rgba(14, 8, 8, 0.64) 42%,
+        rgba(14, 8, 8, 0.14) 78%,
+        rgba(14, 8, 8, 0.04) 100%
+      ),
+      rgba(0, 0, 0, 0.12);
+  }
+}
+
 @layer base {
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight;

@@ -85,21 +85,45 @@ export default async function StartHerePage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Zone 1: hero */}
-      <section className="bg-[#CC0000] py-20 md:py-24 text-white">
-        <div className="container mx-auto px-4 text-center max-w-4xl">
-          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-90 mb-4">
-            New to delivery riding?
-          </span>
-          <h1 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
-            Everything you need to<br />ride smarter, earn more.
-          </h1>
-          <p className="text-lg md:text-2xl font-medium opacity-90 leading-relaxed mb-8">
-            RiderComplex reviews the gear, tests the platforms, and breaks down the tech — so you spend less time guessing and more time earning.
-          </p>
-          <div className="flex flex-wrap justify-center gap-6 text-sm opacity-80">
-            <span> <strong className="font-bold">4.8/5</strong> avg. gear rating</span>
-            <span> <strong className="font-bold">120+</strong> products reviewed</span>
-            <span> <strong className="font-bold">Safety-first</strong> recommendations</span>
+      <section className="relative isolate flex min-h-[clamp(520px,62vh,720px)] items-center overflow-hidden bg-[#1a1412] text-white">
+        <Image
+          src="/Assets/Order_Collection.png"
+          alt="Delivery rider loading a paper bag and drinks into an insulated delivery backpack beside an e-bike"
+          fill
+          priority
+          sizes="100vw"
+          quality={80}
+          className="z-0 object-cover [object-position:50%_55%] [transform:scaleX(-1)]"
+        />
+        <div aria-hidden="true" className="start-here-hero-overlay absolute inset-0 z-[1]" />
+        <div className="relative z-10 mx-auto w-full max-w-[1240px] px-[clamp(20px,4vw,48px)] py-[clamp(48px,7vw,96px)]">
+          <div className="flex max-w-[640px] flex-col items-start gap-7">
+            <span className="inline-flex items-center rounded-full border border-white/40 bg-white/[0.14] px-4 py-2 text-[13px] font-extrabold uppercase tracking-[0.14em] text-white">
+              New to delivery riding?
+            </span>
+            <h1 className="text-[clamp(42px,6vw,76px)] font-black leading-[1.12] tracking-[-0.02em] text-white">
+              Everything you need to ride smarter,{' '}
+              <span className="rounded-[8px] bg-[#CC0000] px-[0.18em] text-inherit [box-decoration-break:clone] [-webkit-box-decoration-break:clone]">
+                earn more.
+              </span>
+            </h1>
+            <div className="flex flex-wrap gap-4">
+              <a
+                href="#free-starter-checklist"
+                className="inline-flex min-h-14 items-center gap-3 rounded-full bg-[#CC0000] px-7 text-[17px] font-extrabold text-white transition-colors hover:bg-[#a80000] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
+              >
+                Get the free starter checklist
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </a>
+              <Link
+                href="/category/safety-gear"
+                className="inline-flex min-h-14 items-center justify-center rounded-full border-2 border-white px-7 text-[17px] font-extrabold text-white transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
+              >
+                Browse reviews
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -118,7 +142,7 @@ export default async function StartHerePage() {
           </div>
 
           {/* Zone 2: lead magnet */}
-          <div className="bg-gray-50 border border-gray-100 border-l-4 border-l-[#CC0000] rounded-2xl p-8 md:p-10 mb-16">
+          <div id="free-starter-checklist" className="bg-gray-50 border border-gray-100 border-l-4 border-l-[#CC0000] rounded-2xl p-8 md:p-10 mb-16">
             <span className="inline-flex items-center gap-1 bg-red-50 border border-[#CC0000] text-[#CC0000] text-xs font-bold uppercase tracking-widest rounded px-3 py-1 mb-4">
               📋 Free guide
             </span>
