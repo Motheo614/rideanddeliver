@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, ImageIcon, Minus } from 'lucide-react';
 import { toReviewRatingValue } from '@/lib/seo/schema';
+import { getCloudinaryImageUrl } from '@/lib/utils';
 
 interface HeroProductMetric {
   label: string;
@@ -82,7 +83,6 @@ export default function HeroProductCard({
             {productName}
           </h2>
           {brand && <p className="mb-2 text-sm text-gray-600">Brand: {brand}</p>}
-          {description && <p className="mb-3 text-sm leading-relaxed text-gray-600">{description}</p>}
 
           <div className="mb-[14px] flex items-center gap-[10px]">
             <span
@@ -160,7 +160,7 @@ export default function HeroProductCard({
           <div className="relative h-full w-full overflow-hidden">
             {imageUrl ? (
               <img
-                src={imageUrl}
+                src={getCloudinaryImageUrl(imageUrl)}
                 alt={productName}
                 className="absolute inset-0 block h-full w-full box-border object-contain object-center p-4"
               />

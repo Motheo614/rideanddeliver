@@ -13,6 +13,7 @@ import {
   isAmazonHostedImage,
 } from '../lib/seo/schema';
 import { getEditorialDates } from '../lib/dates';
+import { getCloudinaryImageUrl, isCloudinaryImageUrl } from '../lib/utils';
 
 // ---------------------------------------------------------------------------
 // toReviewRatingValue
@@ -87,6 +88,30 @@ describe('isAmazonHostedImage', () => {
   });
 });
 
+describe('Cloudinary image URL optimization', () => {
+  it('adds auto-format and quality transformations to Cloudinary URLs', () => {
+    expect(
+      getCloudinaryImageUrl('https://res.cloudinary.com/ridercomplex/image/upload/v123/product.jpg')
+    ).toBe(
+      'https://res.cloudinary.com/ridercomplex/image/upload/f_auto,q_auto/v123/product.jpg'
+    );
+  });
+
+  it('adds auto transformations to an existing Cloudinary transformation segment', () => {
+    expect(
+      getCloudinaryImageUrl('https://res.cloudinary.com/ridercomplex/image/upload/w_500/v123/product.jpg')
+    ).toBe(
+      'https://res.cloudinary.com/ridercomplex/image/upload/w_500,f_auto,q_auto/v123/product.jpg'
+    );
+  });
+
+  it('does not change non-Cloudinary URLs', () => {
+    const amazonUrl = 'https://m.media-amazon.com/images/I/product.jpg';
+    expect(getCloudinaryImageUrl(amazonUrl)).toBe(amazonUrl);
+    expect(isCloudinaryImageUrl(amazonUrl)).toBe(false);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // buildProductReviewSchema
 // ---------------------------------------------------------------------------
@@ -116,6 +141,10 @@ describe('buildProductReviewSchema — complete product', () => {
 
   it('has the correct name', () => {
     expect(result.name).toBe('Kryptonite New York Lock');
+  });
+
+  it('preserves the complete product description for JSON-LD', () => {
+    expect(result.description).toBe(VALID_INPUT.description);
   });
 
   it('has a brand block', () => {

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from '@/components/CloudinaryImage';
 import { notFound, redirect } from 'next/navigation';
 import { Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
-import { formatDateAbsolute, stripHeadMetadataTags } from '@/lib/utils';
+import { formatDateAbsolute, getCloudinaryImageUrl, stripHeadMetadataTags } from '@/lib/utils';
 import { CATEGORY_MAP } from '@/lib/categoryMap';
 import ArticleAuthorBox from '@/components/ArticleAuthorBox';
 import TableWrapper from '@/components/TableWrapper';
@@ -75,6 +75,11 @@ function normalizeHtmlFragment(input: string) {
       .replace(/\u00A0/g, ' ')
       .replace(/â€“|–/g, '-')
       .replace(/â€”|—/g, '-')
+      .replace(
+        /(src=["'])(https?:\/\/res\.cloudinary\.com\/[^"']+)(["'])/gi,
+        (_match, prefix: string, imageUrl: string, suffix: string) =>
+          `${prefix}${getCloudinaryImageUrl(imageUrl)}${suffix}`
+      )
   );
 }
 
@@ -199,9 +204,8 @@ export default async function BlogPostPage({ params }: Props) {
 
       const safeName = safe(params.productName);
       const safeBrand = safe(params.brand || '');
-      const safeDescription = safe(params.description || '');
       const safeUrl = safe(params.affiliateUrl);
-      const safeImageUrl = params.imageUrl ? safe(params.imageUrl) : '';
+      const safeImageUrl = params.imageUrl ? safe(getCloudinaryImageUrl(params.imageUrl)) : '';
       const safeAwardLabel = params.awardLabel ? safe(params.awardLabel) : '';
       const scoreValue = Number.isFinite(Number(params.score)) ? Number(params.score) : undefined;
       const ratingValue = scoreValue !== undefined ? toReviewRatingValue(scoreValue) : null;
@@ -213,7 +217,6 @@ export default async function BlogPostPage({ params }: Props) {
           safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" />` : '',
           `<h3>${safeName}</h3>`,
           safeBrand ? `<p>Brand: ${safeBrand}</p>` : '',
-          safeDescription ? `<p>${safeDescription}</p>` : '',
           `<div class="affiliate-card-cta"><a href="${safeUrl}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></div>`,
           '</div>',
         ].join('');
@@ -240,7 +243,6 @@ export default async function BlogPostPage({ params }: Props) {
       <span style="font-size:18px;line-height:1;">${starsHtml}</span>
     </div>
     <p style="margin:8px 0 0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${scoreColor};">${Number(scoreValue).toFixed(1)} / 10 Rating</p>
-    ${safeDescription ? `<p style="margin:8px 0 0;font-size:13px;line-height:1.5;color:#4b5563;">${safeDescription}</p>` : ''}
     <a href="${safeUrl}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>
     <a href="${jumpHref}" style="display:block;margin-top:8px;text-align:center;font-size:12px;color:#6b7280;text-decoration:none;">Jump to review ↓</a>
   </div>
@@ -257,13 +259,12 @@ export default async function BlogPostPage({ params }: Props) {
           .replace(/'/g, '&#39;');
 
       const productName = safe(String(product?.productName || 'Top Pick'));
-      const productDescription = safe(getProductReviewBody(product) || post.excerpt || '');
       const productBrand = safe(String(product?.brand || ''));
       const authorName = safe('Marcus Webb');
       const rawScore = Number(product?.score ?? product?.rating);
       const score = Number.isFinite(rawScore) ? rawScore : undefined;
       const ratingValue = score !== undefined ? toReviewRatingValue(score) : null;
-      const imageUrl = safe(String(product?.imageUrl || ''));
+      const imageUrl = safe(getCloudinaryImageUrl(String(product?.imageUrl || '')));
       const amazonUrl = safe(String(product?.affiliateLink || '#'));
       const reviewUrl = safe(String(product?.jumpTargetId ? `#${product.jumpTargetId}` : articlePath));
       const editorNote = safe(String(product?.editorNote || 'Top pick selected by the Rider Complex editorial team.'));
@@ -291,7 +292,6 @@ export default async function BlogPostPage({ params }: Props) {
     <div style="padding:24px;border-bottom:1px solid #e5e7eb;">
       <h2 style="margin:0;color:#111;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:32px;line-height:1.1;font-weight:900;">${productName}</h2>
       ${productBrand ? `<p style="margin:8px 0 0;color:#6b7280;font-size:13px;">Brand: ${productBrand}</p>` : ''}
-      <p style="margin:12px 0 0;color:#6b7280;font-size:14px;line-height:1.6;">${productDescription}</p>
       ${ratingHtml}
       ${specs.length > 0 ? `<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;">${specs.map((spec: any) => `<span style=\"display:inline-flex;align-items:center;padding:4px 10px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;\">${safe(`${spec.label}: ${spec.value}`)}</span>`).join('')}</div>` : ''}
       <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -368,12 +368,10 @@ export default async function BlogPostPage({ params }: Props) {
     const buildAffiliateCard = (
       name: string,
       imageTag: string,
-      href: string,
-      description?: string
+      href: string
     ) => {
       const trimmedName = String(name || '').trim();
       const trimmedHref = String(href || '').trim();
-      const trimmedDescription = String(description || '').trim();
 
       if (!trimmedName || !trimmedHref || !imageTag) {
         return '';
@@ -438,7 +436,7 @@ export default async function BlogPostPage({ params }: Props) {
   </div>
 </div>`;
 
-        return trimmedDescription ? `${upgradedCard}<p>${trimmedDescription}</p>` : upgradedCard;
+        return upgradedCard;
       }
 
       const card = [
@@ -449,7 +447,7 @@ export default async function BlogPostPage({ params }: Props) {
         '</div>',
       ].join('');
 
-      return trimmedDescription ? `${card}<p>${trimmedDescription}</p>` : card;
+      return card;
     };
 
     // Convert old inline-formatted product chunks (title/asin/price/image/link)
@@ -460,8 +458,8 @@ export default async function BlogPostPage({ params }: Props) {
 
     upgraded = upgraded.replace(
       legacyBlockPattern,
-      (_match, name, _asin, _price, imageTag, description, href) => {
-        return buildAffiliateCard(name, imageTag, href, description) || _match;
+      (_match, name, _asin, _price, imageTag, _description, href) => {
+        return buildAffiliateCard(name, imageTag, href) || _match;
       }
     );
 
@@ -470,8 +468,8 @@ export default async function BlogPostPage({ params }: Props) {
 
     upgraded = upgraded.replace(
       mixedParagraphLegacyPattern,
-      (_match, name, _asin, _price, imageTag, description, href) => {
-        return buildAffiliateCard(name, imageTag, href, description) || _match;
+      (_match, name, _asin, _price, imageTag, _description, href) => {
+        return buildAffiliateCard(name, imageTag, href) || _match;
       }
     );
 
@@ -481,8 +479,8 @@ export default async function BlogPostPage({ params }: Props) {
 
     upgraded = upgraded.replace(
       broadLegacyPattern,
-      (_match, name, _asin, _price, imageTag, description, href) => {
-        return buildAffiliateCard(name, imageTag, href, description) || _match;
+      (_match, name, _asin, _price, imageTag, _description, href) => {
+        return buildAffiliateCard(name, imageTag, href) || _match;
       }
     );
 
@@ -705,39 +703,51 @@ export default async function BlogPostPage({ params }: Props) {
   const uniqueReviewedBlocks = Array.from(
     new Map(
       Object.values(productMap)
-        .filter((block) => Boolean(block?.product?.productName))
+        .filter((block) => Boolean(block?.product))
         .map((block) => [
-          String(block.product?._id || block.product?.productName),
+          String(block.product?._id || block.productId || block.product?.productName),
           block,
         ])
     ).values()
   );
 
-  uniqueReviewedBlocks.forEach(({ product }) => {
-    if (!product) return;
-    if (product.imageUrl && isAmazonHostedImage(product.imageUrl)) {
-      console.warn(
-        `[schema] Product "${product.productName}" has an Amazon-hosted image and will be excluded from JSON-LD. ` +
-        `Re-upload to Cloudinary and update the imageUrl field.`
-      );
-    }
-  });
+  console.info(
+    `[SCHEMA DEBUG] Post "${post.slug}": evaluating ${uniqueReviewedBlocks.length} product(s).`
+  );
 
   const productReviewSchemas = uniqueReviewedBlocks
-    .map(({ blockType, product }) => {
+    .map(({ blockType, product, productId }, index) => {
       if (!product) return null;
       const score = blockType === 'hero'
         ? toFiniteNumber(product.score, 9.0)
         : Number.isFinite(Number(product.score)) ? Number(product.score) : 9.5;
       const reviewBody = getProductReviewBody(product);
-      const brand = String(product.brand || '').trim();
+      const brand = String(product.brand || '').trim() || 'Generic';
       const ratingValue = toReviewRatingValue(score);
-      if (ratingValue === null || !reviewBody || !brand) return null;
+      const rawImage = String(product.imageUrl || '').trim();
+      const image = getCloudinaryImageUrl(rawImage);
+      const failures: string[] = [];
 
-      return buildProductReviewSchema({
+      if (!String(product.productName || '').trim()) failures.push('missing product name');
+      if (!brand) failures.push('missing or blank brand');
+      if (!image) failures.push('missing image');
+      else if (isAmazonHostedImage(rawImage)) failures.push('Amazon-hosted image is excluded');
+      if (ratingValue === null) failures.push(`invalid review rating value from score "${String(score)}"`);
+      if (!reviewBody.trim()) failures.push('missing or blank reviewBody');
+
+      const productLabel = String(product.productName || productId || `product ${index + 1}`).trim();
+      if (failures.length > 0) {
+        console.warn(
+          `[SCHEMA DEBUG] Product "${productLabel}" failed eligibility: ${failures.join('; ')}.`
+        );
+        return null;
+      }
+      if (ratingValue === null) return null;
+
+      const schema = buildProductReviewSchema({
         name: String(product.productName),
-        image: String(product.imageUrl || ''),
-        description: reviewBody,
+        image,
+        description: String(product.description || '').trim() || undefined,
         brand,
         reviewBody,
         ratingValue,
@@ -745,6 +755,13 @@ export default async function BlogPostPage({ params }: Props) {
         authorUrl: AUTHOR_URL,
         reviewDatePublished: publishedIso,
       });
+
+      if (!schema) {
+        console.warn(
+          `[SCHEMA DEBUG] Product "${productLabel}" failed schema-builder validation after route eligibility checks.`
+        );
+      }
+      return schema;
     })
     .filter((s): s is Record<string, unknown> => s !== null);
 
@@ -756,9 +773,19 @@ export default async function BlogPostPage({ params }: Props) {
   ]);
   articleSchemas.push(breadcrumbSchema);
 
+  const articleSchemaGraph = buildArticleSchemaGraph(articleSchemas);
+  const graphNodes = articleSchemaGraph['@graph'] as Array<Record<string, unknown>>;
+  const productNodeCount = graphNodes.filter((node) => node['@type'] === 'Product').length;
+  console.info(
+    `[SCHEMA DEBUG] Post "${post.slug}": ${productNodeCount} Product node(s) included in final @graph.`
+  );
+  console.info(
+    `[SCHEMA DEBUG] Post "${post.slug}": final @graph: ${JSON.stringify(graphNodes, null, 2)}`
+  );
+
   return (
     <main className="bg-white" id="top">
-      <SeoJsonLd data={buildArticleSchemaGraph(articleSchemas)} />
+      <SeoJsonLd data={articleSchemaGraph} />
       <div className="bg-amber-50 border-b border-amber-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <p className="text-xs sm:text-sm text-amber-900 text-center">

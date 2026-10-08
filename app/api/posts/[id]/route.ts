@@ -119,7 +119,12 @@ export async function GET(
       return {
         blockType: block?.blockType === 'hero' ? 'hero' : 'accent',
         productId,
-        product: hydratedProductsById[productId] || null,
+        product: hydratedProductsById[productId]
+          ? {
+              ...hydratedProductsById[productId],
+              brand: String(hydratedProductsById[productId].brand || '').trim() || 'Generic',
+            }
+          : null,
       };
     });
 

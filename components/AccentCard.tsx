@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+import Image from '@/components/CloudinaryImage';
 import { ImageIcon } from 'lucide-react';
 import { toReviewRatingValue } from '@/lib/seo/schema';
 
@@ -77,8 +77,6 @@ export default function AccentCard({
         </div>
 
         {brand && <p className="mb-2 text-xs text-gray-600">Brand: {brand}</p>}
-        {description && <p className="mb-3 text-xs leading-relaxed text-gray-700">{description}</p>}
-
         <div className="mb-3 flex items-end justify-between gap-2">
           <div className="leading-none" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
             <span className="text-[42px] font-extrabold text-[#d40000]">{safeScore.toFixed(1)}</span>

@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+import Image from '@/components/CloudinaryImage';
 import Link from 'next/link';
 import { Post } from '@/lib/types';
 import { formatDate } from '@/lib/utils';

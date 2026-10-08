@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+import Image from '@/components/CloudinaryImage';
 import Link from 'next/link';
 import { getLatestPosts } from '@/lib/posts';
 

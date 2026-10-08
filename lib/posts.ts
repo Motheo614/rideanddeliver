@@ -74,6 +74,13 @@ const fetchOptions: RequestInit = {
   },
 };
 
+function fetchPostsApi(url: string, options: RequestInit = fetchOptions) {
+  return fetch(url, {
+    ...options,
+    signal: AbortSignal.timeout(15_000),
+  });
+}
+
 /**
  * Fetch all posts with optional filters
  */
@@ -104,7 +111,7 @@ export async function getPostsPage(options?: {
     if (options?.page) params.append('page', options.page.toString());
 
     const url = `${API_BASE}/api/posts${params.toString() ? `?${params}` : ''}`;
-    const response = await fetch(url, fetchOptions);
+    const response = await fetchPostsApi(url);
 
     if (!response.ok) {
       console.error('Failed to fetch posts:', response.statusText);
@@ -140,7 +147,7 @@ export async function getPostsPage(options?: {
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   try {
     const url = `${API_BASE}/api/posts/${encodeURIComponent(slug)}`;
-    const response = await fetch(url, fetchOptions);
+    const response = await fetchPostsApi(url);
 
     if (!response.ok) {
       return null;
@@ -197,7 +204,7 @@ export async function getLatestPosts(limit = 10): Promise<Post[]> {
 export async function getFeaturedPost(): Promise<Post | null> {
   try {
     const url = `${API_BASE}/api/posts/featured`;
-    const response = await fetch(url, fetchOptions);
+    const response = await fetchPostsApi(url);
 
     if (!response.ok) {
       return null;
@@ -217,7 +224,7 @@ export async function getFeaturedPost(): Promise<Post | null> {
 export async function getTrendingPosts(): Promise<Post[]> {
   try {
     const url = `${API_BASE}/api/posts/trending`;
-    const response = await fetch(url, fetchOptions);
+    const response = await fetchPostsApi(url);
 
     if (!response.ok) {
       return [];
@@ -237,7 +244,7 @@ export async function getTrendingPosts(): Promise<Post[]> {
 export async function getEditorsPicks(): Promise<Post[]> {
   try {
     const url = `${API_BASE}/api/posts/editors-picks`;
-    const response = await fetch(url, fetchOptions);
+    const response = await fetchPostsApi(url);
 
     if (!response.ok) {
       return [];
@@ -256,7 +263,7 @@ export async function getEditorsPicks(): Promise<Post[]> {
  */
 export async function incrementPostViews(postId: string): Promise<void> {
   try {
-    await fetch(`${API_BASE}/api/posts/${postId}`, {
+    await fetchPostsApi(`${API_BASE}/api/posts/${postId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
