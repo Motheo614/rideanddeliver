@@ -25,6 +25,8 @@ import { format } from 'date-fns';
 interface Product {
   _id: string;
   productName: string;
+  brand?: string;
+  description?: string;
   asin: string;
   affiliateLink: string;
   category: string;
@@ -63,6 +65,7 @@ export default function AdminAffiliatePage() {
   // Form state
   const [formData, setFormData] = useState({
     productName: '',
+    brand: '',
     asin: '',
     affiliateLink: '',
     category: 'accessories',
@@ -138,9 +141,14 @@ export default function AdminAffiliatePage() {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.brand.trim()) {
+      setMessage({ type: 'error', text: 'Brand is required' });
+      return;
+    }
     try {
       const payload = {
         ...formData,
+        brand: formData.brand.trim(),
         imageUrl: normalizeImageUrl(formData.imageUrl),
       };
 
@@ -169,10 +177,15 @@ export default function AdminAffiliatePage() {
   const handleEditProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct) return;
+    if (!formData.brand.trim()) {
+      setMessage({ type: 'error', text: 'Brand is required' });
+      return;
+    }
 
     try {
       const payload = {
         ...formData,
+        brand: formData.brand.trim(),
         imageUrl: normalizeImageUrl(formData.imageUrl),
       };
 
@@ -231,6 +244,7 @@ export default function AdminAffiliatePage() {
   const resetForm = () => {
     setFormData({
       productName: '',
+      brand: '',
       asin: '',
       affiliateLink: '',
       category: 'accessories',
@@ -247,13 +261,14 @@ export default function AdminAffiliatePage() {
     setSelectedProduct(product);
     setFormData({
       productName: product.productName,
+      brand: product.brand || '',
       asin: product.asin,
       affiliateLink: product.affiliateLink,
       category: product.category,
       price: product.price || '',
       imageUrl: product.imageUrl || '',
       rating: product.rating || 0,
-      description: '',
+      description: product.description || '',
       commissionRate: product.commissionRate || 3,
       isActive: product.isActive,
     });
@@ -605,6 +620,29 @@ export default function AdminAffiliatePage() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Brand</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
+                    placeholder="Product brand"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Review Summary</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
+                    placeholder="Short summary shown with the product"
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">ASIN *</label>
@@ -735,6 +773,29 @@ export default function AdminAffiliatePage() {
                     value={formData.productName}
                     onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Brand</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
+                    placeholder="Product brand"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Review Summary</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
+                    placeholder="Short summary shown with the product"
                   />
                 </div>
 
@@ -905,4 +966,3 @@ export default function AdminAffiliatePage() {
     </>
   );
 }
-

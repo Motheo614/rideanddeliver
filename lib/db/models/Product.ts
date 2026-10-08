@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 // TypeScript interface for Product document
 export interface IProduct extends Document {
   productName: string;
+  brand: string;
   asin: string;
   affiliateLink: string;
   category: 'helmets' | 'lights' | 'locks' | 'bags' | 'tools' | 'clothing' | 'accessories';
@@ -37,6 +38,12 @@ const ProductSchema = new Schema<IProduct>(
     productName: {
       type: String,
       required: [true, 'Product name is required'],
+      trim: true,
+    },
+    brand: {
+      type: String,
+      required: [true, 'Brand is required'],
+      default: 'Generic',
       trim: true,
     },
     asin: {

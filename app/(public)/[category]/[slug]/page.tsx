@@ -17,8 +17,8 @@ import AccentCard from '@/components/AccentCard';
 import {
   buildBlogPostingSchema,
   buildBreadcrumbSchema,
+  buildArticleSchemaGraph,
   buildProductReviewSchema,
-  buildRoundupItemListSchema,
   toReviewRatingValue,
   isAmazonHostedImage,
   toAbsoluteUrl,
@@ -33,6 +33,7 @@ interface Props {
 interface ProductRecord {
   _id?: string;
   productName?: string;
+  brand?: string;
   affiliateLink?: string;
   imageUrl?: string;
   awardLabel?: string;
@@ -84,6 +85,18 @@ function escapeHtml(value: string) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function getProductReviewBody(product: ProductRecord) {
+  const description = String(product.description || '').trim();
+  if (description) return description;
+
+  const pros = Array.isArray(product.pros) ? product.pros.filter(Boolean).slice(0, 5) : [];
+  const cons = Array.isArray(product.cons) ? product.cons.filter(Boolean).slice(0, 5) : [];
+  return [
+    pros.length > 0 ? `Pros: ${pros.join('; ')}` : '',
+    cons.length > 0 ? `Cons: ${cons.join('; ')}` : '',
+  ].filter(Boolean).join(' ');
 }
 
 export default async function BlogPostPage({ params }: Props) {
@@ -168,6 +181,8 @@ export default async function BlogPostPage({ params }: Props) {
 
     const renderAccentCardHtml = (params: {
       productName: string;
+      brand?: string;
+      description?: string;
       affiliateUrl: string;
       imageUrl?: string;
       awardLabel?: string;
@@ -183,6 +198,8 @@ export default async function BlogPostPage({ params }: Props) {
           .replace(/'/g, '&#39;');
 
       const safeName = safe(params.productName);
+      const safeBrand = safe(params.brand || '');
+      const safeDescription = safe(params.description || '');
       const safeUrl = safe(params.affiliateUrl);
       const safeImageUrl = params.imageUrl ? safe(params.imageUrl) : '';
       const safeAwardLabel = params.awardLabel ? safe(params.awardLabel) : '';
@@ -195,6 +212,8 @@ export default async function BlogPostPage({ params }: Props) {
           '<div class="affiliate-product-card" data-product-card="true">',
           safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" />` : '',
           `<h3>${safeName}</h3>`,
+          safeBrand ? `<p>Brand: ${safeBrand}</p>` : '',
+          safeDescription ? `<p>${safeDescription}</p>` : '',
           `<div class="affiliate-card-cta"><a href="${safeUrl}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></div>`,
           '</div>',
         ].join('');
@@ -216,10 +235,12 @@ export default async function BlogPostPage({ params }: Props) {
       ${safeImageUrl ? `<img src="${safeImageUrl}" alt="${safeName}" style="max-height:160px;width:auto;object-fit:contain;" />` : '<span style="font-size:14px;color:#9ca3af;">No image available</span>'}
     </div>
     <h3 style="margin:16px 0 0;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;line-height:1.2;color:#111;text-decoration:underline;">${safeName}</h3>
+    ${safeBrand ? `<p style="margin:8px 0 0;font-size:12px;color:#6b7280;">Brand: ${safeBrand}</p>` : ''}
     <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
       <span style="font-size:18px;line-height:1;">${starsHtml}</span>
     </div>
     <p style="margin:8px 0 0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${scoreColor};">${Number(scoreValue).toFixed(1)} / 10 Rating</p>
+    ${safeDescription ? `<p style="margin:8px 0 0;font-size:13px;line-height:1.5;color:#4b5563;">${safeDescription}</p>` : ''}
     <a href="${safeUrl}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>
     <a href="${jumpHref}" style="display:block;margin-top:8px;text-align:center;font-size:12px;color:#6b7280;text-decoration:none;">Jump to review ↓</a>
   </div>
@@ -236,8 +257,9 @@ export default async function BlogPostPage({ params }: Props) {
           .replace(/'/g, '&#39;');
 
       const productName = safe(String(product?.productName || 'Top Pick'));
-      const productDescription = safe(String(product?.description || post.excerpt || ''));
-      const authorName = safe(String((post as any).author?.name || 'Rider Complex Team'));
+      const productDescription = safe(getProductReviewBody(product) || post.excerpt || '');
+      const productBrand = safe(String(product?.brand || ''));
+      const authorName = safe('Marcus Webb');
       const rawScore = Number(product?.score ?? product?.rating);
       const score = Number.isFinite(rawScore) ? rawScore : undefined;
       const ratingValue = score !== undefined ? toReviewRatingValue(score) : null;
@@ -268,6 +290,7 @@ export default async function BlogPostPage({ params }: Props) {
   <div style="display:grid;grid-template-columns:1fr;">
     <div style="padding:24px;border-bottom:1px solid #e5e7eb;">
       <h2 style="margin:0;color:#111;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:32px;line-height:1.1;font-weight:900;">${productName}</h2>
+      ${productBrand ? `<p style="margin:8px 0 0;color:#6b7280;font-size:13px;">Brand: ${productBrand}</p>` : ''}
       <p style="margin:12px 0 0;color:#6b7280;font-size:14px;line-height:1.6;">${productDescription}</p>
       ${ratingHtml}
       ${specs.length > 0 ? `<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;">${specs.map((spec: any) => `<span style=\"display:inline-flex;align-items:center;padding:4px 10px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;\">${safe(`${spec.label}: ${spec.value}`)}</span>`).join('')}</div>` : ''}
@@ -330,6 +353,8 @@ export default async function BlogPostPage({ params }: Props) {
 
           return renderAccentCardHtml({
             productName: String(product?.productName || placeholderName || 'Product'),
+            brand: String(product?.brand || ''),
+            description: getProductReviewBody(product || {}),
             affiliateUrl: String(product?.affiliateLink || '#'),
             imageUrl: String(product?.imageUrl || ''),
             awardLabel: product?.awardLabel,
@@ -580,6 +605,8 @@ export default async function BlogPostPage({ params }: Props) {
             <div key={`hero-block-${segmentIndex}`} id={jumpTargetId} className="my-8 md:my-10 scroll-mt-24">
               <HeroProductCard
                 productName={String(product.productName || 'Top Pick')}
+                brand={product.brand}
+                description={getProductReviewBody(product) || undefined}
                 year={new Date(post.publishedAt || Date.now()).getFullYear()}
                 awardLabel={String(product.awardLabel || 'Best Overall')}
                 overallScore={score}
@@ -603,6 +630,8 @@ export default async function BlogPostPage({ params }: Props) {
               key={`accent-block-${segmentIndex}`}
               jumpTargetId={jumpTargetId}
               productName={String(product.productName || 'Product')}
+              brand={product.brand}
+              description={getProductReviewBody(product) || undefined}
               affiliateUrl={String(product.affiliateLink || '#')}
               imageUrl={String(product.imageUrl || '')}
               awardLabel={product.awardLabel}
@@ -670,32 +699,22 @@ export default async function BlogPostPage({ params }: Props) {
       tags: post.tags,
       authorName,
     }),
-    buildBreadcrumbSchema([
-      { name: 'Home', url: '/' },
-      { name: post.category, url: `/category/${post.categorySlug}` },
-      { name: post.title, url: articlePath },
-    ]),
   ];
 
-  // Editorial Product + Review schema.
-  // ratingValue comes from toReviewRatingValue(score) — the shared helper that also drives
-  // visible stars. The `stars` DB field is ignored (may be Amazon customer data).
-  // buildProductReviewSchema returns null when name, image, or ratingValue is missing/invalid,
-  // so partial markup never reaches Google.
-  // Amazon-hosted images are skipped by the builder's own guard (isAmazonHostedImage).
   const AUTHOR_URL = toAbsoluteUrl('/about');
-
-  const uniqueReviewedProducts = Array.from(
+  const uniqueReviewedBlocks = Array.from(
     new Map(
       Object.values(productMap)
-        .map((block) => block?.product)
-        .filter((product): product is ProductRecord => Boolean(product && product.productName))
-        .map((product) => [String(product._id || product.productName), product])
+        .filter((block) => Boolean(block?.product?.productName))
+        .map((block) => [
+          String(block.product?._id || block.product?.productName),
+          block,
+        ])
     ).values()
-  ).filter((product) => toReviewRatingValue(product.score) !== null);
+  );
 
-  // Flag Amazon-hosted product images so they can be replaced (logged server-side only).
-  uniqueReviewedProducts.forEach((product) => {
+  uniqueReviewedBlocks.forEach(({ product }) => {
+    if (!product) return;
     if (product.imageUrl && isAmazonHostedImage(product.imageUrl)) {
       console.warn(
         `[schema] Product "${product.productName}" has an Amazon-hosted image and will be excluded from JSON-LD. ` +
@@ -704,52 +723,42 @@ export default async function BlogPostPage({ params }: Props) {
     }
   });
 
-  const productReviewSchemas = uniqueReviewedProducts
-    .map((product) =>
-      buildProductReviewSchema({
+  const productReviewSchemas = uniqueReviewedBlocks
+    .map(({ blockType, product }) => {
+      if (!product) return null;
+      const score = blockType === 'hero'
+        ? toFiniteNumber(product.score, 9.0)
+        : Number.isFinite(Number(product.score)) ? Number(product.score) : 9.5;
+      const reviewBody = getProductReviewBody(product);
+      const brand = String(product.brand || '').trim();
+      const ratingValue = toReviewRatingValue(score);
+      if (ratingValue === null || !reviewBody || !brand) return null;
+
+      return buildProductReviewSchema({
         name: String(product.productName),
         image: String(product.imageUrl || ''),
-        description: product.description,
-        ratingValue: toReviewRatingValue(product.score) as number,
+        description: reviewBody,
+        brand,
+        reviewBody,
+        ratingValue,
         authorName,
         authorUrl: AUTHOR_URL,
         reviewDatePublished: publishedIso,
-        pros: product.pros,
-        cons: product.cons,
-      })
-    )
+      });
+    })
     .filter((s): s is Record<string, unknown> => s !== null);
 
-  // Schema structure decision (owner-approved):
-  //   - Exactly 1 product block (uniqueReviewedProducts.length === 1) AND its schema is
-  //     non-null → emit Product+Review directly (eligible for star snippet).
-  //   - 2+ product blocks → always emit plain ItemList regardless of how many schemas
-  //     are null. Google does not award review snippets for multi-product pages.
-  //   - ItemList items use on-page anchor (#jumpTargetId) when available; omit url
-  //     entirely when there is no anchor (never repeat the article URL, never use
-  //     affiliate links).
-  if (uniqueReviewedProducts.length === 1 && productReviewSchemas.length === 1) {
-    articleSchemas.push(productReviewSchemas[0]);
-  } else if (uniqueReviewedProducts.length > 1) {
-    // Build plain ItemList from all product blocks (including those that failed schema
-    // validation — they still deserve a list entry with name + optional anchor).
-    const listItems = Object.values(productMap)
-      .map((block) => block?.product)
-      .filter((p): p is ProductRecord => Boolean(p?.productName))
-      .map((p) => {
-        const anchor = String(p.jumpTargetId || '').trim();
-        return anchor
-          ? { name: String(p.productName), url: `${articlePath}#${anchor}` }
-          : { name: String(p.productName) };
-      });
-    if (listItems.length > 0) {
-      articleSchemas.push(buildRoundupItemListSchema(listItems as Array<{ name: string; url?: string }>));
-    }
-  }
+  articleSchemas.push(...productReviewSchemas);
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: post.category, url: `/category/${post.categorySlug}` },
+    { name: post.title, url: articlePath },
+  ]);
+  articleSchemas.push(breadcrumbSchema);
 
   return (
     <main className="bg-white" id="top">
-      <SeoJsonLd data={articleSchemas} />
+      <SeoJsonLd data={buildArticleSchemaGraph(articleSchemas)} />
       <div className="bg-amber-50 border-b border-amber-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <p className="text-xs sm:text-sm text-amber-900 text-center">

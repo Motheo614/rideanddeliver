@@ -45,6 +45,7 @@ const normalizeProductPayload = (payload: any) => {
   return {
     ...payload,
     productName,
+    brand: String(payload?.brand || '').trim(),
     asin: String(payload?.asin || '').trim().toUpperCase(),
     affiliateLink: String(payload?.affiliateLink || '').trim(),
     category: String(payload?.category || '').trim(),
@@ -152,10 +153,10 @@ export async function POST(request: NextRequest) {
     const body = normalizeProductPayload(await request.json());
 
     // Validate required fields
-    const { productName, asin, affiliateLink, category } = body;
-    if (!productName || !asin || !affiliateLink || !category) {
+    const { productName, brand, asin, affiliateLink, category } = body;
+    if (!productName || !brand || !asin || !affiliateLink || !category) {
       return NextResponse.json(
-        { error: 'Missing required fields: productName, asin, affiliateLink, category' },
+        { error: 'Missing required fields: productName, brand, asin, affiliateLink, category' },
         { status: 400 }
       );
     }

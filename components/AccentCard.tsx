@@ -6,6 +6,8 @@ import { toReviewRatingValue } from '@/lib/seo/schema';
 interface AccentCardProps {
   jumpTargetId?: string;
   productName?: string;
+  brand?: string;
+  description?: string;
   awardLabel?: string;
   score?: number;
   imageUrl?: string;
@@ -17,6 +19,8 @@ interface AccentCardProps {
 export default function AccentCard({
   jumpTargetId,
   productName,
+  brand,
+  description,
   awardLabel,
   score,
   imageUrl,
@@ -71,6 +75,9 @@ export default function AccentCard({
             {safeName}
           </h3>
         </div>
+
+        {brand && <p className="mb-2 text-xs text-gray-600">Brand: {brand}</p>}
+        {description && <p className="mb-3 text-xs leading-relaxed text-gray-700">{description}</p>}
 
         <div className="mb-3 flex items-end justify-between gap-2">
           <div className="leading-none" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>

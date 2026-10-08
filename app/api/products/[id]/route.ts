@@ -50,6 +50,14 @@ const normalizeUpdatePayload = (payload: any) => {
     normalized.productName = String(normalized.productName || '').trim();
   }
 
+  if ('brand' in normalized) {
+    normalized.brand = String(normalized.brand || '').trim();
+  }
+
+  if ('description' in normalized) {
+    normalized.description = String(normalized.description || '').trim();
+  }
+
   if ('affiliateLink' in normalized) {
     normalized.affiliateLink = String(normalized.affiliateLink || '').trim();
   }
@@ -166,6 +174,9 @@ export async function PUT(
 
     const { id } = await params;
     const body = normalizeUpdatePayload(await request.json());
+    if ('brand' in body && !body.brand) {
+      return NextResponse.json({ error: 'Brand is required' }, { status: 400 });
+    }
 
     // Find and update product
     let product;

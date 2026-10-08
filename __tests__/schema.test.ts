@@ -7,6 +7,7 @@ import { describe, it, expect } from 'vitest';
 import {
   toReviewRatingValue,
   buildProductReviewSchema,
+  buildArticleSchemaGraph,
   buildBlogPostingSchema,
   buildRoundupItemListSchema,
   isAmazonHostedImage,
@@ -99,8 +100,7 @@ const VALID_INPUT = {
   authorName: 'Marcus Webb',
   authorUrl: 'https://www.ridercomplex.com/about',
   reviewDatePublished: '2026-01-15T09:00:00Z',
-  pros: ['Extremely secure', 'Weather resistant'],
-  cons: ['Heavy'],
+  reviewBody: 'This lock is secure and weather resistant, though heavy to carry.',
 };
 
 describe('buildProductReviewSchema — complete product', () => {
@@ -122,6 +122,14 @@ describe('buildProductReviewSchema — complete product', () => {
     expect(result.brand).toEqual({ '@type': 'Brand', name: 'Kryptonite' });
   });
 
+  it('accepts the Generic brand value used by the backfill', () => {
+    const genericProduct = buildProductReviewSchema({
+      ...VALID_INPUT,
+      brand: 'Generic',
+    }) as Record<string, any>;
+    expect(genericProduct.brand).toEqual({ '@type': 'Brand', name: 'Generic' });
+  });
+
   it('has a review with correct ratingValue', () => {
     expect((result.review as any).reviewRating.ratingValue).toBe(4.6);
   });
@@ -140,12 +148,8 @@ describe('buildProductReviewSchema — complete product', () => {
     expect((result.review as any).datePublished).toBe('2026-01-15T09:00:00Z');
   });
 
-  it('has positiveNotes when pros+cons >= 2', () => {
-    expect((result.review as any).positiveNotes).toBeDefined();
-  });
-
-  it('has negativeNotes when pros+cons >= 2', () => {
-    expect((result.review as any).negativeNotes).toBeDefined();
+  it('has a review excerpt matching the visible review text', () => {
+    expect((result.review as any).reviewBody).toBe(VALID_INPUT.reviewBody);
   });
 
   // Forbidden keys
@@ -168,6 +172,11 @@ describe('buildProductReviewSchema — complete product', () => {
   it('does NOT contain reviewCount', () => {
     expect(result).not.toHaveProperty('reviewCount');
   });
+
+  it('does NOT contain offers, pricing, or availability', () => {
+    const serialized = JSON.stringify(result);
+    expect(serialized).not.toMatch(/"offers"|"price"|"priceCurrency"|"availability"/);
+  });
 });
 
 describe('buildProductReviewSchema — missing image → returns null', () => {
@@ -188,6 +197,18 @@ describe('buildProductReviewSchema — missing image → returns null', () => {
 describe('buildProductReviewSchema — missing name → returns null', () => {
   it('returns null when name is empty string', () => {
     expect(buildProductReviewSchema({ ...VALID_INPUT, name: '' })).toBeNull();
+  });
+});
+
+describe('buildProductReviewSchema — missing brand → returns null', () => {
+  it('does not emit a Product without a visible brand value', () => {
+    expect(buildProductReviewSchema({ ...VALID_INPUT, brand: '' })).toBeNull();
+  });
+});
+
+describe('buildProductReviewSchema — missing review body → returns null', () => {
+  it('requires visible review text', () => {
+    expect(buildProductReviewSchema({ ...VALID_INPUT, reviewBody: '' })).toBeNull();
   });
 });
 
@@ -218,15 +239,30 @@ describe('buildProductReviewSchema — special characters in name', () => {
 });
 
 describe('buildProductReviewSchema — no pros/cons → no notes', () => {
-  it('omits positiveNotes and negativeNotes when combined count < 2', () => {
-    const result = buildProductReviewSchema({
-      ...VALID_INPUT,
-      pros: ['One pro'],
-      cons: [],
-    }) as Record<string, any>;
+  it('does not add non-visible note markup', () => {
+    const result = buildProductReviewSchema(VALID_INPUT) as Record<string, any>;
     expect(result).not.toBeNull();
     expect((result.review as any).positiveNotes).toBeUndefined();
     expect((result.review as any).negativeNotes).toBeUndefined();
+  });
+});
+
+describe('buildArticleSchemaGraph', () => {
+  it('uses one schema context and puts blog post and product nodes in the graph', () => {
+    const product = buildProductReviewSchema(VALID_INPUT) as Record<string, any>;
+    const graph = buildArticleSchemaGraph([
+      buildBlogPostingSchema({
+        url: '/safety-gear/lock-review',
+        title: 'Lock review',
+        description: 'A lock review.',
+        datePublished: '2026-01-15T09:00:00Z',
+      }),
+      product,
+    ]) as Record<string, any>;
+
+    expect(graph['@context']).toBe('https://schema.org');
+    expect(graph['@graph'].map((node: any) => node['@type'])).toEqual(['BlogPosting', 'Product']);
+    expect(graph['@graph'].every((node: any) => !('@context' in node))).toBe(true);
   });
 });
 

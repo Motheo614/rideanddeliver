@@ -18,6 +18,7 @@ export interface Post {
     product?: {
       _id?: string;
       productName?: string;
+      brand?: string;
       affiliateLink?: string;
       imageUrl?: string;
       awardLabel?: string;

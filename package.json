@@ -13,6 +13,7 @@
     "seed-analytics": "tsx scripts/seed-analytics.ts",
     "seed-notifications": "tsx scripts/seed-notifications.ts",
     "backfill-read-time": "tsx scripts/backfill-read-time.ts",
+    "backfill-brands": "tsx scripts/backfill-brands.ts",
     "normalize-slugs": "tsx scripts/normalize-slugs.ts",
     "ngrok": "ngrok http 3002",
     "test": "vitest run",

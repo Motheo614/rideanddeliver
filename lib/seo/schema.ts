@@ -64,8 +64,10 @@ type ProductReviewInput = {
   /** Own-domain image URL — required. Skip the whole block if absent or Amazon-hosted. */
   image: string;
   description?: string;
-  /** Brand name if known (e.g. "Kryptonite"). Omit if not stored. */
-  brand?: string;
+  /** Visible review excerpt rendered with the product card. */
+  reviewBody: string;
+  /** Visible brand name (e.g. "Kryptonite"). */
+  brand: string;
   /**
    * Editorial rating on the 1-5 scale, produced by toReviewRatingValue(score).
    * Required. Skip the whole block if absent or out of range.
@@ -80,10 +82,6 @@ type ProductReviewInput = {
    * Use the post's publishedAt. Required by Google for review snippets.
    */
   reviewDatePublished: string;
-  /** Visible pros. Only included when combined pros+cons >= 2. */
-  pros?: string[];
-  /** Visible cons. Only included when combined pros+cons >= 2. */
-  cons?: string[];
 };
 
 // ---------------------------------------------------------------------------
@@ -117,18 +115,6 @@ export function toReviewRatingValue(score: unknown): number | null {
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
-
-function buildNotesList(items?: string[]): JsonLd | undefined {
-  if (!items || items.length === 0) return undefined;
-  return {
-    '@type': 'ItemList',
-    itemListElement: items.map((text, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: text,
-    })),
-  };
-}
 
 /** Returns true when the URL is hosted on an Amazon domain. */
 export function isAmazonHostedImage(url: string): boolean {
@@ -297,27 +283,27 @@ export function buildProductSchema(input: ProductSchemaInput): JsonLd {
  *
  * Returns null (emit nothing) when any required field is missing:
  *   - name
+ *   - brand
  *   - image (must be present and NOT Amazon-hosted)
  *   - ratingValue (must be in [1, 5])
+ *   - reviewBody matching visible page text
  *
  * This prevents partial/invalid markup from reaching Google.
  *
  * Rules:
  *   - ratingValue MUST come from toReviewRatingValue(score) — never from `stars`.
  *   - No aggregateRating, ratingCount, reviewCount, offers, or price — ever.
- *   - positiveNotes/negativeNotes only when combined pros+cons >= 2 AND visible on page.
+ *   - reviewBody must match text rendered visibly with the product card.
  *   - review.datePublished = the post's publishedAt ISO string.
  *   - author.url = absolute URL to the author page.
  */
 export function buildProductReviewSchema(input: ProductReviewInput): JsonLd | null {
   // Guard: skip entirely if required fields are missing or invalid.
   if (!input.name?.trim()) return null;
+  if (!input.brand?.trim()) return null;
   if (!input.image?.trim() || isAmazonHostedImage(input.image)) return null;
   if (!Number.isFinite(input.ratingValue) || input.ratingValue < 1 || input.ratingValue > 5) return null;
-
-  const combinedNotesCount = (input.pros?.length || 0) + (input.cons?.length || 0);
-  const positiveNotes = combinedNotesCount >= 2 ? buildNotesList(input.pros) : undefined;
-  const negativeNotes = combinedNotesCount >= 2 ? buildNotesList(input.cons) : undefined;
+  if (!input.reviewBody?.trim()) return null;
 
   return {
     '@context': 'https://schema.org',
@@ -325,12 +311,11 @@ export function buildProductReviewSchema(input: ProductReviewInput): JsonLd | nu
     name: input.name.trim(),
     image: [toAbsoluteUrl(input.image)],
     description: input.description?.trim() || undefined,
-    brand: input.brand?.trim()
-      ? { '@type': 'Brand', name: input.brand.trim() }
-      : undefined,
+    brand: { '@type': 'Brand', name: input.brand.trim() },
     review: {
       '@type': 'Review',
       datePublished: input.reviewDatePublished,
+      reviewBody: input.reviewBody.trim(),
       author: {
         '@type': 'Person',
         name: input.authorName,
@@ -342,9 +327,14 @@ export function buildProductReviewSchema(input: ProductReviewInput): JsonLd | nu
         bestRating: 5,
         worstRating: 1,
       },
-      positiveNotes,
-      negativeNotes,
     },
+  };
+}
+
+export function buildArticleSchemaGraph(nodes: JsonLd[]): JsonLd {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': nodes.map(({ ['@context']: _context, ...node }) => node),
   };
 }
 

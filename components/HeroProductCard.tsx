@@ -9,6 +9,8 @@ interface HeroProductMetric {
 
 interface HeroProductCardProps {
   productName: string;
+  brand?: string;
+  description?: string;
   year: number | string;
   awardLabel?: string;
   overallScore: number;
@@ -38,6 +40,8 @@ const isExternalUrl = (url: string) => /^https?:\/\//i.test(url);
 
 export default function HeroProductCard({
   productName,
+  brand,
+  description,
   year,
   awardLabel,
   overallScore,
@@ -77,6 +81,8 @@ export default function HeroProductCard({
           >
             {productName}
           </h2>
+          {brand && <p className="mb-2 text-sm text-gray-600">Brand: {brand}</p>}
+          {description && <p className="mb-3 text-sm leading-relaxed text-gray-600">{description}</p>}
 
           <div className="mb-[14px] flex items-center gap-[10px]">
             <span

@@ -7,6 +7,7 @@ import { Plus, Edit2, Trash2, X, Star } from 'lucide-react';
 interface Product {
   _id: string;
   productName: string;
+  brand?: string;
   asin: string;
   affiliateLink: string;
   category: string;
@@ -71,6 +72,7 @@ export default function ProductsPage() {
   // Form state
   const [formData, setFormData] = useState({
     productName: '',
+    brand: '',
     asin: '',
     affiliateLink: '',
     category: '',
@@ -134,6 +136,7 @@ export default function ProductsPage() {
     setEditingProduct(null);
     setFormData({
       productName: '',
+      brand: '',
       asin: '',
       affiliateLink: '',
       category: '',
@@ -158,6 +161,7 @@ export default function ProductsPage() {
     setEditingProduct(product);
     setFormData({
       productName: product.productName,
+      brand: product.brand || '',
       asin: product.asin,
       affiliateLink: product.affiliateLink,
       category: normalizeUiCategory(product.category),
@@ -183,6 +187,10 @@ export default function ProductsPage() {
 
     if (!formData.productName.trim()) {
       errors.productName = 'Product name is required';
+    }
+
+    if (!formData.brand.trim()) {
+      errors.brand = 'Brand is required';
     }
 
     if (!formData.asin.trim()) {
@@ -246,6 +254,7 @@ export default function ProductsPage() {
 
     const productData = {
       ...formData,
+      brand: formData.brand.trim(),
       asin: formData.asin.toUpperCase(),
       imageUrl: normalizeImageUrl(formData.imageUrl),
       awardLabel: formData.awardLabel.trim(),
@@ -573,6 +582,21 @@ export default function ProductsPage() {
                   />
                   {formErrors.productName && (
                     <p className="text-red-500 text-xs mt-1">{formErrors.productName}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Brand</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.brand}
+                    onChange={(e) => updateFormField('brand', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                    placeholder="Product brand"
+                  />
+                  {formErrors.brand && (
+                    <p className="mt-1 text-xs text-red-500">{formErrors.brand}</p>
                   )}
                 </div>
 
@@ -921,4 +945,3 @@ export default function ProductsPage() {
     </>
   );
 }
-
