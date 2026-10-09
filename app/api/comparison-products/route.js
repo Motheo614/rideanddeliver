@@ -42,6 +42,8 @@ export async function GET(request) {
       name: p.productName,
       affiliateUrl: p.affiliateLink || null,
       reviewSummary: p.editorNote || p.description || null,
+      score: Number.isFinite(p.score) ? p.score : null,
+      imageUrl: p.imageUrl || null,
     })),
   });
 }

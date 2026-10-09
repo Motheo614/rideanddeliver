@@ -1,13 +1,18 @@
 import sgMail from '@sendgrid/mail';
 import sendgridClient from '@sendgrid/client';
+import { getSiteUrl } from '@/lib/site-url';
 
-function getSiteUrl() {
-  const rawUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  return rawUrl.replace(/\/$/, '');
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
-function buildEmailShell(content: string) {
+function buildEmailShell(content: string, unsubscribeUrl: string) {
   const siteUrl = getSiteUrl();
+  const safeUnsubscribeUrl = escapeHtml(unsubscribeUrl);
 
   return `
     <div style="margin:0; background:#f4f4f5; padding:24px 12px; font-family:Arial,sans-serif; color:#1a1a1a;">
@@ -20,6 +25,7 @@ function buildEmailShell(content: string) {
         </div>
         <div style="padding:18px 24px; border-top:1px solid #e5e7eb; background:#fafafa; text-align:center; font-size:13px; color:#6b7280;">
           <p style="margin:0;">Rider Complex Newsletter</p>
+          <p style="margin:8px 0 0;"><a href="${safeUnsubscribeUrl}" style="color:#6b7280;">Unsubscribe</a></p>
           <p style="margin:8px 0 0;">&copy; 2026 Rider Complex. All rights reserved.</p>
         </div>
       </div>
@@ -79,19 +85,29 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   });
 }
 
-export async function sendNewsletterWelcomeEmail(email: string) {
+export async function sendNewsletterWelcomeEmail(email: string, unsubscribeUrl: string) {
   const { from } = configureSendGridClient();
+  const guideUrl = `${getSiteUrl()}/Assets/Starter_Checklist.pdf`;
+  const safeGuideUrl = escapeHtml(guideUrl);
 
   await sgMail.send({
     to: email,
     from,
-    subject: 'Subscription confirmed – Rider Complex',
-    text: `Your Rider Complex subscription is confirmed. You will receive practical rider guides, gear picks, and updates in your inbox.`,
+    subject: 'Your Rider Complex field guide is here',
+    text: `You're confirmed\n\nHere is your free guide, What Nobody Tells You Before Your First Delivery. It's a 7 page PDF.\n\nDownload the guide: ${guideUrl}\n\nIf the button doesn't work, copy this link into your browser: ${guideUrl}\n\nUnsubscribe: ${unsubscribeUrl}`,
     html: buildEmailShell(`
-      <h1 style="margin:0; font-size:38px; line-height:1.2; font-family:Georgia,serif; color:#111827;">Subscription confirmed</h1>
-      <p style="margin:18px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">Thanks for subscribing to Rider Complex.</p>
-      <p style="margin:10px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">You will receive practical rider guides, gear picks, and updates in your inbox.</p>
-    `),
+      <h1 style="margin:0; font-size:38px; line-height:1.2; font-family:Georgia,serif; color:#111827;">You're confirmed</h1>
+      <p style="margin:18px 0 0; font-size:20px; line-height:1.6; color:#1f2937;">Here is your free guide, What Nobody Tells You Before Your First Delivery. It's a 7 page PDF.</p>
+      <p style="margin:28px 0 0;">
+        <a href="${safeGuideUrl}" style="display:inline-block; background:#CC0000; color:#FFFFFF; text-decoration:none; padding:14px 22px; border-radius:8px; font-size:16px; line-height:1; font-weight:700;">
+          Download the guide
+        </a>
+      </p>
+      <p style="margin:18px 0 0; font-size:14px; line-height:1.6; color:#1f2937;">
+        If the button doesn't work, copy this link into your browser:<br />
+        <a href="${safeGuideUrl}" style="color:#CC0000; word-break:break-all;">${safeGuideUrl}</a>
+      </p>
+    `, unsubscribeUrl),
   });
 }
 

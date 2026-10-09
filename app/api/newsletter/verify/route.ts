@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import connectDB from '@/lib/db/mongoose';
 import Subscriber from '@/lib/db/models/Subscriber';
+import { createUnsubscribeUrl } from '@/lib/newsletter/unsubscribe-token';
 import {
   isSendGridConfigured,
   sendNewsletterLeadNotification,
@@ -103,7 +104,10 @@ export async function GET(request: NextRequest) {
     if (isSendGridConfigured()) {
       try {
         await sendNewsletterLeadNotification(subscriber.email, subscriber.source || 'website', subscriber.subscribedAt);
-        await sendNewsletterWelcomeEmail(subscriber.email);
+        await sendNewsletterWelcomeEmail(
+          subscriber.email,
+          createUnsubscribeUrl(subscriber._id.toString(), subscriber.subscribedAt)
+        );
       } catch (emailError) {
         console.error('Newsletter post-verify email error:', emailError);
       }

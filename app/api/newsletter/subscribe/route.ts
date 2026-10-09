@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import connectDB from '@/lib/db/mongoose';
 import Subscriber from '@/lib/db/models/Subscriber';
+import { getSiteUrl } from '@/lib/site-url';
+import { createUnsubscribeUrl } from '@/lib/newsletter/unsubscribe-token';
 import {
   isSendGridConfigured,
   sendNewsletterLeadNotification,
@@ -11,11 +13,6 @@ import {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-
-function getSiteUrl() {
-  const rawUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  return rawUrl.replace(/\/$/, '');
-}
 
 function createVerificationToken() {
   return crypto.randomBytes(32).toString('hex');
@@ -70,7 +67,10 @@ export async function POST(request: NextRequest) {
 
       if (existing.status === 'active' && isLegacyOrVerified) {
         try {
-          await sendNewsletterWelcomeEmail(normalizedEmail);
+          await sendNewsletterWelcomeEmail(
+            normalizedEmail,
+            createUnsubscribeUrl(existing._id.toString(), existing.subscribedAt)
+          );
         } catch (emailError) {
           console.error('Newsletter welcome email error:', emailError);
         }
@@ -91,7 +91,10 @@ export async function POST(request: NextRequest) {
 
         try {
           await sendNewsletterLeadNotification(normalizedEmail, normalizedSource, existing.subscribedAt);
-          await sendNewsletterWelcomeEmail(normalizedEmail);
+          await sendNewsletterWelcomeEmail(
+            normalizedEmail,
+            createUnsubscribeUrl(existing._id.toString(), existing.subscribedAt)
+          );
         } catch (emailError) {
           console.error('Newsletter welcome email error:', emailError);
         }

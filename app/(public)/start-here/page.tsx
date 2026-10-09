@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getPosts } from '@/lib/posts';
 import { buildPageMetadata } from '@/lib/seo/metadata';
+import { getStartHereComparisonProducts } from '@/lib/start-here-comparison';
 import NewsletterSignupForm from '@/components/NewsletterSignupForm';
 
 export const metadata = buildPageMetadata({
@@ -11,15 +12,6 @@ export const metadata = buildPageMetadata({
   path: '/start-here',
   keywords: ['new delivery rider guide', 'start delivery riding', 'gig rider setup'],
 });
-
-const checklistBullets = [
-  'The 7 pieces of gear every new rider needs (ranked by priority)',
-  "Budget tiers: what to buy first if you're under $150",
-  'Platform sign-up checklist for DoorDash & Uber Eats',
-  'Safety non-negotiables before your first drop',
-];
-
-const comparisonCategories = ['Helmets', 'Gloves', 'Cameras', 'Locks', 'Rain Gear', 'Power Banks', 'Shoe Covers'];
 
 function PostCard({ post }: { post: any }) {
   const imageUrl = post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : post.featuredImage.url);
@@ -69,7 +61,10 @@ function MidListCapture() {
 }
 
 export default async function StartHerePage() {
-  const allPosts = await getPosts({ status: 'published' });
+  const [allPosts, comparisonProducts] = await Promise.all([
+    getPosts({ status: 'published' }),
+    getStartHereComparisonProducts(),
+  ]);
   const importantPosts = allPosts.slice(0, 8);
   const firstPosts = importantPosts.slice(0, 4);
   const restPosts = importantPosts.slice(4, 8);
@@ -112,7 +107,7 @@ export default async function StartHerePage() {
                 href="#free-starter-checklist"
                 className="inline-flex min-h-14 items-center gap-3 rounded-full bg-[#CC0000] px-7 text-[17px] font-extrabold text-white transition-colors hover:bg-[#a80000] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white"
               >
-                Get the free starter checklist
+                Get the free field guide
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -140,62 +135,168 @@ export default async function StartHerePage() {
               </Link>
             ))}
           </div>
+        </div>
+      </div>
 
-          {/* Zone 2: lead magnet */}
-          <div id="free-starter-checklist" className="bg-gray-50 border border-gray-100 border-l-4 border-l-[#CC0000] rounded-2xl p-8 md:p-10 mb-16">
-            <span className="inline-flex items-center gap-1 bg-red-50 border border-[#CC0000] text-[#CC0000] text-xs font-bold uppercase tracking-widest rounded px-3 py-1 mb-4">
-              📋 Free guide
-            </span>
-            <h2 className="text-2xl md:text-3xl font-black text-[#1a1a1a] mb-3">The New Rider&apos;s Starter Checklist</h2>
-            <p className="text-gray-600 mb-6 max-w-2xl leading-relaxed">
-              Grab our free starter checklist — the exact gear, budget tiers, and platform sign-up steps every new delivery rider needs before their first shift.
-            </p>
-            <ul className="space-y-2 mb-6 max-w-xl">
-              {checklistBullets.map((bullet) => (
-                <li key={bullet} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="text-green-600 font-bold flex-shrink-0">✓</span>
-                  {bullet}
-                </li>
-              ))}
-            </ul>
-            <div className="max-w-md">
-              <NewsletterSignupForm
-                source="start-here-lead-magnet"
-                buttonText="Get the checklist"
-                rowClassName="flex flex-col sm:flex-row gap-3"
-              />
-            </div>
-            <p className="text-xs text-gray-400 mt-3">
-              We&apos;ll email it to you shortly after you confirm your subscription. No spam, unsubscribe any time.
-            </p>
-            {/* TODO: once the starter checklist PDF is hosted, link it directly here (and/or attach it in sendNewsletterWelcomeEmail) instead of the "shortly" messaging above. */}
-          </div>
-
-          {/* Zone 3: gear comparison teaser */}
-          <div className="bg-gradient-to-br from-red-50 to-white border border-red-100 rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 mb-16">
-            <div>
-              <p className="text-[#CC0000] text-xs font-bold uppercase tracking-widest mb-2"> AI-powered tool</p>
-              <h2 className="text-xl md:text-2xl font-black text-[#1a1a1a] mb-2">Can&apos;t decide between two products?</h2>
-              <p className="text-gray-600 text-sm mb-4 max-w-md">
-                Pick any two pieces of gear and get a side-by-side AI breakdown — pros, cons, head-to-head scores, and a straight verdict. Uses our real reviews.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {comparisonCategories.map((cat) => (
-                  <span key={cat} className="text-xs bg-white border border-gray-200 rounded-full px-3 py-1 text-gray-600">
-                    {cat}
-                  </span>
-                ))}
+          {/* Zone 2: field guide signup */}
+          <section id="free-starter-checklist" className="bg-white">
+            <div className="mx-auto flex w-full max-w-[1240px] flex-col items-start gap-14 px-5 py-12 lg:flex-row lg:items-center lg:px-12 lg:py-24">
+              <div className="flex min-w-0 flex-[1_1_480px] flex-col items-start gap-6">
+                <span className="text-[13px] font-black uppercase tracking-widest text-[#1a1a1a]">
+                  Free PDF · 7 pages
+                </span>
+                <h2 className="max-w-[640px] text-[clamp(38px,4.6vw,60px)] font-black leading-[1.04] tracking-[-0.02em] text-[#1a1a1a]">
+                  What nobody tells you before your first delivery
+                </h2>
+                <p className="max-w-[540px] text-[19px] leading-[1.6] text-gray-700">
+                  The pay traps, safety risks and gear regrets that catch delivery riders out. Built from rider reports on DoorDash, Uber Eats, Grubhub and Instacart forums, plus city labor data.
+                </p>
+                <div className="w-full max-w-[560px]">
+                  <NewsletterSignupForm
+                    source="start-here-lead-magnet"
+                    inputId="start-here-field-guide-email"
+                    inputPlaceholder="you@example.com"
+                    buttonText="Send me the guide"
+                    label="Email address"
+                    variant="field-guide"
+                  />
+                  <p className="mt-3 max-w-[500px] text-sm leading-[1.5] text-gray-600">
+                    We&apos;ll email a link to confirm first. Confirm it and we&apos;ll send you the guide. Unsubscribe any time.
+                  </p>
+                </div>
+              </div>
+              <div className="relative aspect-[404/494] w-[70%] max-w-[404px] self-center lg:w-full lg:flex-[0_1_404px]">
+                <Image
+                  src="/Assets/guide-contents.jpg"
+                  alt="Contents page of the guide, listing five sections"
+                  width={1190}
+                  height={1540}
+                  sizes="(max-width: 639px) 54vw, 360px"
+                  className="absolute border"
+                  style={{
+                    top: '5.7%',
+                    left: '10.9%',
+                    width: '89.1%',
+                    height: 'auto',
+                    borderColor: 'rgba(26,26,26,0.18)',
+                    borderRadius: '4px',
+                    boxShadow: '0 12px 28px rgba(26,26,26,0.16)',
+                  }}
+                />
+                <Image
+                  src="/Assets/guide-cover.jpg"
+                  alt="Cover of the Rider Complex Field Guide: What Nobody Tells You Before Your First Delivery"
+                  width={1190}
+                  height={1540}
+                  sizes="(max-width: 639px) 54vw, 360px"
+                  className="absolute"
+                  style={{
+                    top: 0,
+                    left: 0,
+                    width: '89.1%',
+                    height: 'auto',
+                    borderRadius: '4px',
+                    boxShadow: '0 24px 48px rgba(26,26,26,0.32)',
+                  }}
+                />
               </div>
             </div>
-            <Link
-              href="/tools/gear-comparison"
-              className="bg-[#CC0000] text-white rounded-xl px-6 py-4 font-bold text-center hover:bg-red-700 transition-colors whitespace-nowrap"
-            >
-              Compare gear now 
-              <span className="block text-xs font-normal opacity-80 mt-1">Free · No sign-in needed</span>
-            </Link>
-          </div>
+          </section>
 
+          {/* Zone 3: reviewed gear comparison */}
+          <section className="border-y border-t-2 border-[#1a1a1a] bg-white">
+            <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-14 px-5 py-12 lg:flex-row lg:px-12 lg:py-20">
+              <div className={`flex min-w-0 flex-col items-start gap-6 ${comparisonProducts ? 'lg:flex-1' : 'flex-1'}`}>
+                <h2 className="max-w-[600px] text-[clamp(34px,4vw,48px)] font-black leading-[1.06] tracking-[-0.02em] text-[#1a1a1a]">
+                  Compare any two products
+                </h2>
+                <p className="max-w-[460px] text-[18px] leading-[1.6] text-gray-700">
+                  Choose two products and see their pros and cons side by side, with a verdict for the job you have in mind.
+                </p>
+                <Link
+                  href="/tools/gear-comparison"
+                  className="inline-flex min-h-14 items-center gap-3 rounded bg-[#CC0000] px-7 text-[17px] font-black text-white transition-colors hover:bg-[#a80000] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a1a1a]"
+                >
+                  Compare two products
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+                <p className="text-[15px] leading-[1.5] text-gray-600">
+                  Choose from the products we list in each category, from helmets and locks to e-bikes, or type in any product.
+                </p>
+              </div>
+
+              {comparisonProducts && (
+                <div className="min-w-0 lg:flex-[1.35_1_0%]">
+                  <div className="overflow-x-auto">
+                    <table id="start-here-comparison-table" className="w-full min-w-[600px] table-fixed border-t-[3px] border-b border-[#1a1a1a] text-left text-[#1a1a1a]">
+                      <caption className="caption-bottom pt-4 text-left text-sm leading-[1.5] text-gray-600">
+                        Score, pros and cons are from our own notes on each product. The tool adds an AI-generated verdict and category notes.
+                      </caption>
+                      <colgroup>
+                        <col className="w-[22%]" />
+                        <col className="w-[39%]" />
+                        <col className="w-[39%]" />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th scope="col" className="px-3 py-4 align-bottom text-[12px] font-black uppercase tracking-wide text-gray-700" />
+                          {comparisonProducts.map((product) => (
+                            <th key={product.productName} scope="col" className="border-l border-[#1a1a1a] px-4 py-4 align-bottom">
+                              <span className="block text-[11px] font-bold uppercase tracking-wide text-gray-600">
+                                {product.category}
+                              </span>
+                              <span className="mt-1 block break-words [overflow-wrap:anywhere] text-[22px] font-black leading-tight">
+                                {product.productName}
+                              </span>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-t border-gray-300">
+                          <th scope="row" className="px-3 py-4 text-[12px] font-black uppercase tracking-wide">Score</th>
+                          {comparisonProducts.map((product) => (
+                            <td key={product.productName} className="border-l border-[#1a1a1a] px-4 py-4 text-[17px] font-bold">
+                              {product.score.toFixed(1)} / 10
+                            </td>
+                          ))}
+                        </tr>
+                        {(['Pros', 'Cons'] as const).map((kind) => (
+                          <tr key={kind} className="border-t border-gray-300">
+                            <th scope="row" className="px-3 py-4 align-top text-[12px] font-black uppercase tracking-wide">{kind}</th>
+                            {comparisonProducts.map((product) => (
+                              <td key={product.productName} className="border-l border-[#1a1a1a] px-4 py-4 align-top text-[14px] leading-[1.5] text-[#1a1a1a]">
+                                <ul className="list-disc space-y-1 pl-4">
+                                  {(kind === 'Pros' ? product.pros : product.cons).slice(0, 3).map((item, index) => (
+                                    <li key={`${product.productName}-${kind}-${index}`} className="break-words">{item}</li>
+                                  ))}
+                                </ul>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                        {comparisonProducts.every((product) => product.editorNote?.trim()) && (
+                          <tr className="border-t border-gray-300">
+                            <th scope="row" className="px-3 py-4 align-top text-[12px] font-black uppercase tracking-wide">Editor&apos;s note</th>
+                            {comparisonProducts.map((product) => (
+                              <td key={product.productName} className="border-l border-[#1a1a1a] px-4 py-4 align-top break-words text-sm leading-[1.5] text-gray-700">
+                                {product.editorNote}
+                              </td>
+                            ))}
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+      <div className="container mx-auto px-4 py-16 md:py-20">
+        <div className="max-w-5xl mx-auto">
           {/* Zone 4: essential reading */}
           <h2 className="text-2xl font-black text-[#1a1a1a] mb-8 text-center">Essential Reading</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

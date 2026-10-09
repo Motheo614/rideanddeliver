@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 
 interface NewsletterSignupFormProps {
   source?: string;
   inputId?: string;
   inputPlaceholder?: string;
   buttonText?: string;
+  label?: string;
+  variant?: 'default' | 'field-guide';
   formClassName?: string;
   rowClassName?: string;
   inputClassName?: string;
@@ -16,18 +18,24 @@ interface NewsletterSignupFormProps {
 
 export default function NewsletterSignupForm({
   source = 'website',
-  inputId = 'newsletter-email',
+  inputId: providedInputId,
   inputPlaceholder = 'your@email.com',
   buttonText = 'Subscribe',
+  label = 'Email address',
+  variant = 'default',
   formClassName = '',
   rowClassName = 'flex flex-col gap-4',
   inputClassName = 'w-full px-4 py-3 border border-gray-200 rounded focus:outline-none focus:border-[#CC0000] transition-colors',
   buttonClassName = 'w-full bg-[#CC0000] text-white py-3 font-bold uppercase tracking-widest hover:bg-red-700 transition-colors',
   messageClassName = 'mt-3 text-sm text-center',
 }: NewsletterSignupFormProps) {
+  const generatedInputId = useId();
+  const inputId = providedInputId || `newsletter-email-${generatedInputId}`;
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const messageId = `${inputId}-message`;
+  const fieldGuide = variant === 'field-guide';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,29 +75,57 @@ export default function NewsletterSignupForm({
 
   return (
     <form onSubmit={handleSubmit} className={formClassName}>
-      <div className={rowClassName}>
+      <label
+        htmlFor={inputId}
+        className={fieldGuide
+          ? 'mb-2 block text-[13px] font-black uppercase tracking-wide text-[#1a1a1a]'
+          : 'sr-only'}
+      >
+        {label}
+      </label>
+      <div className={fieldGuide ? 'flex flex-wrap gap-3' : rowClassName}>
         <input
           id={inputId}
           type="email"
+          name="email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onInvalid={(e) => {
+            setMessage({
+              type: 'error',
+              text: e.currentTarget.validity.valueMissing ? 'Email is required.' : 'Please enter a valid email address.',
+            });
+          }}
           placeholder={inputPlaceholder}
-          className={inputClassName}
+          aria-describedby={messageId}
+          aria-invalid={message?.type === 'error'}
+          className={fieldGuide
+            ? 'min-h-14 min-w-0 flex-[1_1_260px] rounded border-2 border-[#1a1a1a] px-4 text-[17px] text-[#1a1a1a] placeholder:text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a1a1a]'
+            : `${inputClassName} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a1a1a]`}
           required
         />
         <button
           type="submit"
           disabled={loading}
-          className={buttonClassName + ' disabled:opacity-60 disabled:cursor-not-allowed'}
+          className={fieldGuide
+            ? 'min-h-14 flex-[0_1_auto] rounded bg-[#CC0000] px-7 text-[17px] font-black text-white transition-colors hover:bg-[#a80000] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a1a1a] disabled:cursor-not-allowed'
+            : `${buttonClassName} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a1a1a] disabled:opacity-60 disabled:cursor-not-allowed`}
         >
           {loading ? 'Submitting...' : buttonText}
         </button>
       </div>
-      {message && (
-        <p className={messageClassName + (message.type === 'success' ? ' text-green-700' : ' text-red-700')}>
-          {message.text}
-        </p>
-      )}
+      <p
+        id={messageId}
+        aria-live="polite"
+        role="status"
+        className={message
+          ? `${fieldGuide ? 'mt-3 text-sm' : messageClassName} ${message.type === 'success' ? 'text-green-700' : 'text-red-700'}`
+          : 'sr-only'}
+      >
+        {message && <span className="sr-only">{message.type === 'success' ? 'Success: ' : 'Error: '}</span>}
+        {message?.text || ''}
+      </p>
     </form>
   );
 }
