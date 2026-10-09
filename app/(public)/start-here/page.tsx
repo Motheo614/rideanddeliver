@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getPosts } from '@/lib/posts';
 import { buildPageMetadata } from '@/lib/seo/metadata';
 import { getStartHereComparisonProducts } from '@/lib/start-here-comparison';
 import NewsletterSignupForm from '@/components/NewsletterSignupForm';
@@ -13,69 +12,8 @@ export const metadata = buildPageMetadata({
   keywords: ['new delivery rider guide', 'start delivery riding', 'gig rider setup'],
 });
 
-function PostCard({ post }: { post: any }) {
-  const imageUrl = post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : post.featuredImage.url);
-
-  return (
-    <Link
-      href={`/${post.dbCategorySlug}/${post.slug}`}
-      className="group flex gap-4 bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-[#CC0000] transition-colors"
-    >
-      <div className="w-20 h-20 flex-shrink-0 bg-gray-100 relative">
-        {imageUrl ? (
-          <Image src={imageUrl} alt={post.title} fill className="object-cover group-hover:scale-110 transition-transform" referrerPolicy="no-referrer" />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <span className="text-gray-400 text-xs">No Image</span>
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col justify-center py-3 pr-4">
-        <span className="text-[10px] text-[#CC0000] font-bold uppercase tracking-widest mb-1">{post.category}</span>
-        <h3 className="text-sm font-bold text-[#1a1a1a] group-hover:text-[#CC0000] transition-colors leading-snug">
-          {post.title}
-        </h3>
-      </div>
-    </Link>
-  );
-}
-
-function MidListCapture() {
-  return (
-    <div className="bg-gray-50 border border-gray-100 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 my-4">
-      <div>
-        <p className="font-bold text-[#1a1a1a]">Get weekly gear picks in your inbox</p>
-        <p className="text-sm text-gray-500">Budget-first recommendations for working delivery riders. No fluff.</p>
-      </div>
-      <div className="w-full md:w-auto md:min-w-[320px]">
-        <NewsletterSignupForm
-          source="start-here-midlist"
-          buttonText="Join free"
-          rowClassName="flex flex-col sm:flex-row gap-2"
-          inputClassName="flex-1 px-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:border-[#CC0000] transition-colors"
-          buttonClassName="bg-[#CC0000] text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-700 transition-colors whitespace-nowrap"
-        />
-      </div>
-    </div>
-  );
-}
-
 export default async function StartHerePage() {
-  const [allPosts, comparisonProducts] = await Promise.all([
-    getPosts({ status: 'published' }),
-    getStartHereComparisonProducts(),
-  ]);
-  const importantPosts = allPosts.slice(0, 8);
-  const firstPosts = importantPosts.slice(0, 4);
-  const restPosts = importantPosts.slice(4, 8);
-
-  const hubs = [
-    { label: 'Safety Gear', href: '/safety-gear', desc: 'Helmets, clothing, and safety tips.' },
-    { label: 'Tech & Lighting', href: '/tech-lighting', desc: 'Dash cams, lights, and gadgets.' },
-    { label: 'Bike Security', href: '/bike-security', desc: 'Locks, trackers, and theft prevention.' },
-    { label: 'Delivery Gear', href: '/delivery-gear', desc: 'Bags, racks, and equipment.' },
-    { label: 'Platform Reviews', href: '/platform-reviews', desc: 'Earnings, apps, and platform guides.' },
-  ];
+  const comparisonProducts = await getStartHereComparisonProducts();
 
   return (
     <main className="min-h-screen bg-white">
@@ -123,21 +61,6 @@ export default async function StartHerePage() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-16 md:py-20">
-        <div className="max-w-5xl mx-auto">
-          {/* Zone 1: category grid */}
-          <h2 className="text-2xl font-black text-[#1a1a1a] mb-8 text-center">Browse by category</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            {hubs.map((hub) => (
-              <Link key={hub.href} href={hub.href} className="group p-8 bg-gray-50 rounded-2xl border border-gray-100 hover:border-[#CC0000] transition-all">
-                <h3 className="text-xl font-bold text-[#1a1a1a] mb-2 group-hover:text-[#CC0000] transition-colors">{hub.label}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{hub.desc}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-
           {/* Zone 2: field guide signup */}
           <section id="free-starter-checklist" className="bg-white">
             <div className="mx-auto flex w-full max-w-[1240px] flex-col items-start gap-14 px-5 py-12 lg:flex-row lg:items-center lg:px-12 lg:py-24">
@@ -155,7 +78,7 @@ export default async function StartHerePage() {
                   <NewsletterSignupForm
                     source="start-here-lead-magnet"
                     inputId="start-here-field-guide-email"
-                    inputPlaceholder="you@example.com"
+                    inputPlaceholder="Email address"
                     buttonText="Send me the guide"
                     label="Email address"
                     variant="field-guide"
@@ -295,25 +218,6 @@ export default async function StartHerePage() {
             </div>
           </section>
 
-      <div className="container mx-auto px-4 py-16 md:py-20">
-        <div className="max-w-5xl mx-auto">
-          {/* Zone 4: essential reading */}
-          <h2 className="text-2xl font-black text-[#1a1a1a] mb-8 text-center">Essential Reading</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {firstPosts.map((post) => (
-              <PostCard key={post.slug} post={post} />
-            ))}
-          </div>
-
-          <MidListCapture />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {restPosts.map((post) => (
-              <PostCard key={post.slug} post={post} />
-            ))}
-          </div>
-        </div>
-      </div>
     </main>
   );
 }
