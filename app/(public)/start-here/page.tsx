@@ -107,7 +107,7 @@ export default async function StartHerePage() {
                   }}
                 />
                 <Image
-                  src="/Assets/guide-cover.jpg"
+                  src="/Assets/guide-cover.png"
                   alt="Cover of the Rider Complex Field Guide: What Nobody Tells You Before Your First Delivery"
                   width={1190}
                   height={1540}
