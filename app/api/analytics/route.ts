@@ -16,6 +16,14 @@ type DailyGSCMetrics = {
   impressions: number;
 };
 
+type ProviderError = {
+  message: string;
+  status?: number;
+  code?: string | number;
+  googleStatus?: string;
+  reasons?: string[];
+};
+
 function parseMetric(value?: string | null): number {
   const parsed = Number(value || 0);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -117,8 +125,42 @@ async function getGSCMetrics(
   };
 }
 
-function errorMessage(reason: unknown): string {
-  return reason instanceof Error ? reason.message : String(reason);
+function providerError(reason: unknown): ProviderError {
+  if (typeof reason !== 'object' || reason === null) {
+    return { message: String(reason) };
+  }
+
+  const error = reason as {
+    message?: unknown;
+    code?: unknown;
+    response?: {
+      status?: unknown;
+      data?: {
+        error?: {
+          message?: unknown;
+          status?: unknown;
+          errors?: Array<{ reason?: unknown }>;
+        };
+      };
+    };
+  };
+  const googleError = error.response?.data?.error;
+  const status = error.response?.status;
+  const code = error.code;
+  const reasons = googleError?.errors
+    ?.map((detail) => detail.reason)
+    .filter((value): value is string => typeof value === 'string');
+
+  return {
+    message:
+      (typeof googleError?.message === 'string' && googleError.message)
+      || (typeof error.message === 'string' && error.message)
+      || 'The Google API request failed.',
+    ...(typeof status === 'number' ? { status } : {}),
+    ...(typeof code === 'string' || typeof code === 'number' ? { code } : {}),
+    ...(typeof googleError?.status === 'string' ? { googleStatus: googleError.status } : {}),
+    ...(reasons?.length ? { reasons } : {}),
+  };
 }
 
 export async function GET(_request: NextRequest) {
@@ -175,8 +217,8 @@ export async function GET(_request: NextRequest) {
     log('Failed to fetch Search Console analytics:', gscResult.reason);
   }
 
-  const ga4Error = ga4Result.status === 'rejected' ? errorMessage(ga4Result.reason) : undefined;
-  const gscError = gscResult.status === 'rejected' ? errorMessage(gscResult.reason) : undefined;
+  const ga4Error = ga4Result.status === 'rejected' ? providerError(ga4Result.reason) : undefined;
+  const gscError = gscResult.status === 'rejected' ? providerError(gscResult.reason) : undefined;
   const configuredFailure =
     (ga4Error && missingGA4Variables.length > 0)
     || (gscError && missingGSCVariables.length > 0);

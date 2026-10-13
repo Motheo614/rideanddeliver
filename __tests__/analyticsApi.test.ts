@@ -142,10 +142,44 @@ describe('Google analytics API endpoint', () => {
 
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toMatchObject({
-      ga4: { error: 'Missing environment variables: GA4_PROPERTY_ID' },
-      gsc: { error: 'Missing environment variables: GSC_SITE_URL' },
+      ga4: { error: { message: 'Missing environment variables: GA4_PROPERTY_ID' } },
+      gsc: { error: { message: 'Missing environment variables: GSC_SITE_URL' } },
     });
     expect(mocks.runReport).not.toHaveBeenCalled();
     expect(mocks.searchQuery).not.toHaveBeenCalled();
+  });
+
+  it('preserves successful provider metrics and returns safe details for a failed provider', async () => {
+    mocks.runReport.mockRejectedValue({
+      message: 'Google Analytics API request failed',
+      code: 403,
+      response: {
+        status: 403,
+        data: {
+          error: {
+            message: 'The caller does not have permission',
+            status: 'PERMISSION_DENIED',
+            errors: [{ reason: 'forbidden' }],
+          },
+        },
+      },
+    });
+    mocks.searchQuery.mockResolvedValue({
+      data: { rows: [{ keys: ['2026-10-10'], clicks: 3, impressions: 27 }] },
+    });
+
+    const response = await GET(new NextRequest('https://example.com/api/analytics'));
+    const body = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(body.ga4.error).toMatchObject({
+      message: 'The caller does not have permission',
+      status: 403,
+      code: 403,
+      googleStatus: 'PERMISSION_DENIED',
+      reasons: ['forbidden'],
+    });
+    expect(body.gsc).toMatchObject({ clicks: 3, impressions: 27 });
+    expect(body).not.toHaveProperty('credentials');
   });
 });

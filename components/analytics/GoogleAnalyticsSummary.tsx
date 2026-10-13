@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import {
   CartesianGrid,
   Legend,
@@ -32,39 +33,68 @@ function DailyChart({
   dataKeys: Array<{ key: string; label: string }>;
   colors: string[];
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [hasDimensions, setHasDimensions] = useState(false);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateDimensions = () => {
+      const { width, height } = container.getBoundingClientRect();
+      setHasDimensions(width > 0 && height > 0);
+    };
+
+    updateDimensions();
+    const observer = new ResizeObserver(updateDimensions);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
   if (!data.length) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg bg-zinc-50 text-sm text-zinc-500">
+      <div className="flex h-64 min-w-0 items-center justify-center rounded-lg bg-zinc-50 text-sm text-zinc-500">
         No daily data available for this period.
       </div>
     );
   }
 
   return (
-    <div className="h-64 w-full" aria-label="Daily analytics chart">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" />
-          <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} />
-          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} />
-          <Tooltip
-            contentStyle={{ borderRadius: 10, borderColor: '#e4e4e7', boxShadow: '0 8px 24px rgb(0 0 0 / 0.08)' }}
-          />
-          <Legend />
-          {dataKeys.map(({ key, label }, index) => (
-            <Line
-              key={key}
-              type="monotone"
-              dataKey={key}
-              name={label}
-              stroke={colors[index]}
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4 }}
+    <div
+      ref={containerRef}
+      className="h-64 w-full min-w-0"
+      style={{ height: 256, minWidth: 0 }}
+      aria-label="Daily analytics chart"
+    >
+      {hasDimensions ? (
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={256}>
+          <LineChart data={data} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" />
+            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} />
+            <Tooltip
+              contentStyle={{ borderRadius: 10, borderColor: '#e4e4e7', boxShadow: '0 8px 24px rgb(0 0 0 / 0.08)' }}
             />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
+            <Legend />
+            {dataKeys.map(({ key, label }, index) => (
+              <Line
+                key={key}
+                type="monotone"
+                dataKey={key}
+                name={label}
+                stroke={colors[index]}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4 }}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      ) : (
+        <div className="flex h-full items-center justify-center text-sm text-zinc-500" role="status">
+          Preparing chart…
+        </div>
+      )}
     </div>
   );
 }
@@ -76,10 +106,14 @@ export default function GoogleAnalyticsSummary({
   onRetry,
 }: GoogleAnalyticsSummaryProps) {
   const providerErrors = [
-    data?.ga4.error ? `GA4: ${data.ga4.error}` : null,
-    data?.gsc.error ? `Search Console: ${data.gsc.error}` : null,
+    data?.ga4.error
+      ? `GA4: ${data.ga4.error.message}${data.ga4.error.status ? ` (HTTP ${data.ga4.error.status})` : ''}`
+      : null,
+    data?.gsc.error
+      ? `Search Console: ${data.gsc.error.message}${data.gsc.error.status ? ` (HTTP ${data.gsc.error.status})` : ''}`
+      : null,
   ].filter((message): message is string => Boolean(message));
-  const alertMessage = error || providerErrors.join(' · ');
+  const alertMessage = error || providerErrors.join(' · ') || data?.error;
 
   const cards = [
     { label: 'Active Users', source: 'Google Analytics 4', value: data?.ga4.error ? null : data?.ga4.activeUsers, icon: Users },
@@ -135,7 +169,7 @@ export default function GoogleAnalyticsSummary({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map(({ label, source, value, icon: Icon }) => (
-          <article key={label} className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <article key={label} className="min-w-0 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-zinc-500">{label}</p>
@@ -157,7 +191,7 @@ export default function GoogleAnalyticsSummary({
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm" aria-labelledby="traffic-engagement-heading">
+        <section className="min-w-0 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm" aria-labelledby="traffic-engagement-heading">
           <div className="mb-5">
             <h3 id="traffic-engagement-heading" className="font-semibold text-zinc-950">Traffic engagement</h3>
             <p className="mt-1 text-sm text-zinc-500">Daily active users and pageviews from GA4</p>
@@ -176,7 +210,7 @@ export default function GoogleAnalyticsSummary({
           )}
         </section>
 
-        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm" aria-labelledby="search-visibility-heading">
+        <section className="min-w-0 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm" aria-labelledby="search-visibility-heading">
           <div className="mb-5">
             <h3 id="search-visibility-heading" className="font-semibold text-zinc-950">Search visibility</h3>
             <p className="mt-1 text-sm text-zinc-500">Daily clicks and impressions from Search Console</p>

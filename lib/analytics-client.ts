@@ -20,6 +20,14 @@ export interface OutboundClickAnalytics {
   byAsin: Array<{ asin: string; productName: string; clicks: number }>;
 }
 
+export interface GoogleAnalyticsProviderError {
+  message: string;
+  status?: number;
+  code?: string | number;
+  googleStatus?: string;
+  reasons?: string[];
+}
+
 export interface GoogleAnalyticsSummary {
   dateRange: { from: string; to: string };
   ga4: {
@@ -27,14 +35,14 @@ export interface GoogleAnalyticsSummary {
     activeUsers: number;
     pageviews: number;
     daily: Array<{ date: string; activeUsers: number; pageviews: number }>;
-    error?: string;
+    error?: GoogleAnalyticsProviderError;
   };
   gsc: {
     siteUrl?: string;
     clicks: number;
     impressions: number;
     daily: Array<{ date: string; clicks: number; impressions: number }>;
-    error?: string;
+    error?: GoogleAnalyticsProviderError;
   };
   error?: string;
 }
