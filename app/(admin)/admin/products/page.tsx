@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminTopBar from '@/components/admin/AdminTopBar';
-import { Plus, Edit2, Trash2, X, Star } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Star, Download } from 'lucide-react';
 
 interface Product {
   _id: string;
@@ -59,6 +59,7 @@ export default function ProductsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
   const [previewImageBroken, setPreviewImageBroken] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const buildJumpTargetId = (value: string) => {
     return String(value || '')
@@ -323,6 +324,33 @@ export default function ProductsPage() {
     }
   };
 
+  const handleExportProducts = async () => {
+    setIsExporting(true);
+
+    try {
+      const response = await fetch('/api/admin/products/export');
+      if (!response.ok) {
+        throw new Error('Failed to export products');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `products-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+      showToast('Product CSV downloaded', 'success');
+    } catch (error) {
+      console.error('Error exporting products:', error);
+      showToast('Failed to export products', 'error');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const updateFormField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
@@ -410,13 +438,24 @@ export default function ProductsPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1a1a1a]">Affiliate Products</h1>
-          <button
-            onClick={openAddModal}
-            className="w-full sm:w-auto bg-[#CC0000] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#AA0000] transition-colors flex items-center justify-center gap-2"
-          >
-            <Plus size={20} />
-            Add Product
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={handleExportProducts}
+              disabled={isExporting}
+              className="w-full sm:w-auto border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Download size={20} />
+              {isExporting ? 'Exporting...' : 'Export Product Data CSV'}
+            </button>
+            <button
+              onClick={openAddModal}
+              className="w-full sm:w-auto bg-[#CC0000] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#AA0000] transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus size={20} />
+              Add Product
+            </button>
+          </div>
         </div>
 
         {/* Filter Bar */}
