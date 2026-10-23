@@ -126,6 +126,31 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: '/category/delivery-gear',
+        destination: '/delivery-gear',
+        permanent: true,
+      },
+      {
+        source: '/category/safety-gear',
+        destination: '/safety-gear',
+        permanent: true,
+      },
+      {
+        source: '/category/tech-lighting',
+        destination: '/tech-lighting',
+        permanent: true,
+      },
+      {
+        source: '/category/bike-security',
+        destination: '/bike-security',
+        permanent: true,
+      },
+      {
+        source: '/category/platform-reviews',
+        destination: '/platform-reviews',
+        permanent: true,
+      },
+      {
         source: '/category/bike-delivery-tech-and-visibility',
         destination: '/tech-lighting',
         permanent: true,

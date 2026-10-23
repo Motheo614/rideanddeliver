@@ -629,7 +629,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: 'Home', url: '/' },
-    { name: post.category, url: `/category/${post.categorySlug}` },
+    { name: post.category, url: `/${post.categorySlug}` },
     { name: post.title, url: articlePath },
   ]);
   articleSchemas.push(breadcrumbSchema);
@@ -659,7 +659,7 @@ export default async function BlogPostPage({ params }: Props) {
             <ChevronRight size={14} className="text-gray-400" />
             <li>
               <Link
-                href={`/category/${post.categorySlug}`}
+                href={`/${post.categorySlug}`}
                 className="text-gray-500 hover:text-[#CC0000] transition-colors"
               >
                 {post.category}
