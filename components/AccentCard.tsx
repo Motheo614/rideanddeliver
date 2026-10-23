@@ -1,7 +1,6 @@
 import React from 'react';
 import Image from '@/components/CloudinaryImage';
 import { ImageIcon } from 'lucide-react';
-import { toReviewRatingValue } from '@/lib/seo/schema';
 import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
 
 interface AccentCardProps {
@@ -10,7 +9,6 @@ interface AccentCardProps {
   brand?: string;
   description?: string;
   awardLabel?: string;
-  score?: number;
   imageUrl?: string;
   affiliateUrl?: string;
   specs?: string[];
@@ -25,7 +23,6 @@ export default function AccentCard({
   brand,
   description,
   awardLabel,
-  score,
   imageUrl,
   affiliateUrl,
   asin,
@@ -33,8 +30,6 @@ export default function AccentCard({
 }: AccentCardProps) {
   const safeName = String(productName || 'Product').trim();
   const safeAwardLabel = String(awardLabel || 'Top Pick').trim().toUpperCase();
-  const safeScore = Number.isFinite(Number(score)) ? Number(score) : 9.5;
-  const safeStars = toReviewRatingValue(safeScore) ?? 1;
   const rawHref = String(affiliateUrl || '#').trim() || '#';
   const href = buildAffiliateRedirectUrl(safeName, asin, sourcePage, rawHref);
   const isExternal = /^https?:\/\//i.test(href);
@@ -83,19 +78,6 @@ export default function AccentCard({
         </div>
 
         {brand && <p className="mb-2 text-xs text-gray-600">Brand: {brand}</p>}
-        <div className="mb-3 flex items-end justify-between gap-2">
-          <div className="leading-none" style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
-            <span className="text-[42px] font-extrabold text-[#d40000]">{safeScore.toFixed(1)}</span>
-            <span className="ml-1 text-[15px] font-semibold text-[#9a9a9a]">/10</span>
-          </div>
-          <div className="mb-[5px] text-[17px] leading-none" aria-label={`${safeStars} star rating`}>
-            {Array.from({ length: 5 }, (_unused, index) => (
-              <span key={`accent-star-${index}`} className={index < safeStars ? 'text-[#d40000]' : 'text-[#b9b9b9]'}>
-                ★
-              </span>
-            ))}
-          </div>
-        </div>
 
         <a
           href={href}

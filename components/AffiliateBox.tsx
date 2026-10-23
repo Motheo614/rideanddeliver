@@ -21,8 +21,6 @@ export default function AffiliateBox({
   affiliateUrl,
   image,
   awardLabel,
-  score,
-  stars,
   name,
   url,
   asin,
@@ -32,14 +30,7 @@ export default function AffiliateBox({
   const rawUrl = (affiliateUrl || url || '').trim();
   const resolvedUrl = buildAffiliateRedirectUrl(resolvedName, asin, sourcePage, rawUrl);
   const isExternal = /^https?:\/\//i.test(resolvedUrl);
-  const hasMetaLayout = Boolean(
-    awardLabel
-    && typeof score === 'number'
-    && typeof stars === 'number'
-  );
-
-  const normalizedStars = Math.max(1, Math.min(5, Math.round(stars ?? 0)));
-  const scoreLabelClass = (score ?? 0) >= 8.5 ? 'text-[#CC0000]' : 'text-gray-500';
+  const hasMetaLayout = Boolean(awardLabel || image);
 
   if (!hasMetaLayout) {
     return (
@@ -93,20 +84,6 @@ export default function AffiliateBox({
         >
           {resolvedName}
         </h3>
-
-        <div className="mt-3 flex items-center gap-2">
-          <span className="text-lg leading-none" aria-label={`${normalizedStars} star rating`}>
-            {Array.from({ length: 5 }, (_unused, index) => (
-              <span key={`star-${index}`} className={index < normalizedStars ? 'text-[#CC0000]' : 'text-[#ddd]'}>
-                ★
-              </span>
-            ))}
-          </span>
-        </div>
-
-        <p className={`mt-2 text-[11px] uppercase tracking-wide font-bold ${scoreLabelClass}`}>
-          {score?.toFixed(1)} / 10 Rating
-        </p>
 
         <a
           href={resolvedUrl}

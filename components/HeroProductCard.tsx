@@ -1,13 +1,7 @@
 import React from 'react';
 import { Check, ImageIcon, Minus } from 'lucide-react';
-import { toReviewRatingValue } from '@/lib/seo/schema';
 import { getCloudinaryImageUrl } from '@/lib/utils';
 import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
-
-interface HeroProductMetric {
-  label: string;
-  score: number;
-}
 
 interface HeroProductCardProps {
   productName: string;
@@ -15,8 +9,6 @@ interface HeroProductCardProps {
   description?: string;
   year: number | string;
   awardLabel?: string;
-  overallScore: number;
-  metrics: HeroProductMetric[];
   specs: string[];
   pros: string[];
   cons: string[];
@@ -28,18 +20,6 @@ interface HeroProductCardProps {
   // priceText removed — no live-price pipeline approved. Do not re-add.
 }
 
-const toBarPercent = (score: number) => {
-  if (!Number.isFinite(score)) return 0;
-  const normalized = score <= 10 ? score * 10 : score;
-  return Math.max(0, Math.min(100, normalized));
-};
-
-const formatOverallScore = (score: number) => {
-  if (!Number.isFinite(score)) return '0.0';
-  const rounded = Math.round(score * 10) / 10;
-  return Number.isInteger(rounded) ? `${rounded}.0` : String(rounded);
-};
-
 const isExternalUrl = (url: string) => /^https?:\/\//i.test(url);
 
 export default function HeroProductCard({
@@ -48,8 +28,6 @@ export default function HeroProductCard({
   description,
   year,
   awardLabel,
-  overallScore,
-  metrics,
   specs,
   pros,
   cons,
@@ -59,11 +37,9 @@ export default function HeroProductCard({
   jumpTargetId,
   imageUrl,
 }: HeroProductCardProps) {
-  const displayedMetrics = metrics.slice(0, 6);
   const displayedSpecs = specs.slice(0, 10);
   const displayedPros = pros.slice(0, 5);
   const displayedCons = cons.slice(0, 5);
-  const normalizedStars = toReviewRatingValue(overallScore) ?? 1;
   const rawAffiliateUrl = String(affiliateUrl || '#').trim() || '#';
   const safeAffiliateUrl = buildAffiliateRedirectUrl(productName, asin, sourcePage, rawAffiliateUrl);
   const safeAwardLabel = String(awardLabel || 'Best Overall').trim().toUpperCase();
@@ -89,48 +65,6 @@ export default function HeroProductCard({
             {productName}
           </h2>
           {brand && <p className="mb-2 text-sm text-gray-600">Brand: {brand}</p>}
-
-          <div className="mb-[14px] flex items-center gap-[10px]">
-            <span
-              className="text-[30px] leading-none text-[#CC0000]"
-              style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif', fontWeight: 900 }}
-            >
-              {formatOverallScore(overallScore)}
-            </span>
-            <div className="flex flex-col">
-              <span className="text-[13px] leading-none text-[#CC0000]" aria-label={`${normalizedStars} star rating`}>
-                {Array.from({ length: 5 }, (_unused, index) => (
-                  <span key={`hero-star-${index}`} className={index < normalizedStars ? 'text-[#CC0000]' : 'text-[#d2d2d2]'}>
-                    ★
-                  </span>
-                ))}
-              </span>
-              <span className="mt-1 text-[11px] text-[#888888]">Out of 10</span>
-            </div>
-          </div>
-
-          <div className="mb-[14px] space-y-2 text-[12px]">
-            {displayedMetrics.map((metric) => {
-              const scoreValue = Math.max(0, Math.min(10, Number(metric.score) || 0));
-
-              return (
-                <div key={metric.label}>
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-[11px] uppercase tracking-[0.04em] text-[#888888]">
-                      {metric.label}
-                    </span>
-                    <span className="font-bold text-[#111111]">{scoreValue.toFixed(1)}</span>
-                  </div>
-                  <div className="h-1 overflow-hidden rounded-[2px] bg-[#eeeeee]">
-                    <div
-                      className="h-1 rounded-[2px] bg-[#CC0000]"
-                      style={{ width: `${toBarPercent(scoreValue)}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
 
           {displayedSpecs.length > 0 && (
             <div className="mb-4 flex flex-wrap gap-[6px]">
@@ -179,9 +113,10 @@ export default function HeroProductCard({
         </div>
       </div>
 
-      <div className="border-t border-[#e2e2e2] px-5 py-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+      {(displayedPros.length > 0 || displayedCons.length > 0) && (
+        <div className="border-t border-[#e2e2e2] px-5 py-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {displayedPros.length > 0 && <div>
             <div className="mb-2 text-[10px] font-extrabold uppercase text-[#CC0000]">Pros</div>
             <ul className="flex flex-col gap-[5px]">
               {displayedPros.map((item) => (
@@ -191,9 +126,9 @@ export default function HeroProductCard({
                 </li>
               ))}
             </ul>
-          </div>
+          </div>}
 
-          <div>
+          {displayedCons.length > 0 && <div>
             <div className="mb-2 text-[10px] font-extrabold uppercase text-[#888888]">Cons</div>
             <ul className="flex flex-col gap-[5px]">
               {displayedCons.map((item) => (
@@ -203,9 +138,10 @@ export default function HeroProductCard({
                 </li>
               ))}
             </ul>
-          </div>
+          </div>}
         </div>
-      </div>
+        </div>
+      )}
     </section>
   );
 }
