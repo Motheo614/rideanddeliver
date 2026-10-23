@@ -5,6 +5,8 @@ export { default as Analytics } from './Analytics';
 export { default as User } from './User';
 export { default as Notification } from './Notification';
 export { default as Subscriber } from './Subscriber';
+export { default as OutboundClickLog } from './OutboundClickLog';
+export { default as AnalyticsCache } from './AnalyticsCache';
 
 // Export types
 export type { IPost } from './Post';
@@ -13,3 +15,5 @@ export type { IAnalytics } from './Analytics';
 export type { IUser } from './User';
 export type { INotification } from './Notification';
 export type { ISubscriber } from './Subscriber';
+export type { IOutboundClickLog } from './OutboundClickLog';
+export type { IAnalyticsCache } from './AnalyticsCache';

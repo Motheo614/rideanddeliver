@@ -5,7 +5,9 @@ import connectDB from '@/lib/db/mongoose';
 import Analytics from '@/lib/db/models/Analytics';
 import Post from '@/lib/db/models/Post';
 import Product from '@/lib/db/models/Product';
+import OutboundClickLog from '@/lib/db/models/OutboundClickLog';
 import { User } from '@/lib/db/models';
+import { getGA4Analytics, type GA4Analytics } from '@/lib/analytics/ga4Service';
 
 /**
  * GET /api/analytics/overview
@@ -69,6 +71,26 @@ export async function GET(request: NextRequest) {
       date: { $gte: startDate, $lte: endDate },
     }).lean();
 
+    const from = startDate.toISOString().slice(0, 10);
+    const to = endDate.toISOString().slice(0, 10);
+    const [ga4Result, outboundClicks, clickPages] = await Promise.all([
+      getGA4Analytics(from, to).catch((error): GA4Analytics => {
+        console.error('Error fetching GA4 analytics:', error);
+        return {
+          configured: Boolean(process.env.GA4_PROPERTY_ID && process.env.GOOGLE_APPLICATION_CREDENTIALS),
+          error: 'GA4 analytics are temporarily unavailable.',
+          totals: { sessions: 0, users: 0, pageviews: 0 },
+          dailySources: [],
+          landingPages: [],
+        };
+      }),
+      OutboundClickLog.countDocuments({ createdAt: { $gte: startDate, $lte: endDate } }),
+      OutboundClickLog.aggregate([
+        { $match: { createdAt: { $gte: startDate, $lte: endDate }, sourcePage: { $ne: '' } } },
+        { $group: { _id: '$sourcePage', clicks: { $sum: 1 } } },
+      ]),
+    ]);
+
     // Aggregate totals
     const totalPageViews = analyticsData.reduce(
       (sum, day) => sum + (day.pageViews || 0),
@@ -119,6 +141,17 @@ export async function GET(request: NextRequest) {
       isActive: true,
     });
 
+    const clicksByPage = new Map<string, number>(
+      clickPages.map((row: { _id: string; clicks: number }) => [row._id, row.clicks])
+    );
+    const topLandingPages = ga4Result.landingPages.map((page) => ({
+      ...page,
+      clicks: clicksByPage.get(page.page) || clicksByPage.get(page.page.split('?')[0]) || 0,
+      clickThroughRate: page.pageviews > 0
+        ? ((clicksByPage.get(page.page) || clicksByPage.get(page.page.split('?')[0]) || 0) / page.pageviews) * 100
+        : 0,
+    }));
+
     return NextResponse.json({
       overview: {
         totalPageViews,
@@ -130,6 +163,9 @@ export async function GET(request: NextRequest) {
       },
       topPosts,
       topProducts,
+      ga4: ga4Result,
+      outboundClicks,
+      topLandingPages,
       dateRange: {
         from: startDate.toISOString(),
         to: endDate.toISOString(),

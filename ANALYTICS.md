@@ -302,6 +302,59 @@ Potential improvements for the analytics system:
 - `/lib/db/models/Analytics.ts` - Database model
 - `/scripts/seed-analytics.ts` - Data seeding script
 
+## Phase 1: GA4, Search Console, and Affiliate Clicks
+
+The dashboard uses the existing Next.js App Router, Mongoose connection, and admin session. Set these optional server-only variables in `.env.local` to enable Google's external metrics:
+
+```dotenv
+GA4_PROPERTY_ID=123456789
+GSC_SITE_URL=sc-domain:ridercomplex.com
+GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\google-service-account.json
+```
+
+Grant the service account read access to the GA4 property and Search Console property. Without these values, the dashboard continues to show local analytics and displays an "Analytics syncing" state for unavailable Google data. Never commit the service-account JSON file.
+
+### First-party affiliate redirects
+
+Public product links that include a known ASIN use `/go/:slug?asin=...&page=...`. The route looks up the active Product by ASIN and redirects to its saved `affiliateLink` (including that link's configured Amazon tracking tag). An ASIN must exist in Products before its redirect can be used. Unknown or inactive products do not redirect. The route records the post path, link slug, ASIN, campaign parameters, user agent, and a keyed IP hash; it never stores the raw IP address.
+
+### Phase 1 endpoints
+
+All analytics endpoints require an authenticated admin:
+
+- `GET /api/analytics/overview` includes GA4 sessions, users, pageviews, landing pages, and local outbound-click totals alongside the existing dashboard metrics.
+- `GET /api/analytics/gsc` returns query/page clicks, impressions, CTR, and position.
+- `GET /api/analytics/clicks` groups first-party clicks by referring post and ASIN.
+- `GET /go/:slug` resolves and logs a click before issuing a 302 redirect. The click-log write runs after the redirect response.
+
+GA4 and Search Console responses are cached in MongoDB for one hour. Cache entries expire automatically. Configure the credentials, property IDs, and site URL, then wait for Google's first report data to populate. Redirect statistics are local and do not require Amazon PA-API.
+
+### Verifying Google OAuth access
+
+The admin dashboard's `GET /api/analytics` endpoint and the verification script use OAuth2 refresh-token credentials. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GA4_PROPERTY_ID`, and `GSC_SITE_URL`. Grant the refresh token read access to both the GA4 property and Search Console site. The endpoint is admin-only and returns period totals and daily series for the last seven complete days; the dashboard displays the four metrics and a daily chart. A provider failure is reported independently so the other provider's metrics remain available.
+
+To verify API access from Node, run:
+
+```sh
+node --env-file=.env scripts/test-analytics.js
+```
+
+The script reports GA4 active users and pageviews and Search Console clicks and impressions for the last seven complete days. It runs both checks independently and exits with a non-zero status if either request fails.
+
+### Related Phase 1 files
+
+- `/app/go/[slug]/route.ts`
+- `/app/api/analytics/overview/route.ts`
+- `/app/api/analytics/gsc/route.ts`
+- `/app/api/analytics/clicks/route.ts`
+- `/app/api/analytics/route.ts`
+- `/scripts/test-analytics.js`
+- `/components/analytics/GoogleAnalyticsSummary.tsx`
+- `/lib/analytics/`
+- `/lib/db/models/OutboundClickLog.ts`
+- `/lib/db/models/AnalyticsCache.ts`
+- `/components/analytics/`
+
 ## Support
 
 For issues or questions:
