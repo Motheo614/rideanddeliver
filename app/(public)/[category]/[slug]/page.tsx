@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : (post.featuredImage as any)?.url;
 
   return buildArticleMetadata({
-    title: `${post.title} | Rider Complex`,
+    title: post.title,
     description: post.excerpt,
     path: `/${category}/${post.slug}`,
     image: featuredImageUrl,
