@@ -25,6 +25,7 @@ import {
 } from '@/lib/seo/schema';
 import { buildArticleMetadata } from '@/lib/seo/metadata';
 import { getEditorialDates } from '@/lib/dates';
+import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
@@ -34,6 +35,7 @@ interface ProductRecord {
   _id?: string;
   productName?: string;
   brand?: string;
+  asin?: string;
   affiliateLink?: string;
   imageUrl?: string;
   awardLabel?: string;
@@ -187,6 +189,7 @@ export default async function BlogPostPage({ params }: Props) {
     const renderAccentCardHtml = (params: {
       productName: string;
       brand?: string;
+      asin?: string;
       description?: string;
       affiliateUrl: string;
       imageUrl?: string;
@@ -204,7 +207,9 @@ export default async function BlogPostPage({ params }: Props) {
 
       const safeName = safe(params.productName);
       const safeBrand = safe(params.brand || '');
-      const safeUrl = safe(params.affiliateUrl);
+      const safeUrl = safe(
+        buildAffiliateRedirectUrl(params.productName, params.asin, articlePath, params.affiliateUrl)
+      );
       const safeImageUrl = params.imageUrl ? safe(getCloudinaryImageUrl(params.imageUrl)) : '';
       const safeAwardLabel = params.awardLabel ? safe(params.awardLabel) : '';
       const scoreValue = Number.isFinite(Number(params.score)) ? Number(params.score) : undefined;
@@ -265,7 +270,10 @@ export default async function BlogPostPage({ params }: Props) {
       const score = Number.isFinite(rawScore) ? rawScore : undefined;
       const ratingValue = score !== undefined ? toReviewRatingValue(score) : null;
       const imageUrl = safe(getCloudinaryImageUrl(String(product?.imageUrl || '')));
-      const amazonUrl = safe(String(product?.affiliateLink || '#'));
+      const rawAmazonUrl = String(product?.affiliateLink || '#');
+      const amazonUrl = safe(
+        buildAffiliateRedirectUrl(String(product?.productName || 'Product'), product?.asin, articlePath, rawAmazonUrl)
+      );
       const reviewUrl = safe(String(product?.jumpTargetId ? `#${product.jumpTargetId}` : articlePath));
       const editorNote = safe(String(product?.editorNote || 'Top pick selected by the Rider Complex editorial team.'));
       const awardLabel = safe(String(product?.awardLabel || 'Best Overall'));
@@ -356,6 +364,7 @@ export default async function BlogPostPage({ params }: Props) {
             brand: String(product?.brand || ''),
             description: getProductReviewBody(product || {}),
             affiliateUrl: String(product?.affiliateLink || '#'),
+            asin: String(product?.asin || ''),
             imageUrl: String(product?.imageUrl || ''),
             awardLabel: product?.awardLabel,
             score: toFiniteNumber(product?.score ?? product?.rating, NaN),
@@ -368,7 +377,8 @@ export default async function BlogPostPage({ params }: Props) {
     const buildAffiliateCard = (
       name: string,
       imageTag: string,
-      href: string
+      href: string,
+      asin?: string
     ) => {
       const trimmedName = String(name || '').trim();
       const trimmedHref = String(href || '').trim();
@@ -406,6 +416,9 @@ export default async function BlogPostPage({ params }: Props) {
       const score = toNumberOrUndefined(matchedProduct?.score ?? matchedProduct?.ratingScore ?? matchedProduct?.rating);
       const awardLabel = String(matchedProduct?.awardLabel || matchedProduct?.award || '').trim() || undefined;
       const imageSrc = String(matchedProduct?.image || '').trim() || extractImageSrc(imageTag) || undefined;
+      const trackedHref = escapeHtml(
+        buildAffiliateRedirectUrl(trimmedName, matchedProduct?.asin || asin, articlePath, trimmedHref)
+      );
 
       if (awardLabel && typeof score === 'number' && toReviewRatingValue(score) !== null) {
         const ratingValue = toReviewRatingValue(score) ?? 1;
@@ -414,7 +427,7 @@ export default async function BlogPostPage({ params }: Props) {
           return `<span style="color:${color};">★</span>`;
         }).join('');
         const safeName = escapeHtml(trimmedName);
-        const safeHref = escapeHtml(trimmedHref);
+        const safeHref = trackedHref;
         const safeAwardLabel = escapeHtml(awardLabel);
         const safeImageSrc = imageSrc ? escapeHtml(imageSrc) : '';
         const scoreColor = score >= 8.5 ? '#CC0000' : '#6b7280';
@@ -443,7 +456,7 @@ export default async function BlogPostPage({ params }: Props) {
         '<div class="affiliate-product-card" data-product-card="true">',
         imageTag,
         `<h3>${trimmedName}</h3>`,
-        `<div class="affiliate-card-cta"><a href="${trimmedHref}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></div>`,
+        `<div class="affiliate-card-cta"><a href="${trackedHref}" target="_blank" rel="noopener noreferrer sponsored">Check Price</a></div>`,
         '</div>',
       ].join('');
 
@@ -458,8 +471,8 @@ export default async function BlogPostPage({ params }: Props) {
 
     upgraded = upgraded.replace(
       legacyBlockPattern,
-      (_match, name, _asin, _price, imageTag, _description, href) => {
-        return buildAffiliateCard(name, imageTag, href) || _match;
+      (_match, name, asin, _price, imageTag, _description, href) => {
+        return buildAffiliateCard(name, imageTag, href, asin) || _match;
       }
     );
 
@@ -468,8 +481,8 @@ export default async function BlogPostPage({ params }: Props) {
 
     upgraded = upgraded.replace(
       mixedParagraphLegacyPattern,
-      (_match, name, _asin, _price, imageTag, _description, href) => {
-        return buildAffiliateCard(name, imageTag, href) || _match;
+      (_match, name, asin, _price, imageTag, _description, href) => {
+        return buildAffiliateCard(name, imageTag, href, asin) || _match;
       }
     );
 
@@ -479,8 +492,8 @@ export default async function BlogPostPage({ params }: Props) {
 
     upgraded = upgraded.replace(
       broadLegacyPattern,
-      (_match, name, _asin, _price, imageTag, _description, href) => {
-        return buildAffiliateCard(name, imageTag, href) || _match;
+      (_match, name, asin, _price, imageTag, _description, href) => {
+        return buildAffiliateCard(name, imageTag, href, asin) || _match;
       }
     );
 
@@ -605,7 +618,7 @@ export default async function BlogPostPage({ params }: Props) {
                 productName={String(product.productName || 'Top Pick')}
                 brand={product.brand}
                 description={getProductReviewBody(product) || undefined}
-                year={new Date(post.publishedAt || Date.now()).getFullYear()}
+                year={new Date(post.publishedAt || post.createdAt || '1970-01-01').getFullYear()}
                 awardLabel={String(product.awardLabel || 'Best Overall')}
                 overallScore={score}
                 metrics={[
@@ -617,6 +630,8 @@ export default async function BlogPostPage({ params }: Props) {
                 pros={Array.isArray(product.pros) && product.pros.length > 0 ? product.pros : ['Strong all-around performance']}
                 cons={Array.isArray(product.cons) && product.cons.length > 0 ? product.cons : ['Premium pricing']}
                 affiliateUrl={String(product.affiliateLink || '#')}
+                asin={String(product.asin || '')}
+                sourcePage={articlePath}
                 jumpTargetId={jumpTargetId}
                 imageUrl={String(product.imageUrl || '') || undefined}
               />
@@ -631,6 +646,8 @@ export default async function BlogPostPage({ params }: Props) {
               brand={product.brand}
               description={getProductReviewBody(product) || undefined}
               affiliateUrl={String(product.affiliateLink || '#')}
+              asin={String(product.asin || '')}
+              sourcePage={articlePath}
               imageUrl={String(product.imageUrl || '')}
               awardLabel={product.awardLabel}
               score={Number.isFinite(Number(product.score)) ? Number(product.score) : undefined}

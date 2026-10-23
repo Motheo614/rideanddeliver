@@ -4,6 +4,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Star, Award, DollarSign } from 'lucide-react';
+import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
 
 interface ComparisonItem {
   name: string;
@@ -13,6 +14,7 @@ interface ComparisonItem {
   bestFor: string;
   keyFeatures: string[];
   affiliateLink?: string;
+  asin?: string;
   badge?: string; // e.g., "Best Overall", "Best Value"
 }
 
@@ -146,7 +148,7 @@ export default function ComparisonTable({
                     {/* CTA Button */}
                     <div className="mt-auto">
                       <a
-                        href={item.affiliateLink || '#'}
+                        href={buildAffiliateRedirectUrl(item.name, item.asin, '', item.affiliateLink || '#')}
                         target="_blank"
                         rel="noopener noreferrer sponsored"
                         className="inline-flex items-center justify-center w-full md:w-auto px-6 py-3 bg-[#CC0000] hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-200 hover:shadow-lg text-sm"

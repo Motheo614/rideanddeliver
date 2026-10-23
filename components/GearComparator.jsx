@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { buildAffiliateRedirectUrl } from "@/lib/affiliate/tracking";
 
 const CATEGORY_CONFIG = {
   "safety-gear": {
@@ -443,7 +444,12 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
                         <td key={index} className="border-l border-[#1a1a1a] px-4 py-4">
                           {product.affiliateUrl && (
                             <a
-                              href={product.affiliateUrl}
+                              href={buildAffiliateRedirectUrl(
+                                product.name,
+                                product.asin,
+                                "/tools/gear-comparison",
+                                product.affiliateUrl
+                              )}
                               target="_blank"
                               rel="noopener noreferrer sponsored"
                               className={`${primaryButtonClassName} w-full`}

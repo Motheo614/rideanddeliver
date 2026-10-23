@@ -2,6 +2,7 @@ import React from 'react';
 import Image from '@/components/CloudinaryImage';
 import { ImageIcon } from 'lucide-react';
 import { toReviewRatingValue } from '@/lib/seo/schema';
+import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
 
 interface AccentCardProps {
   jumpTargetId?: string;
@@ -13,6 +14,8 @@ interface AccentCardProps {
   imageUrl?: string;
   affiliateUrl?: string;
   specs?: string[];
+  asin?: string;
+  sourcePage?: string;
   // priceText removed — no live-price pipeline approved. Do not re-add.
 }
 
@@ -25,12 +28,15 @@ export default function AccentCard({
   score,
   imageUrl,
   affiliateUrl,
+  asin,
+  sourcePage = '',
 }: AccentCardProps) {
   const safeName = String(productName || 'Product').trim();
   const safeAwardLabel = String(awardLabel || 'Top Pick').trim().toUpperCase();
   const safeScore = Number.isFinite(Number(score)) ? Number(score) : 9.5;
   const safeStars = toReviewRatingValue(safeScore) ?? 1;
-  const href = String(affiliateUrl || '#').trim() || '#';
+  const rawHref = String(affiliateUrl || '#').trim() || '#';
+  const href = buildAffiliateRedirectUrl(safeName, asin, sourcePage, rawHref);
   const isExternal = /^https?:\/\//i.test(href);
 
   return (

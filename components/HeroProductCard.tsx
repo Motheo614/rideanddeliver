@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, ImageIcon, Minus } from 'lucide-react';
 import { toReviewRatingValue } from '@/lib/seo/schema';
 import { getCloudinaryImageUrl } from '@/lib/utils';
+import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
 
 interface HeroProductMetric {
   label: string;
@@ -20,6 +21,8 @@ interface HeroProductCardProps {
   pros: string[];
   cons: string[];
   affiliateUrl: string;
+  asin?: string;
+  sourcePage?: string;
   jumpTargetId?: string;
   imageUrl?: string;
   // priceText removed — no live-price pipeline approved. Do not re-add.
@@ -51,6 +54,8 @@ export default function HeroProductCard({
   pros,
   cons,
   affiliateUrl,
+  asin,
+  sourcePage = '',
   jumpTargetId,
   imageUrl,
 }: HeroProductCardProps) {
@@ -59,7 +64,8 @@ export default function HeroProductCard({
   const displayedPros = pros.slice(0, 5);
   const displayedCons = cons.slice(0, 5);
   const normalizedStars = toReviewRatingValue(overallScore) ?? 1;
-  const safeAffiliateUrl = String(affiliateUrl || '#').trim() || '#';
+  const rawAffiliateUrl = String(affiliateUrl || '#').trim() || '#';
+  const safeAffiliateUrl = buildAffiliateRedirectUrl(productName, asin, sourcePage, rawAffiliateUrl);
   const safeAwardLabel = String(awardLabel || 'Best Overall').trim().toUpperCase();
 
   return (

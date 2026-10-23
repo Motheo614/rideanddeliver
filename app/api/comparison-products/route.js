@@ -40,6 +40,7 @@ export async function GET(request) {
   return NextResponse.json({
     products: products.map((p) => ({
       name: p.productName,
+      asin: p.asin,
       affiliateUrl: p.affiliateLink || null,
       reviewSummary: p.editorNote || p.description || null,
       score: Number.isFinite(p.score) ? p.score : null,

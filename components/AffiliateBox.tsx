@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from '@/components/CloudinaryImage';
+import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
 
 interface AffiliateBoxProps {
   productName?: string;
@@ -11,6 +12,8 @@ interface AffiliateBoxProps {
   // Backward-compatible aliases for existing usages.
   name?: string;
   url?: string;
+  asin?: string;
+  sourcePage?: string;
 }
 
 export default function AffiliateBox({
@@ -22,9 +25,12 @@ export default function AffiliateBox({
   stars,
   name,
   url,
+  asin,
+  sourcePage = '',
 }: AffiliateBoxProps) {
   const resolvedName = (productName || name || '').trim();
-  const resolvedUrl = (affiliateUrl || url || '').trim();
+  const rawUrl = (affiliateUrl || url || '').trim();
+  const resolvedUrl = buildAffiliateRedirectUrl(resolvedName, asin, sourcePage, rawUrl);
   const isExternal = /^https?:\/\//i.test(resolvedUrl);
   const hasMetaLayout = Boolean(
     awardLabel

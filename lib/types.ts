@@ -6,6 +6,7 @@ export interface Post {
   categorySlug: string;
   dbCategorySlug: string; // Database category enum for blog post URLs
   publishedAt: string;
+  createdAt?: string;
   readTime: string;
   featuredImage: string;
   featured: boolean;
@@ -19,6 +20,7 @@ export interface Post {
       _id?: string;
       productName?: string;
       brand?: string;
+      asin?: string;
       affiliateLink?: string;
       imageUrl?: string;
       awardLabel?: string;
