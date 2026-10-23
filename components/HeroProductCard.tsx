@@ -86,12 +86,6 @@ export default function HeroProductCard({
             className="inline-flex w-full items-center justify-center gap-2 rounded-[4px] bg-[#CC0000] px-6 py-3 text-[13px] font-extrabold uppercase text-white transition-colors hover:bg-red-700"
             style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}
           >
-            <span aria-hidden="true" className="inline-flex h-[14px] w-[14px] items-center justify-center">
-              <svg viewBox="0 0 24 24" width="14" height="14" role="img" aria-label="Amazon">
-                <text x="8.5" y="12.5" fill="currentColor" fontSize="12" fontWeight="700" fontFamily="Arial, sans-serif">a</text>
-                <path d="M4.5 16.8c3.3 2 7.1 2.1 10.8.2" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </span>
             <span>Buy on Amazon</span>
           </a>
         </div>
