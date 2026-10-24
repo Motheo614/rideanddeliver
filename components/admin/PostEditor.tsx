@@ -27,6 +27,8 @@ interface Post {
   };
   category: string;
   categoryLabel?: string;
+  articleType?: 'review' | 'roundup' | 'comparison' | 'guide';
+  evidenceLevel?: 'Researched' | 'Hands-on tested' | 'Mixed';
   tags: string[];
   status: 'draft' | 'published' | 'archived';
   publishedAt?: string;
@@ -186,6 +188,8 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
   const [imageUrl, setImageUrl] = useState(post?.featuredImage?.url || '');
   const [imageAlt, setImageAlt] = useState(post?.featuredImage?.alt || '');
   const [category, setCategory] = useState(normalizeCategoryValue(post?.category));
+  const [articleType, setArticleType] = useState(post?.articleType || '');
+  const [evidenceLevel, setEvidenceLevel] = useState(post?.evidenceLevel || '');
   const [tags, setTags] = useState<string[]>(post?.tags || []);
   const [tagInput, setTagInput] = useState('');
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>(post?.status || 'draft');
@@ -911,6 +915,8 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
       featuredImage: imageUrl ? { url: imageUrl, alt: imageAlt } : undefined,
       category,
       categoryLabel: categoryOptions.find(c => c.value === category)?.label,
+      articleType: articleType || undefined,
+      evidenceLevel: evidenceLevel || undefined,
       tags,
       status: publishPost ? 'published' : status,
       minorEdit,
@@ -1502,6 +1508,37 @@ export default function PostEditor({ post, mode }: PostEditorProps) {
             {/* Post Settings Card */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <h3 className="text-sm font-bold text-gray-700 mb-3">Post Settings</h3>
+
+              <div className="mb-3">
+                <label htmlFor="articleType" className="block text-sm text-gray-600 mb-1">Article type</label>
+                <select
+                  id="articleType"
+                  value={articleType}
+                  onChange={(event) => setArticleType(event.target.value as NonNullable<Post['articleType']> | '')}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                >
+                  <option value="">Not set</option>
+                  <option value="review">Review</option>
+                  <option value="roundup">Roundup</option>
+                  <option value="comparison">Comparison</option>
+                  <option value="guide">Guide</option>
+                </select>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="evidenceLevel" className="block text-sm text-gray-600 mb-1">Evidence level</label>
+                <select
+                  id="evidenceLevel"
+                  value={evidenceLevel}
+                  onChange={(event) => setEvidenceLevel(event.target.value as NonNullable<Post['evidenceLevel']> | '')}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#CC0000]"
+                >
+                  <option value="">Not set</option>
+                  <option value="Researched">Researched</option>
+                  <option value="Hands-on tested">Hands-on tested</option>
+                  <option value="Mixed">Mixed</option>
+                </select>
+              </div>
               
               <label className="flex items-center justify-between mb-3 cursor-pointer">
                 <span className="text-sm text-gray-600">Featured Post</span>

@@ -16,4 +16,17 @@ describe('getClientPostUpdates', () => {
     });
     expect(updates).not.toHaveProperty('publishedAt');
   });
+
+  it('allows article type and evidence level updates', () => {
+    const updates = getClientPostUpdates({
+      articleType: 'review',
+      evidenceLevel: 'Researched',
+      contentUpdatedAt: '2000-01-01T00:00:00.000Z',
+    });
+
+    expect(updates).toEqual({
+      articleType: 'review',
+      evidenceLevel: 'Researched',
+    });
+  });
 });

@@ -6,6 +6,8 @@ const CLIENT_UPDATABLE_POST_FIELDS = [
   'featuredImage',
   'category',
   'categoryLabel',
+  'articleType',
+  'evidenceLevel',
   'tags',
   'author',
   'amazonProducts',

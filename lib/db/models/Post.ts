@@ -25,6 +25,8 @@ export interface IPost extends Document {
   };
   category: 'safety-gear' | 'tech-lighting' | 'bike-security' | 'delivery-gear' | 'platform-reviews';
   categoryLabel?: string;
+  articleType?: 'review' | 'roundup' | 'comparison' | 'guide';
+  evidenceLevel?: 'Researched' | 'Hands-on tested' | 'Mixed';
   tags: string[];
   author?: {
     name: string;
@@ -117,6 +119,14 @@ const PostSchema = new Schema<IPost, IPostModel>(
     },
     categoryLabel: {
       type: String,
+    },
+    articleType: {
+      type: String,
+      enum: ['review', 'roundup', 'comparison', 'guide'],
+    },
+    evidenceLevel: {
+      type: String,
+      enum: ['Researched', 'Hands-on tested', 'Mixed'],
     },
     tags: {
       type: [String],

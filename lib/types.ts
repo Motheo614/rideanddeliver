@@ -5,6 +5,8 @@ export interface Post {
   category: string;
   categorySlug: string;
   dbCategorySlug: string; // Database category enum for blog post URLs
+  articleType?: 'review' | 'roundup' | 'comparison' | 'guide';
+  evidenceLevel?: 'Researched' | 'Hands-on tested' | 'Mixed';
   publishedAt: string;
   createdAt?: string;
   readTime: string;
