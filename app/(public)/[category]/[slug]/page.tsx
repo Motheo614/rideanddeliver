@@ -22,6 +22,8 @@ import {
 import { buildArticleMetadata } from '@/lib/seo/metadata';
 import { getEditorialDates } from '@/lib/dates';
 import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
+import { addStableArticleHeadingIds } from '@/lib/articleHeadings';
+import { isTextLedArticleHeaderEnabled } from '@/lib/articleHeader';
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
@@ -432,6 +434,7 @@ export default async function BlogPostPage({ params }: Props) {
   };
 
   const normalizedContent = upgradeLegacyAffiliateBlocks(renderContent() || '');
+  const { content: articleBodyContent, headings } = addStableArticleHeadingIds(normalizedContent);
 
   const renderHtmlSegment = (html: string, key: string) => {
     if (!html || !html.trim()) return null;
@@ -612,6 +615,10 @@ export default async function BlogPostPage({ params }: Props) {
   // Matches the hardcoded byline in ArticleAuthorBox — keep these in sync if that ever becomes
   // a real per-post field.
   const authorName = 'Marcus Webb';
+  const articleTypeLabel = post.articleType
+    ? post.articleType.charAt(0).toUpperCase() + post.articleType.slice(1)
+    : 'Article';
+  const textLedHeaderEnabled = isTextLedArticleHeaderEnabled();
 
   const articleSchemas: Array<Record<string, unknown>> = [
     buildBlogPostingSchema({
@@ -678,6 +685,11 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="min-w-0 box-border">
             <article className="w-full min-w-0">
             <header className="mb-8 md:mb-10">
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-[#CC0000]">
+                {post.category}
+                <span className="px-2 text-gray-300" aria-hidden="true">/</span>
+                {articleTypeLabel}
+              </p>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
                 {post.title}
               </h1>
@@ -695,9 +707,16 @@ export default async function BlogPostPage({ params }: Props) {
                   updatedLabel={updatedLabel}
                 />
               </div>
+              {post.evidenceLevel && (
+                <p className="mt-4">
+                  <span className="inline-flex items-center rounded-full border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700">
+                    {post.evidenceLevel}
+                  </span>
+                </p>
+              )}
             </header>
 
-            {featuredImageUrl && (
+            {!textLedHeaderEnabled && featuredImageUrl && (
               <figure className="mb-10 md:mb-12">
                 <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 shadow-lg">
                   <Image
@@ -713,7 +732,28 @@ export default async function BlogPostPage({ params }: Props) {
               </figure>
             )}
 
-            {renderMixedContentFromHtml(normalizedContent)}
+            {headings.length > 0 && (
+              <nav
+                aria-label="On this page"
+                className="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-5"
+              >
+                <h2 className="text-base font-bold text-gray-900">On this page</h2>
+                <ul className="mt-3 space-y-2">
+                  {headings.map((heading) => (
+                    <li key={heading.id}>
+                      <a
+                        href={`#${heading.id}`}
+                        className="text-sm text-gray-700 underline decoration-gray-300 underline-offset-4 hover:text-[#CC0000] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#CC0000]"
+                      >
+                        {heading.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+
+            {renderMixedContentFromHtml(articleBodyContent)}
 
             {articleCta && articleCta.primaryHref && (
               <ArticleBottomCta
