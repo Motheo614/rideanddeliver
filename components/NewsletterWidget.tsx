@@ -23,7 +23,7 @@ export default function NewsletterWidget() {
         <NewsletterSignupForm
           source="sidebar-widget"
           inputId="newsletter-widget-email"
-          inputPlaceholder="your@email.com"
+          inputPlaceholder="Email address"
           buttonText="Join the Dispatch"
           rowClassName="flex flex-col gap-3"
           inputClassName="h-11 w-full rounded-xl border border-white/15 bg-white/5 px-4 text-sm text-white placeholder:text-gray-400 transition-colors duration-200 hover:border-white/25 focus:border-white/40 focus:outline-none"

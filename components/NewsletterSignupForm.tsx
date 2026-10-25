@@ -19,7 +19,7 @@ interface NewsletterSignupFormProps {
 export default function NewsletterSignupForm({
   source = 'website',
   inputId: providedInputId,
-  inputPlaceholder = 'your@email.com',
+  inputPlaceholder = 'Email address',
   buttonText = 'Subscribe',
   label = 'Email address',
   variant = 'default',
