@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useId, useState } from 'react';
-import Image from 'next/image';
 import { Calendar, ChevronDown, Clock } from 'lucide-react';
 
 interface ArticleAuthorBoxProps {
@@ -32,13 +31,6 @@ export default function ArticleAuthorBox({
         className="flex w-full items-center justify-between gap-3 text-left"
       >
         <div className="flex min-w-0 items-center gap-3">
-          <Image
-            src="/Assets/MarcusWebb.png"
-            alt="Marcus Webb - Rider Complex founder"
-            width={60}
-            height={60}
-            className="h-[60px] w-[60px] rounded-full object-cover"
-          />
           <div className="min-w-0">
             <p className="text-lg font-extrabold leading-tight text-gray-900">Written by Marcus Webb</p>
             <p className="mt-1 text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -58,17 +50,16 @@ export default function ArticleAuthorBox({
         <div id={bioId} className="mt-3 border-t border-gray-200 pt-3 text-sm leading-relaxed text-gray-600">
           <p className="font-semibold text-gray-800">A Word from Marcus Webb</p>
           <p className="mt-1">
-            I&apos;ve spent years exploring the gig economy from the rider&apos;s side, testing different
-            setups, vehicles, and tools to figure out what actually works on the road.
+            Marcus Webb is a food delivery enthusiast focused on the gear, bikes, accessories, and
+            tools that make delivery work more practical. He researches products through
+            manufacturer documentation, independent reviews, and owner feedback, then translates
+            that evidence into clear buying advice for delivery riders.
           </p>
           <p className="mt-2">
-            From motorcycles and e-bikes to rental options and delivery gear, the focus is always
-            the same: what holds up during long shifts and what keeps riders efficient without
-            burning through money they just earned.
-          </p>
-          <p className="mt-2">
-            My writing is centered around that idea. Practical insights, smarter decisions, and
-            setups that support consistent earnings on the road.
+            His approach is straightforward: explain what the evidence supports, identify the
+            trade-offs, and be honest about what hasn&apos;t been verified. Rider Complex publishes
+            research-based assessments rather than claiming hands-on tests that haven&apos;t taken
+            place.
           </p>
         </div>
       )}

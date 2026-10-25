@@ -2,7 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { Tag, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Tag, ChevronRight } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
 import { formatDateAbsolute, getCloudinaryImageUrl, stripHeadMetadataTags } from '@/lib/utils';
 import { CATEGORY_MAP } from '@/lib/categoryMap';
@@ -704,10 +704,6 @@ export default async function BlogPostPage({ params }: Props) {
               )}
 
               <div className="py-4 border-t border-b border-gray-200">
-                <p className="mb-3 flex items-center gap-2 text-sm font-bold text-charcoal">
-                  <ShieldCheck className="h-4 w-4 text-brand-red" aria-hidden="true" />
-                  By Rider Complex Research Desk
-                </p>
                 <ArticleAuthorBox
                   publishedLabel={formatDateAbsolute(post.publishedAt)}
                   readTimeLabel={`${estimatedReadTime} min read`}
