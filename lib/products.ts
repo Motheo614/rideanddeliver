@@ -1,5 +1,5 @@
 import { fetchPostsApi, getApiBase } from './posts';
-import { buildAffiliateRedirectUrl } from './affiliate/tracking';
+import { resolveAmazonAffiliateUrl } from './affiliate/amazonLink';
 import { getPostHref } from './postDisplay';
 import { getCategoryInfo } from './categoryMap';
 import { DEPARTMENTS } from './departments';
@@ -9,7 +9,7 @@ export interface TopPick {
   name: string;
   brand: string;
   imageUrl: string;
-  amazonHref: string;
+  amazonHref: string | null;
   badge: string;
   badgeDetail?: string;
   features: string[];
@@ -105,12 +105,18 @@ export async function getTopPicks(limit = 8): Promise<TopPick[]> {
         slug: item.roundup.slug,
       });
       const hub = DEPARTMENTS.find((d) => d.key === item.roundup.dbCategorySlug)?.href;
+      const affiliate = resolveAmazonAffiliateUrl(item.affiliateLink, item.asin);
+      if (!affiliate.url) {
+        console.warn(`[top-picks] No valid Amazon link for product ${item.id} (${item.name}): ${affiliate.reason}`);
+      } else if (affiliate.replacedTag) {
+        console.warn(`[top-picks] Replaced a different Associates tag on product ${item.id} (${item.name})`);
+      }
       return {
         id: item.id,
         name: item.name,
         brand: toTitleCase(item.brand || ''),
         imageUrl: item.imageUrl,
-        amazonHref: buildAffiliateRedirectUrl(item.name, item.asin, '/', item.affiliateLink),
+        amazonHref: affiliate.url,
         ...splitBadge(item.badge || 'Top Pick'),
         features: item.features
           .slice(0, 2)

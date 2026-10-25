@@ -73,16 +73,28 @@ export default function ProductCard({ pick }: { pick: TopPick }) {
         </ul>
 
         <div className="mt-auto flex flex-col gap-2 pt-[18px]">
-          <a
-            href={pick.amazonHref}
-            target="_blank"
-            rel="sponsored nofollow noopener noreferrer"
-            aria-label={`View ${title} on Amazon`}
-            className={`flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d9901a] bg-gradient-to-b from-[#f9b83e] to-[#f0a020] text-[14.5px] font-semibold text-charcoal shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] transition-colors duration-200 hover:from-[#f5ac2a] hover:to-[#e89412] ${focusRing}`}
-          >
-            <ShoppingCart size={18} strokeWidth={1.5} aria-hidden="true" />
-            View on Amazon
-          </a>
+          {pick.amazonHref ? (
+            <a
+              href={pick.amazonHref}
+              target="_blank"
+              rel="sponsored nofollow noopener noreferrer"
+              aria-label={`View ${title} on Amazon`}
+              className={`flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d9901a] bg-gradient-to-b from-[#f9b83e] to-[#f0a020] text-[14.5px] font-semibold text-charcoal shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] transition-colors duration-200 hover:from-[#f5ac2a] hover:to-[#e89412] ${focusRing}`}
+            >
+              <ShoppingCart size={18} strokeWidth={1.5} aria-hidden="true" />
+              View on Amazon
+            </a>
+          ) : (
+            <span
+              role="link"
+              aria-disabled="true"
+              aria-label={`Amazon link unavailable for ${title}`}
+              className="flex h-11 cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-[#d9901a] bg-gradient-to-b from-[#f9b83e] to-[#f0a020] text-[14.5px] font-semibold text-charcoal opacity-40 grayscale"
+            >
+              <ShoppingCart size={18} strokeWidth={1.5} aria-hidden="true" />
+              View on Amazon
+            </span>
+          )}
           {pick.reviewHref && (
             <Link
               href={pick.reviewHref}

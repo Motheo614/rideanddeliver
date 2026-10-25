@@ -3,7 +3,7 @@ import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import { DEPARTMENTS, type DepartmentKey } from '@/lib/departments';
 import { getCatalogProducts, splitBadge, type TopPick } from '@/lib/products';
-import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
+import { resolveAmazonAffiliateUrl } from '@/lib/affiliate/amazonLink';
 import { getCategoryInfo } from '@/lib/categoryMap';
 import { buildPageMetadata } from '@/lib/seo/metadata';
 
@@ -33,12 +33,7 @@ export default async function ProductsPage() {
         name: product.productName,
         brand: product.brand || '',
         imageUrl: product.imageUrl || '',
-        amazonHref: buildAffiliateRedirectUrl(
-          product.productName,
-          product.asin,
-          '/products',
-          product.affiliateLink
-        ),
+        amazonHref: resolveAmazonAffiliateUrl(product.affiliateLink, product.asin).url,
         ...splitBadge(product.awardLabel || 'Recommended'),
         features: product.pros.filter(Boolean).slice(0, 2),
         roundupLabel: getCategoryInfo(department.key)?.displayName || department.title,
