@@ -1,80 +1,40 @@
 import React from 'react';
-import Image from '@/components/CloudinaryImage';
 import Link from 'next/link';
-import { Post } from '@/lib/types';
-import { formatDate, formatDateAbsolute } from '@/lib/utils';
+import { ArrowRight, Clock } from 'lucide-react';
+import type { Post } from '@/lib/types';
+import { formatDateAbsolute } from '@/lib/utils';
+import { formatReadTime, getPostHref } from '@/lib/postDisplay';
 
-interface ArticleCardProps {
-  post: Post;
-  replaceDateWithReadTime?: boolean;
-  useAbsoluteUpperDate?: boolean;
-  swapDateWithReadTime?: boolean;
-}
-
-export default function ArticleCard({
-  post,
-  replaceDateWithReadTime = false,
-  useAbsoluteUpperDate = false,
-  swapDateWithReadTime = false,
-}: ArticleCardProps) {
-  const normalizedReadTime = (() => {
-    const raw = (post.readTime || '').toString().trim();
-    if (!raw) return '5 min read';
-    if (/min\s+read/i.test(raw)) return raw;
-
-    const minutes = raw.match(/\d+/)?.[0];
-    return minutes ? `${minutes} min read` : raw;
-  })();
-  const formattedDate = useAbsoluteUpperDate
-    ? formatDateAbsolute(post.publishedAt).toUpperCase()
-    : formatDate(post.publishedAt);
-
+export default function ArticleCard({ post }: { post: Post }) {
   return (
-    <Link href={`/${post.dbCategorySlug}/${post.slug}`} className="group flex flex-col md:flex-row gap-6 mb-8 pb-8 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
-      <div className="w-full md:w-[60%] flex flex-col justify-center order-2 md:order-1">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 bg-gray-100 px-2 py-1 rounded">
-            {post.category}
+    <article className="group relative mb-4 overflow-hidden rounded-2xl border border-hairline bg-white p-6 shadow-xs transition-all duration-200 ease-out last:mb-0 hover:border-black/10 hover:shadow-md focus-within:shadow-md md:p-8">
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-[3px] bg-brand-red opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-within:opacity-100"
+      />
+      <p className="eyebrow">{post.category}</p>
+      <h3 className="mt-3 text-[1.25rem] font-semibold leading-snug text-charcoal md:text-[1.375rem]">
+        {post.title}
+      </h3>
+      <p className="mt-3 line-clamp-2 text-body text-body">{post.excerpt}</p>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <p className="flex flex-wrap items-center gap-x-3 text-[13px] text-body">
+          <time dateTime={new Date(post.publishedAt).toISOString()}>{formatDateAbsolute(post.publishedAt)}</time>
+          <span aria-hidden="true" className="h-3 w-px bg-black/15" />
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+            {formatReadTime(post.readTime)}
           </span>
-          <span className="text-[10px] text-gray-400 font-medium">
-            {replaceDateWithReadTime
-              ? normalizedReadTime.toUpperCase()
-              : swapDateWithReadTime
-                ? normalizedReadTime.toUpperCase()
-                : formattedDate}
-          </span>
-        </div>
-        
-        <h2 className="text-xl md:text-2xl font-bold text-[#1a1a1a] mb-3 group-hover:text-[#CC0000] transition-colors leading-tight">
-          {post.title}
-        </h2>
-        
-        <p className="text-gray-600 text-sm md:text-base mb-4 line-clamp-3 leading-relaxed">
-          {post.excerpt}
         </p>
-        
-        {!replaceDateWithReadTime && (
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-            {swapDateWithReadTime ? formattedDate : normalizedReadTime}
-          </span>
-        )}
+        <Link
+          href={getPostHref(post)}
+          className="inline-flex items-center gap-1.5 rounded-sm text-small font-medium text-brand-red after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red/40"
+        >
+          Read Buying Guide
+          <span className="sr-only">: {post.title}</span>
+          <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-1" strokeWidth={1.5} aria-hidden="true" />
+        </Link>
       </div>
-      
-      <div className="w-full md:w-[40%] aspect-video relative overflow-hidden rounded-lg order-1 md:order-2">
-        {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
-          <Image
-            src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url}
-            alt={post.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <span className="text-gray-400 text-sm">No Image</span>
-          </div>
-        )}
-      </div>
-    </Link>
+    </article>
   );
 }

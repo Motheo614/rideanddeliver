@@ -1,9 +1,8 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Image from '@/components/CloudinaryImage';
 import { notFound, redirect } from 'next/navigation';
-import { Tag, ChevronRight } from 'lucide-react';
+import { Tag, ChevronRight, ShieldCheck } from 'lucide-react';
 import { getPostBySlug, getPostsByCategory } from '@/lib/posts';
 import { formatDateAbsolute, getCloudinaryImageUrl, stripHeadMetadataTags } from '@/lib/utils';
 import { CATEGORY_MAP } from '@/lib/categoryMap';
@@ -23,7 +22,6 @@ import { buildArticleMetadata } from '@/lib/seo/metadata';
 import { getEditorialDates } from '@/lib/dates';
 import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
 import { addStableArticleHeadingIds } from '@/lib/articleHeadings';
-import { isTextLedArticleHeaderEnabled } from '@/lib/articleHeader';
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
@@ -445,7 +443,7 @@ export default async function BlogPostPage({ params }: Props) {
           <div
             className="
               w-full
-              prose prose-base sm:prose-lg !max-w-none
+              prose prose-base sm:prose-lg
               prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
               prose-h2:text-2xl sm:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4
               prose-h3:text-xl sm:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
@@ -460,7 +458,7 @@ export default async function BlogPostPage({ params }: Props) {
               prose-code:text-[#CC0000] prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm
               prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:shadow-lg prose-pre:overflow-x-auto
               prose-hr:my-12 prose-hr:border-gray-200
-              [&>*]:!max-w-none [&_table]:w-full
+              [&_table]:w-full
               break-words
             "
             dangerouslySetInnerHTML={{ __html: html }}
@@ -618,7 +616,6 @@ export default async function BlogPostPage({ params }: Props) {
   const articleTypeLabel = post.articleType
     ? post.articleType.charAt(0).toUpperCase() + post.articleType.slice(1)
     : 'Article';
-  const textLedHeaderEnabled = isTextLedArticleHeaderEnabled();
 
   const articleSchemas: Array<Record<string, unknown>> = [
     buildBlogPostingSchema({
@@ -683,7 +680,7 @@ export default async function BlogPostPage({ params }: Props) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="w-full max-w-7xl mx-auto box-border grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,300px)] gap-10 lg:gap-12 items-start">
           <div className="min-w-0 box-border">
-            <article className="w-full min-w-0">
+            <article className="w-full max-w-3xl min-w-0">
             <header className="mb-8 md:mb-10">
               <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-[#CC0000]">
                 {post.category}
@@ -701,6 +698,10 @@ export default async function BlogPostPage({ params }: Props) {
               )}
 
               <div className="py-4 border-t border-b border-gray-200">
+                <p className="mb-3 flex items-center gap-2 text-sm font-bold text-charcoal">
+                  <ShieldCheck className="h-4 w-4 text-brand-red" aria-hidden="true" />
+                  By Rider Section Research Desk
+                </p>
                 <ArticleAuthorBox
                   publishedLabel={formatDateAbsolute(post.publishedAt)}
                   readTimeLabel={`${estimatedReadTime} min read`}
@@ -716,21 +717,25 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </header>
 
-            {!textLedHeaderEnabled && featuredImageUrl && (
-              <figure className="mb-10 md:mb-12">
-                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 shadow-lg">
-                  <Image
-                    src={featuredImageUrl}
-                    alt={post.title}
-                    fill
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              </figure>
-            )}
+            <aside
+              aria-labelledby="research-standards-heading"
+              className="mb-8 rounded-xl border-l-4 border-brand-red bg-offwhite p-5"
+            >
+              <h2 id="research-standards-heading" className="text-base font-bold text-charcoal">
+                Research Standards
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-body">
+                This guide follows our five-step research method, with no paid placements. We earn a
+                commission from some links at no cost to you.{' '}
+                <Link href="/how-we-research" className="font-semibold text-brand-red underline underline-offset-2">
+                  How we research
+                </Link>{' '}
+                ·{' '}
+                <Link href="/affiliate-disclaimer" className="font-semibold text-brand-red underline underline-offset-2">
+                  Affiliate disclaimer
+                </Link>
+              </p>
+            </aside>
 
             {headings.length > 0 && (
               <nav
@@ -846,49 +851,26 @@ export default async function BlogPostPage({ params }: Props) {
               Continue Reading
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedPosts.map((p) => {
-                const relatedImageUrl = typeof p.featuredImage === 'string'
-                  ? p.featuredImage
-                  : (p.featuredImage as any)?.url;
-
-                return (
-                  <Link
-                    key={p.slug}
-                    href={`/${p.dbCategorySlug}/${p.slug}`}
-                    className="group flex flex-col bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-[#CC0000] hover:shadow-lg transition-all duration-300"
-                  >
-                    <div className="relative aspect-video overflow-hidden bg-gray-100">
-                      {relatedImageUrl ? (
-                        <Image
-                          src={relatedImageUrl}
-                          alt={p.title}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                          <span className="text-gray-400 text-xs">No Image</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <h3 className="text-base font-bold text-gray-900 group-hover:text-[#CC0000] transition-colors line-clamp-2">
-                        {p.title}
-                      </h3>
-                      {p.excerpt && (
-                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                          {p.excerpt}
-                        </p>
-                      )}
-                      <div className="mt-3 text-xs font-semibold text-[#CC0000] group-hover:underline">
-                        Read More -&gt;
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+              {relatedPosts.map((p) => (
+                <Link
+                  key={p.slug}
+                  href={`/${p.dbCategorySlug}/${p.slug}`}
+                  className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 transition-all duration-300 hover:border-brand-red hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red"
+                >
+                  <span className="text-xs font-bold uppercase tracking-widest text-brand-red">
+                    {p.category}
+                  </span>
+                  <h3 className="mt-2 line-clamp-2 text-base font-bold text-gray-900 group-hover:text-brand-red">
+                    {p.title}
+                  </h3>
+                  {p.excerpt && (
+                    <p className="mt-2 line-clamp-2 text-sm text-body">{p.excerpt}</p>
+                  )}
+                  <span className="mt-3 text-xs font-semibold text-brand-red group-hover:underline">
+                    Read More →
+                  </span>
+                </Link>
+              ))}
             </div>
           </section>
         )}

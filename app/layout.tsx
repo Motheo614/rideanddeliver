@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import AuthProvider from '@/components/AuthProvider';
@@ -9,7 +9,14 @@ import { buildSiteGraphSchema } from '@/lib/seo/schema';
 
 const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-sans',
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const display = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-display-face',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -55,7 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const siteGraphSchema = buildSiteGraphSchema();
 
   return (
-    <html lang="en" className={`${inter.variable}`}>
+    <html lang="en" className={`${inter.variable} ${display.variable}`}>
       <head>
         <Script
           async

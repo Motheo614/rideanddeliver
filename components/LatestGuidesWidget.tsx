@@ -1,44 +1,45 @@
 import React from 'react';
-import Image from '@/components/CloudinaryImage';
 import Link from 'next/link';
 import { getLatestPosts } from '@/lib/posts';
+import { formatReadTime, getPostHref } from '@/lib/postDisplay';
 
 export default async function LatestGuidesWidget() {
-  const latestPosts = await getLatestPosts(3);
+  const latestPosts = await getLatestPosts(4);
+  if (latestPosts.length === 0) return null;
 
   return (
-    <div className="bg-white border border-gray-100 p-8 rounded-xl shadow-sm">
-      <h3 className="text-xl font-bold text-[#1a1a1a] mb-6">Latest Guides</h3>
-      
-      <div className="flex flex-col gap-6">
-        {latestPosts.map((post) => (
-          <Link key={post.slug} href={`/${post.dbCategorySlug}/${post.slug}`} className="group flex gap-4">
-            <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden">
-              {post.featuredImage && (typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url) ? (
-                <Image
-                  src={typeof post.featuredImage === 'string' ? post.featuredImage : (post.featuredImage as any).url}
-                  alt={post.title}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400 text-xs">No Image</span>
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col justify-center">
-              <h4 className="text-sm font-bold text-[#1a1a1a] group-hover:text-[#CC0000] transition-colors line-clamp-2 leading-snug mb-1">
-                {post.title}
-              </h4>
-              <span className="text-[10px] text-gray-400 font-medium uppercase">
-                {post.readTime}
+    <section
+      aria-labelledby="latest-guides-heading"
+      className="rounded-2xl border border-hairline bg-white p-6 shadow-xs"
+    >
+      <h3 id="latest-guides-heading" className="mb-2 text-h4 font-semibold text-charcoal">
+        Latest Guides
+      </h3>
+      <ol className="divide-y divide-hairline">
+        {latestPosts.map((post, i) => (
+          <li key={post.slug}>
+            <Link
+              href={getPostHref(post)}
+              className="group flex gap-3 rounded-lg py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-red/40"
+            >
+              <span
+                aria-hidden="true"
+                className="w-5 shrink-0 pt-0.5 font-display text-sm font-semibold tabular-nums text-brand-red"
+              >
+                {String(i + 1).padStart(2, '0')}
               </span>
-            </div>
-          </Link>
+              <span className="min-w-0">
+                <span className="block text-small font-medium leading-snug text-charcoal transition-colors duration-200 group-hover:text-brand-red">
+                  {post.title}
+                </span>
+                <span className="mt-1 block text-xs text-body">
+                  {post.category} · {formatReadTime(post.readTime)}
+                </span>
+              </span>
+            </Link>
+          </li>
         ))}
-      </div>
-    </div>
+      </ol>
+    </section>
   );
 }

@@ -12,7 +12,7 @@ function isLocalhostUrl(url: string) {
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(url);
 }
 
-function getApiBase() {
+export function getApiBase() {
   const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const appUrl = process.env.APP_URL;
@@ -74,7 +74,7 @@ const fetchOptions: RequestInit = {
   },
 };
 
-function fetchPostsApi(url: string, options: RequestInit = fetchOptions) {
+export function fetchPostsApi(url: string, options: RequestInit = fetchOptions) {
   return fetch(url, {
     ...options,
     signal: AbortSignal.timeout(15_000),

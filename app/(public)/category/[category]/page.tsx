@@ -93,7 +93,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <SectionHeading title={`Latest in ${categoryName}`} />
         <div className="max-w-4xl">
           {categoryPosts.map((post) => (
-            <ArticleCard key={post.slug} post={post} useAbsoluteUpperDate swapDateWithReadTime />
+            <ArticleCard key={post.slug} post={post} />
           ))}
 
           <CategoryPagination
