@@ -1,7 +1,6 @@
 import React from 'react';
 import { Check, ImageIcon, Minus } from 'lucide-react';
 import { getCloudinaryImageUrl } from '@/lib/utils';
-import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
 
 interface HeroProductCardProps {
   productName: string;
@@ -12,15 +11,12 @@ interface HeroProductCardProps {
   specs: string[];
   pros: string[];
   cons: string[];
-  affiliateUrl: string;
-  asin?: string;
-  sourcePage?: string;
+  // Server-resolved, validated and tagged Amazon URL; null renders a disabled button.
+  amazonUrl: string | null;
   jumpTargetId?: string;
   imageUrl?: string;
   // priceText removed — no live-price pipeline approved. Do not re-add.
 }
-
-const isExternalUrl = (url: string) => /^https?:\/\//i.test(url);
 
 export default function HeroProductCard({
   productName,
@@ -31,17 +27,13 @@ export default function HeroProductCard({
   specs,
   pros,
   cons,
-  affiliateUrl,
-  asin,
-  sourcePage = '',
+  amazonUrl,
   jumpTargetId,
   imageUrl,
 }: HeroProductCardProps) {
   const displayedSpecs = specs.slice(0, 10);
   const displayedPros = pros.slice(0, 5);
   const displayedCons = cons.slice(0, 5);
-  const rawAffiliateUrl = String(affiliateUrl || '#').trim() || '#';
-  const safeAffiliateUrl = buildAffiliateRedirectUrl(productName, asin, sourcePage, rawAffiliateUrl);
   const safeAwardLabel = String(awardLabel || 'Best Overall').trim().toUpperCase();
 
   return (
@@ -79,15 +71,28 @@ export default function HeroProductCard({
             </div>
           )}
 
-          <a
-            href={safeAffiliateUrl}
-            target={isExternalUrl(safeAffiliateUrl) ? '_blank' : undefined}
-            rel={isExternalUrl(safeAffiliateUrl) ? 'noopener noreferrer sponsored' : undefined}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-[4px] bg-[#CC0000] px-6 py-3 text-[13px] font-extrabold uppercase text-white transition-colors hover:bg-red-700"
-            style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}
-          >
-            <span>Buy on Amazon</span>
-          </a>
+          {amazonUrl ? (
+            <a
+              href={amazonUrl}
+              target="_blank"
+              rel="sponsored nofollow noopener noreferrer"
+              aria-label={`Buy ${productName} on Amazon`}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-[4px] bg-[#CC0000] px-6 py-3 text-[13px] font-extrabold uppercase text-white transition-colors hover:bg-red-700"
+              style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}
+            >
+              <span>Buy on Amazon</span>
+            </a>
+          ) : (
+            <span
+              role="link"
+              aria-disabled="true"
+              aria-label={`Amazon link unavailable for ${productName}`}
+              className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-[4px] bg-[#CC0000] px-6 py-3 text-[13px] font-extrabold uppercase text-white opacity-40 grayscale"
+              style={{ fontFamily: '"Barlow Condensed", system-ui, -apple-system, sans-serif' }}
+            >
+              <span>Buy on Amazon</span>
+            </span>
+          )}
         </div>
 
         <div className="self-stretch border-l border-[#e2e2e2] bg-white">

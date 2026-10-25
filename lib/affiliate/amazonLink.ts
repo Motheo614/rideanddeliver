@@ -12,6 +12,26 @@ export function getAssociateTag(): string {
 }
 
 /**
+ * Resolves a product record's Amazon link and logs a server warning with `context`
+ * (e.g. the post slug) when it is unusable. `warned` de-duplicates repeat warnings per render.
+ */
+export function getProductAmazonUrl(
+  product: { _id?: unknown; productName?: string; affiliateLink?: unknown; asin?: unknown } | null | undefined,
+  context: string,
+  warned?: Set<string>
+): string | null {
+  const result = resolveAmazonAffiliateUrl(product?.affiliateLink, product?.asin);
+  if (!result.url) {
+    const label = `${context} product ${String(product?._id ?? 'unknown')} (${product?.productName ?? 'unnamed'})`;
+    if (!warned?.has(label)) {
+      warned?.add(label);
+      console.warn(`[affiliate] No valid Amazon link for ${label}: ${result.reason}`);
+    }
+  }
+  return result.url;
+}
+
+/**
  * Validates a stored affiliate link and guarantees it carries our Associates tag.
  * Returns url: null (never a placeholder) when the link cannot be trusted.
  */

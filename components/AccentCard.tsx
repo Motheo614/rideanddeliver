@@ -1,7 +1,6 @@
 import React from 'react';
 import Image from '@/components/CloudinaryImage';
 import { ImageIcon } from 'lucide-react';
-import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
 
 interface AccentCardProps {
   jumpTargetId?: string;
@@ -10,10 +9,9 @@ interface AccentCardProps {
   description?: string;
   awardLabel?: string;
   imageUrl?: string;
-  affiliateUrl?: string;
+  // Server-resolved, validated and tagged Amazon URL; null renders a disabled button.
+  amazonUrl: string | null;
   specs?: string[];
-  asin?: string;
-  sourcePage?: string;
   // priceText removed — no live-price pipeline approved. Do not re-add.
 }
 
@@ -24,15 +22,10 @@ export default function AccentCard({
   description,
   awardLabel,
   imageUrl,
-  affiliateUrl,
-  asin,
-  sourcePage = '',
+  amazonUrl,
 }: AccentCardProps) {
   const safeName = String(productName || 'Product').trim();
   const safeAwardLabel = String(awardLabel || 'Top Pick').trim().toUpperCase();
-  const rawHref = String(affiliateUrl || '#').trim() || '#';
-  const href = buildAffiliateRedirectUrl(safeName, asin, sourcePage, rawHref);
-  const isExternal = /^https?:\/\//i.test(href);
 
   return (
     <div
@@ -79,15 +72,28 @@ export default function AccentCard({
 
         {brand && <p className="mb-2 text-xs text-gray-600">Brand: {brand}</p>}
 
-        <a
-          href={href}
-          target={isExternal ? '_blank' : undefined}
-          rel={isExternal ? 'noopener noreferrer sponsored' : undefined}
-          className="inline-flex w-full items-center justify-center rounded-[14px] border border-[#b7b7b7] bg-[#f6f6f5] px-3.5 py-2.5 text-center text-[12px] font-extrabold leading-[1.15] tracking-[0.04em] text-[#1f1f1f] transition-colors hover:bg-[#efefee]"
-          style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}
-        >
-          <span>BUY ON AMAZON</span>
-        </a>
+        {amazonUrl ? (
+          <a
+            href={amazonUrl}
+            target="_blank"
+            rel="sponsored nofollow noopener noreferrer"
+            aria-label={`Buy ${safeName} on Amazon`}
+            className="inline-flex w-full items-center justify-center rounded-[14px] border border-[#b7b7b7] bg-[#f6f6f5] px-3.5 py-2.5 text-center text-[12px] font-extrabold leading-[1.15] tracking-[0.04em] text-[#1f1f1f] transition-colors hover:bg-[#efefee]"
+            style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}
+          >
+            <span>BUY ON AMAZON</span>
+          </a>
+        ) : (
+          <span
+            role="link"
+            aria-disabled="true"
+            aria-label={`Amazon link unavailable for ${safeName}`}
+            className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-[14px] border border-[#b7b7b7] bg-[#f6f6f5] px-3.5 py-2.5 text-center text-[12px] font-extrabold leading-[1.15] tracking-[0.04em] text-[#1f1f1f] opacity-40 grayscale"
+            style={{ fontFamily: 'Montserrat, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}
+          >
+            <span>BUY ON AMAZON</span>
+          </span>
+        )}
       </div>
     </div>
   );

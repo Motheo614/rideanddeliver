@@ -21,6 +21,7 @@ import {
 import { buildArticleMetadata } from '@/lib/seo/metadata';
 import { getEditorialDates } from '@/lib/dates';
 import { buildAffiliateRedirectUrl } from '@/lib/affiliate/tracking';
+import { getProductAmazonUrl } from '@/lib/affiliate/amazonLink';
 import { addStableArticleHeadingIds } from '@/lib/articleHeadings';
 
 interface Props {
@@ -173,6 +174,10 @@ export default async function BlogPostPage({ params }: Props) {
     productBlocks.map((block: any) => [String(block.productId || block?.product?._id || ''), block])
   );
 
+  const warnedAmazonLinks = new Set<string>();
+  const resolveProductUrl = (product: any) =>
+    getProductAmazonUrl(product, `post ${articlePath}`, warnedAmazonLinks);
+
   const upgradeLegacyAffiliateBlocks = (html: string) => {
     if (!html) return html;
     let heroRenderedFromBlock = false;
@@ -182,7 +187,7 @@ export default async function BlogPostPage({ params }: Props) {
       brand?: string;
       asin?: string;
       description?: string;
-      affiliateUrl: string;
+      amazonUrl: string | null;
       imageUrl?: string;
       awardLabel?: string;
       jumpTargetId?: string;
@@ -197,9 +202,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       const safeName = safe(params.productName);
       const safeBrand = safe(params.brand || '');
-      const safeUrl = safe(
-        buildAffiliateRedirectUrl(params.productName, params.asin, articlePath, params.affiliateUrl)
-      );
+      const safeUrl = params.amazonUrl ? safe(params.amazonUrl) : '';
       const safeImageUrl = params.imageUrl ? safe(getCloudinaryImageUrl(params.imageUrl)) : '';
       const safeAwardLabel = params.awardLabel ? safe(params.awardLabel) : '';
       const jumpHref = params.jumpTargetId ? `#${safe(String(params.jumpTargetId))}` : '#top';
@@ -213,7 +216,9 @@ export default async function BlogPostPage({ params }: Props) {
     </div>
     <h3 style="margin:16px 0 0;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;line-height:1.2;color:#111;text-decoration:underline;">${safeName}</h3>
     ${safeBrand ? `<p style="margin:8px 0 0;font-size:12px;color:#6b7280;">Brand: ${safeBrand}</p>` : ''}
-    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>
+    ${safeUrl
+      ? `<a href="${safeUrl}" target="_blank" rel="sponsored nofollow noopener noreferrer" aria-label="Buy ${safeName} on Amazon" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>`
+      : `<span role="link" aria-disabled="true" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;opacity:.4;filter:grayscale(1);cursor:not-allowed;">BUY OPTIONS ▾</span>`}
     <a href="${jumpHref}" style="display:block;margin-top:8px;text-align:center;font-size:12px;color:#6b7280;text-decoration:none;">Jump to review ↓</a>
   </div>
 </div>`;
@@ -232,10 +237,8 @@ export default async function BlogPostPage({ params }: Props) {
       const productBrand = safe(String(product?.brand || ''));
       const authorName = safe('Marcus Webb');
       const imageUrl = safe(getCloudinaryImageUrl(String(product?.imageUrl || '')));
-      const rawAmazonUrl = String(product?.affiliateLink || '#');
-      const amazonUrl = safe(
-        buildAffiliateRedirectUrl(String(product?.productName || 'Product'), product?.asin, articlePath, rawAmazonUrl)
-      );
+      const resolvedAmazonUrl = resolveProductUrl(product);
+      const amazonUrl = resolvedAmazonUrl ? safe(resolvedAmazonUrl) : '';
       const reviewUrl = safe(String(product?.jumpTargetId ? `#${product.jumpTargetId}` : articlePath));
       const editorNote = safe(String(product?.editorNote || 'Top pick selected by the Rider Complex editorial team.'));
       const awardLabel = safe(String(product?.awardLabel || 'Best Overall'));
@@ -255,7 +258,9 @@ export default async function BlogPostPage({ params }: Props) {
       ${productBrand ? `<p style="margin:8px 0 0;color:#6b7280;font-size:13px;">Brand: ${productBrand}</p>` : ''}
       ${specs.length > 0 ? `<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;">${specs.map((spec: any) => `<span style=\"display:inline-flex;align-items:center;padding:4px 10px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;\">${safe(`${spec.label}: ${spec.value}`)}</span>`).join('')}</div>` : ''}
       <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer sponsored" style="display:inline-flex;align-items:center;justify-content:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:12px 10px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:18px;font-weight:900;text-transform:uppercase;">BUY ON AMAZON</a>
+        ${amazonUrl
+          ? `<a href="${amazonUrl}" target="_blank" rel="sponsored nofollow noopener noreferrer" aria-label="Buy ${productName} on Amazon" style="display:inline-flex;align-items:center;justify-content:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:12px 10px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:18px;font-weight:900;text-transform:uppercase;">BUY ON AMAZON</a>`
+          : `<span role="link" aria-disabled="true" style="display:inline-flex;align-items:center;justify-content:center;background:#CC0000;color:#fff;border-radius:6px;padding:12px 10px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:18px;font-weight:900;text-transform:uppercase;opacity:.4;filter:grayscale(1);cursor:not-allowed;">BUY ON AMAZON</span>`}
         <a href="${reviewUrl}" style="display:inline-flex;align-items:center;justify-content:center;border:1px solid #111;color:#111;text-decoration:none;border-radius:6px;padding:12px 10px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:18px;font-weight:900;text-transform:uppercase;">READ FULL REVIEW</a>
       </div>
     </div>
@@ -308,15 +313,14 @@ export default async function BlogPostPage({ params }: Props) {
           const product = block?.product || null;
 
           if (effectiveType === 'hero') {
-            return renderHeroCardHtml(product || { productName: placeholderName, affiliateLink: '#' });
+            return renderHeroCardHtml(product || { productName: placeholderName, affiliateLink: '' });
           }
 
           return renderAccentCardHtml({
             productName: String(product?.productName || placeholderName || 'Product'),
             brand: String(product?.brand || ''),
             description: getProductReviewBody(product || {}),
-            affiliateUrl: String(product?.affiliateLink || '#'),
-            asin: String(product?.asin || ''),
+            amazonUrl: resolveProductUrl(product || { _id: productId, productName: placeholderName }),
             imageUrl: String(product?.imageUrl || ''),
             awardLabel: product?.awardLabel,
             jumpTargetId: String(product?.jumpTargetId || ''),
@@ -361,9 +365,13 @@ export default async function BlogPostPage({ params }: Props) {
 
       const awardLabel = String(matchedProduct?.awardLabel || matchedProduct?.award || '').trim() || undefined;
       const imageSrc = String(matchedProduct?.image || '').trim() || extractImageSrc(imageTag) || undefined;
-      const trackedHref = escapeHtml(
-        buildAffiliateRedirectUrl(trimmedName, matchedProduct?.asin || asin, articlePath, trimmedHref)
-      );
+      const resolvedHref = resolveProductUrl({
+        _id: matchedProduct?.asin || asin || trimmedName,
+        productName: trimmedName,
+        affiliateLink: trimmedHref,
+        asin: matchedProduct?.asin || asin,
+      });
+      const trackedHref = resolvedHref ? escapeHtml(resolvedHref) : '';
       const safeName = escapeHtml(trimmedName);
       const safeAwardLabel = awardLabel ? escapeHtml(awardLabel) : '';
       const safeImageSrc = imageSrc ? escapeHtml(imageSrc) : '';
@@ -376,7 +384,9 @@ export default async function BlogPostPage({ params }: Props) {
       ${safeImageSrc ? `<img src="${safeImageSrc}" alt="${safeName}" style="max-height:160px;width:auto;object-fit:contain;" />` : '<span style="font-size:14px;color:#9ca3af;">No image available</span>'}
     </div>
     <h3 style="margin:16px 0 0;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;line-height:1.2;color:#111;text-decoration:underline;">${safeName}</h3>
-    <a href="${trackedHref}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>
+    ${trackedHref
+      ? `<a href="${trackedHref}" target="_blank" rel="sponsored nofollow noopener noreferrer" aria-label="Buy ${safeName} on Amazon" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;text-decoration:none;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">BUY OPTIONS ▾</a>`
+      : `<span role="link" aria-disabled="true" style="display:block;margin-top:16px;text-align:center;background:#CC0000;color:#fff;border-radius:6px;padding:14px 12px;font-family:'Barlow Condensed',system-ui,-apple-system,sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;opacity:.4;filter:grayscale(1);cursor:not-allowed;">BUY OPTIONS ▾</span>`}
     <a href="#top" style="display:block;margin-top:8px;text-align:center;font-size:12px;color:#6b7280;text-decoration:none;">Jump to review ↓</a>
   </div>
 </div>`;
@@ -542,9 +552,7 @@ export default async function BlogPostPage({ params }: Props) {
                 specs={specs}
                 pros={Array.isArray(product.pros) && product.pros.length > 0 ? product.pros : ['Strong all-around performance']}
                 cons={Array.isArray(product.cons) ? product.cons : []}
-                affiliateUrl={String(product.affiliateLink || '#')}
-                asin={String(product.asin || '')}
-                sourcePage={articlePath}
+                amazonUrl={resolveProductUrl(product)}
                 jumpTargetId={jumpTargetId}
                 imageUrl={String(product.imageUrl || '') || undefined}
               />
@@ -558,9 +566,7 @@ export default async function BlogPostPage({ params }: Props) {
               productName={String(product.productName || 'Product')}
               brand={product.brand}
               description={getProductReviewBody(product) || undefined}
-              affiliateUrl={String(product.affiliateLink || '#')}
-              asin={String(product.asin || '')}
-              sourcePage={articlePath}
+              amazonUrl={resolveProductUrl(product)}
               imageUrl={String(product.imageUrl || '')}
               awardLabel={product.awardLabel}
               specs={Array.isArray(product.specs)
