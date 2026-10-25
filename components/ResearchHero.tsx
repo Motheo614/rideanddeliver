@@ -6,9 +6,9 @@ const POPULAR_TAGS = ['U-lock', 'MIPS helmet', 'Phone mount', 'Backpack'];
 export default function ResearchHero() {
   return (
     <section
-      className="border-b border-hairline bg-offwhite bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgb(204_0_0/0.06),transparent_70%)]"
+      className="hero relative overflow-hidden border-b border-hairline bg-offwhite bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgb(204_0_0/0.06),transparent_70%)]"
     >
-      <div className="container-page py-16 text-center md:py-28">
+      <div className="container-page relative z-[1] py-16 text-center md:py-28">
         <p className="eyebrow inline-flex items-center rounded-full border border-hairline bg-white px-4 py-1.5 shadow-xs">
           Independent Courier Gear Research Desk
         </p>

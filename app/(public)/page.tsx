@@ -1,4 +1,5 @@
 import React from 'react';
+import Script from 'next/script';
 import ArticleCard from '@/components/ArticleCard';
 import ResearchHero from '@/components/ResearchHero';
 import DepartmentGrid from '@/components/DepartmentGrid';
@@ -57,6 +58,9 @@ export default async function HomePage() {
       </section>
 
       <EditorialPledge />
+
+      {/* Runs after hydration, once the .hero markup exists; loads Three.js r128 itself */}
+      <Script id="hero3d" src="/hero3d.js" strategy="afterInteractive" />
     </main>
   );
 }

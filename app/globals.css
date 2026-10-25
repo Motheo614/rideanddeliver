@@ -138,6 +138,10 @@
   }
 }
 
+/* Hero 3D scene (public/hero3d.js). The ::after veil only shows once WebGL is running. */
+.hero3d{position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;transition:opacity .4s}
+.hero[data-hero3d="on"]::after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 50% 46% at 50% 44%,rgba(250,250,251,.9) 0%,rgba(250,250,251,.7) 50%,rgba(250,250,251,0) 100%)}
+
 .start-here-hero-overlay {
   background: rgba(14, 8, 8, 0.72);
 }
