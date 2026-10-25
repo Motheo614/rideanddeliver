@@ -24,14 +24,20 @@ export default function ProductCard({ pick }: { pick: TopPick }) {
 
       <div className="relative m-2.5 mb-0 aspect-[4/3] rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#ffffff,#eceef2)]">
         <div className="absolute inset-0 overflow-hidden rounded-2xl">
-          <Image
-            src={pick.imageUrl}
-            alt={`${title} product photo`}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 80vw"
-            className="object-contain p-6 mix-blend-multiply transition-transform duration-300 ease-out group-hover:scale-[1.07] motion-reduce:transform-none motion-reduce:transition-none"
-            referrerPolicy="no-referrer"
-          />
+          {pick.imageUrl ? (
+            <Image
+              src={pick.imageUrl}
+              alt={`${title} product photo`}
+              fill
+              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 80vw"
+              className="object-contain p-6 mix-blend-multiply transition-transform duration-300 ease-out group-hover:scale-[1.07] motion-reduce:transform-none motion-reduce:transition-none"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center px-6 text-center text-sm text-body">
+              Product image unavailable
+            </div>
+          )}
         </div>
         <Link
           href={pick.roundupHref}

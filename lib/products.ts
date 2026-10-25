@@ -18,6 +18,21 @@ export interface TopPick {
   reviewHref: string;
 }
 
+export interface CatalogProduct {
+  _id: string;
+  productName: string;
+  brand?: string;
+  asin: string;
+  affiliateLink: string;
+  category: 'helmets' | 'lights' | 'locks' | 'bags' | 'tools' | 'clothing' | 'accessories';
+  price?: string;
+  imageUrl?: string;
+  awardLabel?: string;
+  description?: string;
+  editorNote?: string;
+  pros: string[];
+}
+
 const BADGE_MAX = 16;
 const FEATURE_MAX = 90;
 
@@ -54,6 +69,22 @@ interface TopPickApiItem {
   badge: string;
   features: string[];
   roundup: { title: string; slug: string; dbCategorySlug: string; categoryLabel: string };
+}
+
+export async function getCatalogProducts(): Promise<CatalogProduct[]> {
+  try {
+    const response = await fetchPostsApi(`${getApiBase()}/api/products`);
+    if (!response.ok) {
+      console.error('Failed to fetch catalog products:', response.statusText);
+      return [];
+    }
+
+    const data: { products?: CatalogProduct[] } = await response.json();
+    return Array.isArray(data.products) ? data.products : [];
+  } catch (error) {
+    console.error('Error fetching catalog products:', error);
+    return [];
+  }
 }
 
 /**

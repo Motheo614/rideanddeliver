@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import { getTopPicks } from '@/lib/products';
 
@@ -39,6 +40,16 @@ export default async function TopPicksSection({ limit = 8 }: { limit?: number })
             </li>
           ))}
         </ul>
+
+        <div className="mt-10 flex justify-center">
+          <Link
+            href="/products"
+            className="btn btn-primary"
+          >
+            View all products
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
       </div>
     </section>
   );

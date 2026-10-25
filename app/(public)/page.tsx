@@ -4,7 +4,6 @@ import ArticleCard from '@/components/ArticleCard';
 import ResearchHero from '@/components/ResearchHero';
 import DepartmentGrid from '@/components/DepartmentGrid';
 import TopPicksSection from '@/components/TopPicksSection';
-import MethodologySection from '@/components/MethodologySection';
 import Sidebar from '@/components/Sidebar';
 import EditorialPledge from '@/components/EditorialPledge';
 import SeoJsonLd from '@/components/SeoJsonLd';
@@ -34,8 +33,6 @@ export default async function HomePage() {
       <ResearchHero />
       <DepartmentGrid />
       <TopPicksSection />
-      <MethodologySection />
-
       <section aria-labelledby="latest-heading" className="section-y bg-white">
         <div className="container-page">
           <div className="mb-10 max-w-[65ch]">
