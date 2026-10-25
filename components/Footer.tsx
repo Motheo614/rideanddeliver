@@ -43,15 +43,12 @@ const SOCIALS = [
 const STANDARDS = [
   { label: 'How We Research', href: '/how-we-research' },
   { label: 'Affiliate Disclaimer', href: '/affiliate-disclaimer' },
-  { label: 'Free Rider Checklist', href: '/free-rider-checklist' },
-  { label: 'Night Riding Safety', href: '/night-delivery-riding-safety' },
 ];
 
 const ORGANIZATION = [
   { label: 'Contact', href: '/contact' },
   { label: 'Privacy Policy', href: '/privacy-policy' },
   { label: 'Terms of Service', href: '/terms' },
-  { label: 'Admin', href: '/admin' },
 ];
 
 const linkClass =
@@ -81,7 +78,7 @@ export default function Footer() {
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Link href="/" className="inline-block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              <Image src="/Assets/LogoBlack.png" alt="Rider Section – home" width={360} height={79} className="h-12 w-auto" />
+              <Image src="/Assets/LogoBlack.png" alt="Rider Complex – home" width={360} height={79} className="h-12 w-auto" />
             </Link>
             <p className="mt-4 max-w-xs text-small text-gray-300">
               Independent gear reviews, durability ratings and buying guides for bike delivery
@@ -94,7 +91,7 @@ export default function Footer() {
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`Rider Section on ${s.label}`}
+                    aria-label={`Rider Complex on ${s.label}`}
                     className={`flex h-9 w-9 items-center justify-center rounded-full border border-white/10 hover:border-white/30 ${linkClass}`}
                   >
                     {s.icon}
@@ -114,7 +111,7 @@ export default function Footer() {
 
         <div className="mt-14 border-t border-white/10 pt-8 text-xs leading-relaxed text-gray-300">
           <p className="max-w-4xl">
-            Rider Section is a participant in the Amazon Services LLC Associates Program, an
+            Rider Complex is a participant in the Amazon Services LLC Associates Program, an
             affiliate advertising program designed to provide a means for sites to earn advertising
             fees by advertising and linking to Amazon.com. As an Amazon Associate we earn from
             qualifying purchases. Product prices and availability are accurate as of the date and
@@ -124,7 +121,7 @@ export default function Footer() {
             </Link>
             .
           </p>
-          <p className="mt-4">© {new Date().getFullYear()} Rider Section. All rights reserved.</p>
+          <p className="mt-4">© {new Date().getFullYear()} Rider Complex. All rights reserved.</p>
         </div>
       </div>
     </footer>

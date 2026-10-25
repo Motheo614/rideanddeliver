@@ -60,7 +60,7 @@ export default function HowWeResearchPage() {
             How We Research Courier Gear
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-body">
-            Every recommendation on Rider Section passes the same five-step framework, built around
+            Every recommendation on Rider Complex passes the same five-step framework, built around
             the demands of a real delivery shift.
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function HowWeResearchPage() {
         </h2>
         <div className="mt-4 space-y-4 leading-relaxed text-body">
           <p>
-            Rider Section is reader-supported. When you buy through some of our links, we may earn a
+            Rider Complex is reader-supported. When you buy through some of our links, we may earn a
             commission through the Amazon Associates program at no extra cost to you. That income
             pays for research, and it never decides what we recommend.
           </p>

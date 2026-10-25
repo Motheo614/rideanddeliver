@@ -20,7 +20,7 @@ export default async function HomePage() {
   const homeSchemas = [
     buildCollectionPageSchema(
       '/',
-      'Rider Section Home',
+      'Rider Complex Home',
       'Independent gear reviews and buying guides for bike delivery couriers.'
     ),
     buildItemListSchema(latestArticles.map((post) => ({ name: post.title, url: getPostHref(post) }))),

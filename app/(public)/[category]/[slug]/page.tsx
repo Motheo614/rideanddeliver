@@ -700,7 +700,7 @@ export default async function BlogPostPage({ params }: Props) {
               <div className="py-4 border-t border-b border-gray-200">
                 <p className="mb-3 flex items-center gap-2 text-sm font-bold text-charcoal">
                   <ShieldCheck className="h-4 w-4 text-brand-red" aria-hidden="true" />
-                  By Rider Section Research Desk
+                  By Rider Complex Research Desk
                 </p>
                 <ArticleAuthorBox
                   publishedLabel={formatDateAbsolute(post.publishedAt)}

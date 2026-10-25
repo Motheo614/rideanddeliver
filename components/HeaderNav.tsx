@@ -53,7 +53,7 @@ export default function HeaderNav() {
           <Link href="/" className={`flex shrink-0 items-center rounded-lg ${focusRing}`}>
             <Image
               src="/Assets/Logo.png"
-              alt="Rider Section – home"
+              alt="Rider Complex – home"
               width={360}
               height={79}
               priority
